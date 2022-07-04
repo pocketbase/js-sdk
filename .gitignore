@@ -1,0 +1,9 @@
+/node_modules/
+
+.DS_Store
+
+# Although npm recommends adding it to the source, this really should be
+# done only for top-level packages (aka. applications, not libraries).
+#
+# @see https://github.com/npm/npm/issues/20603
+package-lock.json
