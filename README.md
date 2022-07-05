@@ -46,7 +46,7 @@ const result = await client.Records.getList("demo", 1, 20, {
     filter: "status = true && totalComments > 0"
 });
 
-// authenticate a user
+// authenticate as regular user
 const userData = await client.Users.authViaEmail("test@example.com", "password");
 
 
@@ -55,7 +55,7 @@ const adminData = await client.Admins.authViaEmail("test@example.com", "password
 
 // and much more...
 ```
-> More detailed API docs and copy-paste examples could be found in the [API documentaiton for each service](https://pocketbase.io/docs/api-authentication).
+> More detailed API docs and copy-paste examples could be found in the [API documentation for each service](https://pocketbase.io/docs/api-authentication).
 
 
 ## Definitions
