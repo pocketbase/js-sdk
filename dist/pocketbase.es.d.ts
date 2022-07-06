@@ -522,6 +522,8 @@ declare class Client {
  */
 declare class LocalAuthStore implements AuthStore {
     private fallback;
+    private storageKey;
+    constructor(storageKey?: string);
     /**
      * @inheritdoc
      */

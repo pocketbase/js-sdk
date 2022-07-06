@@ -3,20 +3,23 @@ import JWT           from '@/stores/utils/JWT';
 import User          from '@/models/User';
 import Admin         from '@/models/Admin';
 
-const STORAGE_KEY = 'pocketbase_auth';
-
 /**
  * Default token store for browsers with auto fallback
  * to runtime/memory if local storage is undefined (eg. node env).
  */
 export default class LocalAuthStore implements AuthStore {
     private fallback: { [key: string]: any } = {};
+    private storageKey: string
+
+    constructor(storageKey = "pocketbase_auth") {
+        this.storageKey = storageKey;
+    }
 
     /**
      * @inheritdoc
      */
     get token(): string {
-        const data = this._storageGet(STORAGE_KEY) || {};
+        const data = this._storageGet(this.storageKey) || {};
 
         return data.token || '';
     }
@@ -25,7 +28,7 @@ export default class LocalAuthStore implements AuthStore {
      * @inheritdoc
      */
     get model(): User | Admin | {} {
-        const data = this._storageGet(STORAGE_KEY) || {};
+        const data = this._storageGet(this.storageKey) || {};
 
         if (
             data === null ||
@@ -55,7 +58,7 @@ export default class LocalAuthStore implements AuthStore {
      * @inheritdoc
      */
     save(token: string, model: User | Admin | {}) {
-        this._storageSet(STORAGE_KEY, {
+        this._storageSet(this.storageKey, {
             'token': token,
             'model': model,
         });
@@ -65,7 +68,7 @@ export default class LocalAuthStore implements AuthStore {
      * @inheritdoc
      */
     clear() {
-        return this._storageRemove(STORAGE_KEY);
+        return this._storageRemove(this.storageKey);
     }
 
     // ---------------------------------------------------------------
