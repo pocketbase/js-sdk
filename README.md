@@ -28,7 +28,7 @@ import PocketBase from "pocketbase";
 ...
 ```
 
-#### Browser (manualy via script tag)
+#### Browser (manually via script tag)
 
 ```html
 <script src="/path/to/dist/pocketbase.iife.js"></script>
