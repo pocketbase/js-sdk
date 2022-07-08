@@ -11,19 +11,27 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 
 ## Installation
 
-#### NPM (node, bundlers)
+#### Node.js (via npm)
+
 ```sh
 npm install pocketbase --save
 ```
 
 ```js
-import PocketBase from 'pocketbase'
+const PocketBase = require("pocketbase");
+...
 ```
 
-#### Manual (browser, node)
+_OR if you are using es6 style imports (suitable also for bundlers like rollup and webpack):_
+```js
+import PocketBase from "pocketbase";
+...
+```
+
+#### Browser (manualy via script tag)
 
 ```html
-<script src="/path/to/dist/pocketbase.umd.js"></script>
+<script src="/path/to/dist/pocketbase.iife.js"></script>
 ```
 
 _OR if you are using JavaScript modules:_
