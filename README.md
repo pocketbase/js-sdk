@@ -6,6 +6,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 - [Installation](#installation)
 - [Examples](#examples)
 - [Definitions](#definitions)
+- [Caveats](#caveats)
 - [Development](#development)
 
 
@@ -55,11 +56,11 @@ const result = await client.Records.getList("demo", 1, 20, {
 });
 
 // authenticate as regular user
-const userData = await client.Users.authViaEmail("test@example.com", "password");
+const userData = await client.Users.authViaEmail("test@example.com", "123456");
 
 
 // or as admin
-const adminData = await client.Admins.authViaEmail("test@example.com", "password");
+const adminData = await client.Admins.authViaEmail("test@example.com", "123456");
 
 // and much more...
 ```
@@ -149,6 +150,36 @@ const client = new PocketBase(
 | **[Settings](https://pocketbase.io/docs/api-records)**                                                                                                                                            |                                                                                                       |
 | 🔐`client.Settings.getAll(queryParams = {})`                                                                                                                                                       | Fetch all available app settings.                                                                     |
 | 🔐`client.Settings.update(bodyParams = {}, queryParams = {})`                                                                                                                                      | Bulk updates app settings.                                                                            |
+
+
+## Caveats
+
+The SDK client auto cancel duplicated pending requests.
+For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with error `null`:
+
+```js
+client.Records.getList("demo", 1, 20) // cancelled
+client.Records.getList("demo", 1, 20) // cancelled
+client.Records.getList("demo", 1, 20) // executed
+```
+
+To change this behavior, you could make use of 2 special query parameters:
+
+- `$autoCancel ` - set it to `false` to disable auto cancellation for this request
+- `$cancelKey` - set it to a string that its used as request identifier based on which pending duplicated requests are matched (default to `HTTP_METHOD + url`, eg. "get /api/users?page=1")
+
+Example:
+
+```js
+client.Records.getList("demo", 1, 20);                           // cancelled
+client.Records.getList("demo", 1, 20);                           // executed
+client.Records.getList("demo", 1, 20, { "$autoCancel": false }); // executed
+client.Records.getList("demo", 1, 20, { "$autoCancel": false })  // executed
+client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // cancelled
+client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // executed
+```
+
+To manually cancel pending requests, you could use `client.cancelAllRequests()` or `client.cancelRequest(cancelKey)`.
 
 
 ## Development
