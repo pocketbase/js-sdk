@@ -3,7 +3,7 @@
     "name": "pocketbase",
     "description": "PocketBase JavaScript SDK",
     "author": "Gani Georgiev <gani.georgiev@gmail.com>",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git://github.com/pocketbase/js-sdk.git"
