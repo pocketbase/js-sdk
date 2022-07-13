@@ -1,22 +1,34 @@
-import { assert }  from 'chai';
-import mockAdapter from 'axios-mock-adapter';
-import Client      from '@/Client';
-import Settings    from '@/services/Settings';
+import { assert }    from 'chai';
+import Client        from '@/Client';
+import Settings      from '@/services/Settings';
+import { FetchMock } from 'tests/mocks';
 
 describe('Settings', function () {
     const client = new Client('test_base_url');
     const service = new Settings(client);
-    const adapter = new mockAdapter(service.client.http);
+    const fetchMock = new FetchMock();
 
-    // mock setup
-    adapter
-        // getAll()
-        .onGet('/api/settings', { 'q1': 123 }).reply(200, { 'test': 'abc' })
-        // update()
-        .onPatch('/api/settings', { 'b1': 123 }).reply(200, { 'test': 'abc' })
+    before(function () {
+        fetchMock.init();
+    });
+
+    after(function () {
+        fetchMock.restore();
+    });
+
+    afterEach(function () {
+        fetchMock.clearMocks();
+    });
 
     describe('getAll()', function () {
         it('Should fetch all app settings', async function () {
+            fetchMock.on({
+                method: 'GET',
+                url: service.client.fullUrl('/api/settings') + '?q1=123',
+                replyCode: 200,
+                replyBody: { 'test': 'abc' },
+            });
+
             const result = await service.getAll({ 'q1': 123 });
 
             assert.deepEqual(result, { 'test': 'abc' });
@@ -25,6 +37,14 @@ describe('Settings', function () {
 
     describe('update()', function () {
         it('Should send bulk app settings update', async function () {
+            fetchMock.on({
+                method: 'PATCH',
+                url: service.client.fullUrl('/api/settings'),
+                body: { 'b1': 123 },
+                replyCode: 200,
+                replyBody: { 'test': 'abc' },
+            });
+
             const result = await service.update({ 'b1': 123 });
 
             assert.deepEqual(result, { 'test': 'abc' });

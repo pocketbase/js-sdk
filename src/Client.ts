@@ -1,26 +1,22 @@
-import axios, {
-    AxiosInstance,
-    AxiosRequestConfig,
-    CancelTokenSource
-}                     from 'axios';
-import qs             from 'qs';
-import { AuthStore }  from '@/stores/utils/AuthStore';
-import LocalAuthStore from '@/stores/LocalAuthStore';
-import Settings       from '@/services/Settings';
-import Admins         from '@/services/Admins';
-import Users          from '@/services/Users';
-import Collections    from '@/services/Collections';
-import Records        from '@/services/Records';
-import Logs           from '@/services/Logs';
-import Realtime       from '@/services/Realtime';
+import ClientResponseError from '@/ClientResponseError';
+import { AuthStore }       from '@/stores/utils/AuthStore';
+import LocalAuthStore      from '@/stores/LocalAuthStore';
+import Settings            from '@/services/Settings';
+import Admins              from '@/services/Admins';
+import Users               from '@/services/Users';
+import Collections         from '@/services/Collections';
+import Records             from '@/services/Records';
+import Logs                from '@/services/Logs';
+import Realtime            from '@/services/Realtime';
 
 /**
- * PocketBase API Client.
+ * PocketBase JS Client.
  */
 export default class Client {
+    baseUrl:   string;
+    lang:      string;
     AuthStore: AuthStore;
 
-    readonly http:        AxiosInstance;
     readonly Settings:    Settings;
     readonly Admins:      Admins;
     readonly Users:       Users;
@@ -29,66 +25,16 @@ export default class Client {
     readonly Logs:        Logs;
     readonly Realtime:    Realtime;
 
-    private cancelSource: { [key: string]: CancelTokenSource } = {}
-    private defaultAuthStore = new LocalAuthStore();
+    private cancelControllers: { [key: string]: AbortController } = {}
 
     constructor(
         baseUrl = '/',
         lang = 'en-US',
         authStore?: AuthStore | null,
-        httpConfig?: AxiosRequestConfig,
     ) {
-        // init HTTP client
-        this.http = axios.create(Object.assign({
-            paramsSerializer: (params: any) => {
-                // remove null query params
-                let nonEmptyConfig: { [key: string]: any } = {};
-                for (let k in params) {
-                    if (params[k] === null) {
-                        continue;
-                    }
-
-                    nonEmptyConfig[k] = params[k];
-                }
-
-                return qs.stringify(nonEmptyConfig, {
-                    arrayFormat: 'repeat',
-                    serializeDate: (d) => d.toISOString(),
-                });
-            },
-        }, (httpConfig || {})));
-
-        // handle auto cancelation for duplicated pending request
-        this.http.interceptors.request.use((config) => {
-            if (!config.cancelToken && config?.params?.$autoCancel !== false) {
-                let cancelKey = config?.params?.$cancelKey || ((config.method || 'get') + config.url);
-
-                this.cancelRequest(cancelKey); // abort previous pending requests
-                this.cancelSource[cancelKey] = axios.CancelToken.source();
-                config.cancelToken = this.cancelSource[cancelKey].token;
-            }
-
-            // remove custom cancellation params from the request data
-            delete config?.params?.$autoCancel;
-            delete config?.params?.$cancelKey;
-
-            return config;
-        });
-        this.http.interceptors.response.use((response) => {
-            // delete stored cancel source key
-            // delete this.cancelSource[response.config.cancelKey];
-            return response;
-        }, (error) => {
-            if (axios.isCancel(error)) {
-                // silently reject the cancellation error...
-                return Promise.reject(null);
-            }
-            return Promise.reject(error);
-        });
-
         this.baseUrl     = baseUrl;
-        this.language    = lang;
-        this.AuthStore   = authStore || this.defaultAuthStore;
+        this.lang        = lang;
+        this.AuthStore   = authStore || new LocalAuthStore();
         this.Settings    = new Settings(this);
         this.Admins      = new Admins(this);
         this.Users       = new Users(this);
@@ -99,37 +45,12 @@ export default class Client {
     }
 
     /**
-     * Returns the default http client base url.
-     */
-    get baseUrl(): string {
-        return this.http.defaults.baseURL || '';
-    };
-
-    /**
-     * Sets the default http client base url.
-     */
-    set baseUrl(url: string) {
-        this.http.defaults.baseURL = url.replace(/\/+$/, '');
-    };
-
-    /**
-     * Sets (or remove) the default Accept-Language header.
-     */
-    set language(lang: string) {
-        if (lang) {
-            this.http.defaults.headers.common['Accept-Language'] = lang;
-        } else {
-            delete this.http.defaults.headers.common['Accept-Language'];
-        }
-    }
-
-    /**
-     * Cancels single request by its cancellation token key.
+     * Cancels single request by its cancellation key.
      */
     cancelRequest(cancelKey: string): Client {
-        if (this.cancelSource[cancelKey]) {
-            this.cancelSource[cancelKey].cancel();
-            delete this.cancelSource[cancelKey];
+        if (this.cancelControllers[cancelKey]) {
+            this.cancelControllers[cancelKey].abort();
+            delete this.cancelControllers[cancelKey];
         }
 
         return this;
@@ -139,9 +60,11 @@ export default class Client {
      * Cancels all pending requests.
      */
     cancelAllRequests(): Client {
-        for (let k in this.cancelSource) {
-            this.cancelSource[k].cancel();
+        for (let k in this.cancelControllers) {
+            this.cancelControllers[k].abort();
         }
+
+        this.cancelControllers = {};
 
         return this;
     }
@@ -149,9 +72,30 @@ export default class Client {
     /**
      * Sends an api http request.
      */
-    send(reqConfig: AxiosRequestConfig): Promise<any> {
+    send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
         const config = Object.assign({}, reqConfig);
 
+        if (!(config.body instanceof FormData)) {
+            if (config.body && typeof config.body !== 'string') {
+                config.body = JSON.stringify(config.body);
+            }
+
+            // check if Content-Type header need to added
+            if (typeof config?.headers?.['Contentt-Type'] === 'undefined') {
+                config.headers = Object.assign({}, config.headers, {
+                    'Content-Type': 'application/json',
+                });
+            }
+        }
+
+        // check if Accept-Language header can be added
+        if (typeof config?.headers?.['Accept-Language'] === 'undefined') {
+            config.headers = Object.assign({}, config.headers, {
+                'Accept-Language': this.lang,
+            });
+        }
+
+        // check if Authorization header can be added
         if (
             // has stored token
             this.AuthStore?.token &&
@@ -168,6 +112,101 @@ export default class Client {
             });
         }
 
-        return this.http.request(config);
+        // handle auto cancelation for duplicated pending request
+        if (config?.params?.$autoCancel !== false) {
+            const cancelKey = config?.params?.$cancelKey || ((config.method || 'GET') + path);
+
+            // cancel previous pending requests
+            this.cancelRequest(cancelKey);
+
+            const controller = new AbortController();
+            this.cancelControllers[cancelKey] = controller;
+            config.signal = controller.signal;
+        }
+        // remove the special cancellation params from the other valid query params
+        delete config?.params?.$autoCancel;
+        delete config?.params?.$cancelKey;
+
+        // build full url
+        let url = this.fullUrl(path);
+
+        // serialize the query parameters
+        if (typeof config.params !== 'undefined') {
+            const query = this.serializeQueryParams(config.params)
+            if (query) {
+                url += (url.includes('?') ? '&' : '?') + query;
+            }
+            delete config.params;
+        }
+
+        const finalParams = Object.assign({
+            method: 'GET',
+            mode:   ('cors' as RequestMode),
+        }, config);
+
+        // send the request
+        return fetch(url, finalParams)
+            .then(async (response) => {
+                const data = await response.json();
+
+                if (response.status >= 400) {
+                    throw new ClientResponseError({
+                        url:      response.url,
+                        status:   response.status,
+                        data:     data,
+                    });
+                }
+
+                return data;
+            }).catch((err) => {
+                if (err instanceof ClientResponseError) {
+                    throw err; // rethrow
+                }
+
+                // wrap any other error
+                throw new ClientResponseError(err);
+            });
+    }
+
+    /**
+     * Returns a full client url by safely concatenating the provided path.
+     */
+    fullUrl(path: string): string {
+        let url = this.baseUrl + (this.baseUrl.endsWith('/') ? '' : '/');
+        if (path) {
+            url += (path.startsWith('/') ? path.substring(1) : path);
+        }
+        return url;
+    }
+
+    /**
+     * Serializes the provided query parameters into a query string.
+     */
+    private serializeQueryParams(params: {[key: string]: any}): string {
+        const result: Array<string> = [];
+        for (const key in params) {
+            if (params[key] === null) {
+                // skip null query params
+                continue;
+            }
+
+            const value = params[key];
+            const encodedKey = encodeURIComponent(key);
+
+            if (Array.isArray(value)) {
+                // "repeat" array params
+                for (const v of value) {
+                    result.push(encodedKey + "=" + encodeURIComponent(v));
+                }
+            } else if (value instanceof Date) {
+                result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
+            } else if (typeof value !== null && typeof value === 'object') {
+                result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
+            } else {
+                result.push(encodedKey + "=" + encodeURIComponent(value));
+            }
+        }
+
+        return result.join('&');
     }
 }

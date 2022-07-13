@@ -3,14 +3,12 @@ import { assert }  from 'chai';
 import Client      from '@/Client';
 import Record      from '@/models/Record';
 import Records     from '@/services/Records';
-import mockAdapter from 'axios-mock-adapter';
 
 describe('Records', function() {
     const client  = new Client('test_base_url///');
     const service = new Records(client);
-    const adapter = new mockAdapter(service.client.http);
 
-    subCrudServiceTestsSuite(service, 'sub=', '/api/collections/sub%3D/records', adapter);
+    subCrudServiceTestsSuite(service, 'sub=', '/api/collections/sub%3D/records');
 
     describe('getFileUrl()', function () {
         it('Should return a formatted url', async function () {

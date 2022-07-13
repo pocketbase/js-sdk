@@ -5,22 +5,20 @@ export default class Settings extends BaseService {
      * Fetch all available app settings.
      */
     getAll(queryParams = {}): Promise<{ [key: string]: any }> {
-        return this.client.send({
-            'method': 'get',
-            'url':    '/api/settings',
+        return this.client.send('/api/settings', {
+            'method': 'GET',
             'params': queryParams,
-        }).then((response) => response?.data || {});
+        }).then((responseData) => responseData || {});
     }
 
     /**
      * Bulk updates app settings.
      */
     update(bodyParams = {}, queryParams = {}): Promise<{ [key: string]: any }> {
-        return this.client.send({
-            'method': 'patch',
-            'url':    '/api/settings',
+        return this.client.send('/api/settings', {
+            'method': 'PATCH',
             'params': queryParams,
-            'data':   bodyParams,
-        }).then((response) => response?.data || {});
+            'body':   bodyParams,
+        }).then((responseData) => responseData || {});
     }
 }

@@ -1,5 +1,5 @@
 {
-    "version": "0.1.2",
+    "version": "0.2.0",
     "name": "pocketbase",
     "description": "PocketBase JavaScript SDK",
     "author": "Gani Georgiev <gani.georgiev@gmail.com>",
@@ -8,10 +8,14 @@
         "type": "git",
         "url": "git://github.com/pocketbase/js-sdk.git"
     },
-    "types": "dist/pocketbase.es.d.ts",
-    "main": "dist/pocketbase.cjs.js",
-    "module": "dist/pocketbase.es.js",
-    "browser": "dist/pocketbase.iife.js",
+    "exports": {
+        ".": "./dist/pocketbase.es.mjs",
+        "./cjs": "./dist/pocketbase.cjs.js",
+        "./umd": "./dist/pocketbase.umd.js"
+    },
+    "module": "./dist/pocketbase.es.mjs",
+    "browser": "./dist/pocketbase.umd.js",
+    "types": "./dist/pocketbase.es.d.ts",
     "keywords": [
         "pocketbase",
         "pocketbase-js",
@@ -25,10 +29,6 @@
         "test": "env TS_NODE_PROJECT='tsconfig-test.json' mocha 'tests/**/*.spec.ts' --require=ts-node/register",
         "prepublishOnly": "npm run build"
     },
-    "dependencies": {
-        "axios": "^0.21.1",
-        "qs": "^6.10.1"
-    },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^21.0.0",
         "@rollup/plugin-json": "^4.1.0",
@@ -37,13 +37,12 @@
         "@types/chai-as-promised": "^7.1.4",
         "@types/glob": "^7.1.3",
         "@types/mocha": "^8.2.2",
-        "@types/qs": "^6.9.6",
         "@types/sinon": "^10.0.11",
-        "axios-mock-adapter": "^1.19.0",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1",
         "glob": "^7.1.7",
         "mocha": "^9.0.1",
+        "node-fetch": "^3.2.8",
         "rollup": "^2.63.0",
         "rollup-plugin-terser": "^7.0.0",
         "rollup-plugin-ts": "^2.0.0",

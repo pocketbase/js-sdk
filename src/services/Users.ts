@@ -40,16 +40,16 @@ export default class Users extends CrudService<User> {
     /**
      * Prepare successfull authorization response.
      */
-    protected authResponse(response: any): UserAuthResponse {
-        const user = this.decode(response?.data?.user || {});
+    protected authResponse(responseData: any): UserAuthResponse {
+        const user = this.decode(responseData?.user || {});
 
-        if (response?.data?.token && response?.data?.user) {
-            this.client.AuthStore.save(response.data.token, user);
+        if (responseData?.token && responseData?.user) {
+            this.client.AuthStore.save(responseData.token, user);
         }
 
-        return Object.assign({}, response?.data, {
+        return Object.assign({}, responseData, {
             // normalize common fields
-            'token': response?.data?.token || '',
+            'token': responseData?.token || '',
             'user':  user,
         });
     }
@@ -58,15 +58,14 @@ export default class Users extends CrudService<User> {
      * Returns all available application auth methods.
      */
     listAuthMethods(queryParams = {}): Promise<AuthMethodsList> {
-        return this.client.send({
-            'method': 'get',
-            'url':    this.baseCrudPath() + '/auth-methods',
+        return this.client.send(this.baseCrudPath() + '/auth-methods', {
+            'method': 'GET',
             'params': queryParams,
-        }).then((response: any) => {
-            return Object.assign({}, response?.data, {
+        }).then((responseData: any) => {
+            return Object.assign({}, responseData, {
                 // normalize common fields
-                'emailPassword':  !!response?.data?.emailPassword,
-                'authProviders': Array.isArray(response?.data?.authProviders) ? response?.data?.authProviders : [],
+                'emailPassword':  !!responseData?.emailPassword,
+                'authProviders': Array.isArray(responseData?.authProviders) ? responseData?.authProviders : [],
             });
         });
     }
@@ -90,11 +89,10 @@ export default class Users extends CrudService<User> {
             'password': password,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/auth-via-email',
-            'params': queryParams,
-            'data':   bodyParams,
+        return this.client.send(this.baseCrudPath() + '/auth-via-email', {
+            'method':  'POST',
+            'params':  queryParams,
+            'body':    bodyParams,
             'headers': {
                 'Authorization': '',
             },
@@ -125,11 +123,10 @@ export default class Users extends CrudService<User> {
             'redirectUrl':  redirectUrl,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/auth-via-oauth2',
-            'params': queryParams,
-            'data':   bodyParams,
+        return this.client.send(this.baseCrudPath() + '/auth-via-oauth2', {
+            'method':  'POST',
+            'params':  queryParams,
+            'body':    bodyParams,
             'headers': {
                 'Authorization': '',
             },
@@ -143,11 +140,10 @@ export default class Users extends CrudService<User> {
      * On success this method also automatically updates the client's AuthStore data.
      */
     refresh(bodyParams = {}, queryParams = {}): Promise<UserAuthResponse> {
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/refresh',
+        return this.client.send(this.baseCrudPath() + '/refresh', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 
@@ -163,11 +159,10 @@ export default class Users extends CrudService<User> {
             'email': email,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/request-password-reset',
+        return this.client.send(this.baseCrudPath() + '/request-password-reset', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 
@@ -187,11 +182,10 @@ export default class Users extends CrudService<User> {
             'passwordConfirm': passwordConfirm,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/confirm-password-reset',
+        return this.client.send(this.baseCrudPath() + '/confirm-password-reset', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 
@@ -207,11 +201,10 @@ export default class Users extends CrudService<User> {
             'email': email,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/request-verification',
+        return this.client.send(this.baseCrudPath() + '/request-verification', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 
@@ -227,11 +220,10 @@ export default class Users extends CrudService<User> {
             'token': verificationToken,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/confirm-verification',
+        return this.client.send(this.baseCrudPath() + '/confirm-verification', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 
@@ -247,11 +239,10 @@ export default class Users extends CrudService<User> {
             'newEmail': newEmail,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/request-email-change',
+        return this.client.send(this.baseCrudPath() + '/request-email-change', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 
@@ -269,11 +260,10 @@ export default class Users extends CrudService<User> {
             'password': password,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/confirm-email-change',
+        return this.client.send(this.baseCrudPath() + '/confirm-email-change', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 }

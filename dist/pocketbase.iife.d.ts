@@ -1,4 +1,3 @@
-import { AxiosInstance, AxiosRequestConfig } from 'axios';
 declare abstract class BaseModel {
     id: string;
     created: string;
@@ -196,7 +195,7 @@ declare class Admins extends CrudService<Admin> {
     /**
      * Prepare successfull authorize response.
      */
-    protected authResponse(response: any): AdminAuthResponse;
+    protected authResponse(responseData: any): AdminAuthResponse;
     /**
      * Authenticate an admin account by its email and password
      * and returns a new admin token and data.
@@ -252,7 +251,7 @@ declare class Users extends CrudService<User> {
     /**
      * Prepare successfull authorization response.
      */
-    protected authResponse(response: any): UserAuthResponse;
+    protected authResponse(responseData: any): UserAuthResponse;
     /**
      * Returns all available application auth methods.
      */
@@ -402,7 +401,7 @@ declare class Records extends SubCrudService<Record> {
      */
     getFileUrl(record: Record, filename: string, queryParams?: {}): string;
 }
-declare class Admin$0 extends BaseModel {
+declare class LogRequest extends BaseModel {
     url: string;
     method: string;
     status: number;
@@ -420,10 +419,6 @@ declare class Admin$0 extends BaseModel {
         [key: string]: any;
     }): void;
 }
-declare module AdminWrapper {
-    export { Admin$0 as Admin };
-}
-import Request = AdminWrapper.Admin;
 type HourlyStats = {
     total: number;
     date: string;
@@ -432,11 +427,11 @@ declare class Logs extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page?: number, perPage?: number, queryParams?: {}): Promise<ListResult<Request>>;
+    getRequestsList(page?: number, perPage?: number, queryParams?: {}): Promise<ListResult<LogRequest>>;
     /**
      * Returns a single logged request by its id.
      */
-    getRequest(id: string, queryParams?: {}): Promise<Request>;
+    getRequest(id: string, queryParams?: {}): Promise<LogRequest>;
     /**
      * Returns request logs statistics.
      */
@@ -476,11 +471,12 @@ declare class Realtime extends BaseService {
     private disconnect;
 }
 /**
- * PocketBase API Client.
+ * PocketBase JS Client.
  */
 declare class Client {
+    baseUrl: string;
+    lang: string;
     AuthStore: AuthStore;
-    readonly http: AxiosInstance;
     readonly Settings: Settings;
     readonly Admins: Admins;
     readonly Users: Users;
@@ -488,26 +484,13 @@ declare class Client {
     readonly Records: Records;
     readonly Logs: Logs;
     readonly Realtime: Realtime;
-    private cancelSource;
-    private defaultAuthStore;
-    constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | null, httpConfig?: AxiosRequestConfig);
+    private cancelControllers;
+    constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | null);
     /**
-     * Returns the default http client base url.
-     */
-    get baseUrl(): string;
-    /**
-     * Sets the default http client base url.
-     */
-    set baseUrl(url: string);
-    /**
-     * Sets (or remove) the default Accept-Language header.
-     */
-    set language(lang: string);
-    /**
-     * Cancels single request by its cancellation token key.
+     * Cancels single request by its cancellation key.
      */
     /**
-     * Cancels single request by its cancellation token key.
+     * Cancels single request by its cancellation key.
      */
     cancelRequest(cancelKey: string): Client;
     /**
@@ -523,6 +506,22 @@ declare class Client {
     /**
      * Sends an api http request.
      */
-    send(reqConfig: AxiosRequestConfig): Promise<any>;
+    send(path: string, reqConfig: {
+        [key: string]: any;
+    }): Promise<any>;
+    /**
+     * Returns a full client url by safely concatenating the provided path.
+     */
+    /**
+     * Returns a full client url by safely concatenating the provided path.
+     */
+    fullUrl(path: string): string;
+    /**
+     * Serializes the provided query parameters into a query string.
+     */
+    /**
+     * Serializes the provided query parameters into a query string.
+     */
+    private serializeQueryParams;
 }
 export { Client as default };

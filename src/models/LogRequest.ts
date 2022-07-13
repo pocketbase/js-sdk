@@ -1,6 +1,6 @@
 import BaseModel from '@/models/utils/BaseModel';
 
-export default class Admin extends BaseModel {
+export default class LogRequest extends BaseModel {
     url!:       string;
     method!:    string;
     status!:    number;

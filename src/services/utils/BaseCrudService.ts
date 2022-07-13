@@ -42,23 +42,22 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
             'perPage': perPage,
         }, queryParams);
 
-        return this.client.send({
-            'method': 'get',
-            'url':    basePath,
+        return this.client.send(basePath, {
+            'method': 'GET',
             'params': queryParams,
-        }).then((response: any) => {
+        }).then((responseData: any) => {
             const items: Array<M> = [];
-            if (response?.data?.items) {
-                response.data.items = response?.data?.items || [];
-                for (const item of response.data.items) {
+            if (responseData?.items) {
+                responseData.items = responseData.items || [];
+                for (const item of responseData.items) {
                     items.push(this.decode(item));
                 }
             }
 
             return new ListResult<M>(
-                response?.data?.page || 1,
-                response?.data?.perPage || 0,
-                response?.data?.totalItems || 0,
+                responseData?.page || 1,
+                responseData?.perPage || 0,
+                responseData?.totalItems || 0,
                 items,
             );
         });
@@ -68,46 +67,42 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
      * Returns single item by its id.
      */
     protected _getOne(basePath: string, id: string, queryParams = {}): Promise<M> {
-        return this.client.send({
-            'method': 'get',
-            'url':    basePath + '/' + encodeURIComponent(id),
+        return this.client.send(basePath + '/' + encodeURIComponent(id), {
+            'method': 'GET',
             'params': queryParams
-        }).then((response: any) => this.decode(response?.data));
+        }).then((responseData: any) => this.decode(responseData));
     }
 
     /**
      * Creates a new item.
      */
     protected _create(basePath: string, bodyParams = {}, queryParams = {}): Promise<M> {
-        return this.client.send({
-            'method': 'post',
-            'url':    basePath,
+        return this.client.send(basePath, {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
-        }).then((response: any) => this.decode(response?.data));
+            'body':   bodyParams,
+        }).then((responseData: any) => this.decode(responseData));
     }
 
     /**
      * Updates an existing item by its id.
      */
     protected _update(basePath: string, id: string, bodyParams = {}, queryParams = {}): Promise<M> {
-        return this.client.send({
-            'method': 'patch',
-            'url':    basePath + '/' + encodeURIComponent(id),
+        return this.client.send(basePath + '/' + encodeURIComponent(id), {
+            'method': 'PATCH',
             'params': queryParams,
-            'data':   bodyParams,
-        }).then((response: any) => this.decode(response?.data));
+            'body':   bodyParams,
+        }).then((responseData: any) => this.decode(responseData));
     }
 
     /**
      * Deletes an existing item by its id.
      */
     protected _delete(basePath: string, id: string, bodyParams = {}, queryParams = {}): Promise<boolean> {
-        return this.client.send({
-            'method': 'delete',
-            'url':    basePath + '/' + encodeURIComponent(id),
+        return this.client.send(basePath + '/' + encodeURIComponent(id), {
+            'method': 'DELETE',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 }

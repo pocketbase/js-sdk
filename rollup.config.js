@@ -1,20 +1,11 @@
-import nodeResolve from '@rollup/plugin-node-resolve';
-import commonjs    from '@rollup/plugin-commonjs';
-import json        from '@rollup/plugin-json';
-import ts          from 'rollup-plugin-ts';
-import { terser }  from 'rollup-plugin-terser';
+import ts         from 'rollup-plugin-ts';
+import { terser } from 'rollup-plugin-terser';
 
 const isProduction = !process.env.ROLLUP_WATCH;
 
-function getPlugins(browser = false) {
+function basePlugins() {
     return [
-        nodeResolve({ browser: browser }),
-
-        json(),
-
         ts(),
-
-        commonjs({ extensions: ['.js', '.ts'] }),
 
         // minify if we're building for production
         // (aka. npm run build instead of npm run dev)
@@ -24,10 +15,43 @@ function getPlugins(browser = false) {
             },
         }),
     ]
-};
+}
 
 export default [
-    // CommonJS bundle (only the PocketBase default export)
+    // ES bundle (the PocketBase client as default export + additional helper classes)
+    {
+        input: 'src/index.ts',
+        output: [
+            {
+                file:      'dist/pocketbase.es.mjs',
+                format:    'esm',
+                sourcemap: true,
+            },
+        ],
+        plugins: basePlugins(),
+        watch: {
+            clearScreen: false,
+        },
+    },
+
+    // UMD bundle (only the PocketBase client as default export)
+    {
+        input: 'src/Client.ts',
+        output: [
+            {
+                name:    'PocketBase',
+                file:    'dist/pocketbase.umd.js',
+                format:  'umd',
+                exports: 'default',
+            },
+        ],
+        plugins: basePlugins(),
+        watch: {
+            clearScreen: false
+        },
+    },
+
+    // CommonJS bundle (only the PocketBase client as default export)
     {
         input: 'src/Client.ts',
         output: [
@@ -38,13 +62,16 @@ export default [
                 exports: 'default',
             }
         ],
-        plugins: getPlugins(false),
+        plugins: basePlugins(),
         watch: {
             clearScreen: false
         },
     },
 
-    // Browser-friendly iife bundle (only the PocketBase default export)
+    // !!! Deprecated !!!
+    // (kept only for backwards compatibility and will be removed in v1.0.0)
+    //
+    // Browser-friendly iife bundle (only the PocketBase client as default export)
     {
         input: 'src/Client.ts',
         output: [
@@ -54,23 +81,7 @@ export default [
                 format: 'iife',
             },
         ],
-        plugins: getPlugins(true),
-        watch: {
-            clearScreen: false
-        },
-    },
-
-    // Browser-friendly es bundle (the PocketBase default export + additional helper classes)
-    {
-        input: 'src/index.ts',
-        output: [
-            {
-                file:      'dist/pocketbase.es.js',
-                format:    'es',
-                sourcemap: true,
-            },
-        ],
-        plugins: getPlugins(true),
+        plugins: basePlugins(),
         watch: {
             clearScreen: false
         },

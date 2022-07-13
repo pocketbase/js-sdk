@@ -87,10 +87,9 @@ export default class Realtime extends BaseService {
         // optimistic update
         this.addSubscriptionListeners();
 
-        return this.client.send({
-            'method': 'post',
-            'url':    '/api/realtime',
-            'data':   {
+        return this.client.send('/api/realtime', {
+            'method': 'POST',
+            'body': {
                 'clientId': this.clientId,
                 'subscriptions': Object.keys(this.subscriptions),
             },
@@ -127,7 +126,7 @@ export default class Realtime extends BaseService {
 
     private connect(): void {
         this.disconnect();
-        this.eventSource = new EventSource(this.client.baseUrl + "/api/realtime")
+        this.eventSource = new EventSource(this.client.fullUrl('/api/realtime'))
         this.eventSource.addEventListener('PB_CONNECT', (e) => this.connectHandler(e));
     }
 

@@ -25,16 +25,16 @@ export default class Admins extends CrudService<Admin> {
     /**
      * Prepare successfull authorize response.
      */
-    protected authResponse(response: any): AdminAuthResponse {
-        const admin = this.decode(response?.data?.admin || {});
+    protected authResponse(responseData: any): AdminAuthResponse {
+        const admin = this.decode(responseData?.admin || {});
 
-        if (response?.data?.token && response?.data?.admin) {
-            this.client.AuthStore.save(response.data.token, admin);
+        if (responseData?.token && responseData?.admin) {
+            this.client.AuthStore.save(responseData.token, admin);
         }
 
-        return Object.assign({}, response?.data, {
+        return Object.assign({}, responseData, {
             // normalize common fields
-            'token': response?.data?.token || '',
+            'token': responseData?.token || '',
             'admin': admin,
         });
     }
@@ -56,11 +56,10 @@ export default class Admins extends CrudService<Admin> {
             'password': password,
         }, bodyParams);
 
-        return this.client.send({
-            'method':  'post',
-            'url':     this.baseCrudPath() + '/auth-via-email',
+        return this.client.send(this.baseCrudPath() + '/auth-via-email', {
+            'method':  'POST',
             'params':  queryParams,
-            'data':    bodyParams,
+            'body':    bodyParams,
             'headers': {
                 'Authorization': '',
             },
@@ -74,11 +73,10 @@ export default class Admins extends CrudService<Admin> {
      * On success this method automatically updates the client's AuthStore data.
      */
     refresh(bodyParams = {}, queryParams = {}): Promise<AdminAuthResponse> {
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/refresh',
+        return this.client.send(this.baseCrudPath() + '/refresh', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 
@@ -94,11 +92,10 @@ export default class Admins extends CrudService<Admin> {
             'email': email,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/request-password-reset',
+        return this.client.send(this.baseCrudPath() + '/request-password-reset', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 
@@ -118,11 +115,10 @@ export default class Admins extends CrudService<Admin> {
             'passwordConfirm': passwordConfirm,
         }, bodyParams);
 
-        return this.client.send({
-            'method': 'post',
-            'url':    this.baseCrudPath() + '/confirm-password-reset',
+        return this.client.send(this.baseCrudPath() + '/confirm-password-reset', {
+            'method': 'POST',
             'params': queryParams,
-            'data':   bodyParams,
+            'body':   bodyParams,
         }).then(this.authResponse.bind(this));
     }
 }
