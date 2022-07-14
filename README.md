@@ -5,12 +5,26 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 
 - [Installation](#installation)
 - [Examples](#examples)
-- [Definitions](#definitions)
 - [Caveats](#caveats)
+- [Definitions](#definitions)
 - [Development](#development)
 
 
 ## Installation
+
+#### Browser (manually via script tag)
+
+```html
+<script src="/path/to/dist/pocketbase.umd.js"></script>
+```
+
+_OR if you are using ES modules:_
+```html
+<script type="module">
+    import PocketBase from '/path/to/dist/pocketbase.es.mjs'
+    ...
+</script>
+```
 
 #### Node.js (via npm)
 
@@ -19,33 +33,25 @@ npm install pocketbase --save
 ```
 
 ```js
-const PocketBase = require("pocketbase");
-...
+// Using ES modules (default)
+import PocketBase from 'pocketbase'
+
+// OR if you are using CommonJS modules
+const PocketBase = require('pocketbase/cjs')
 ```
 
-_OR if you are using es6 style imports (suitable also for bundlers like rollup and webpack):_
-```js
-import PocketBase from "pocketbase";
-...
-```
+> ⚠️ For Node < 17 you may need to add a `fetch()` polyfill.
+    I recommend [cross-fetch](https://github.com/lquixada/cross-fetch):
+    ```js
+    import 'cross-fetch/polyfill';
+    ```
 
-#### Browser (manually via script tag)
-
-```html
-<script src="/path/to/dist/pocketbase.iife.js"></script>
-```
-
-_OR if you are using JavaScript modules:_
-```html
-<script type="module">
-    import PocketBase from "/path/to/dist/pocketbase.es.js"
-    ...
-</script>
-```
 
 ## Examples
 
 ```js
+import PocketBase from 'pocketbase';
+
 const client = new PocketBase('http://localhost:8090');
 
 ...
@@ -67,6 +73,69 @@ const adminData = await client.Admins.authViaEmail("test@example.com", "123456")
 > More detailed API docs and copy-paste examples could be found in the [API documentation for each service](https://pocketbase.io/docs/api-authentication).
 
 
+## Caveats
+
+#### Errors handling
+
+Each request error response is wrapped and in a normalized `ClientResponseError` object with the following fields:
+```js
+ClientResponseError {
+    url:           string,     // requested url
+    status:        number,     // response status code
+    data:          { ... },    // the api json error response
+    isAbort:       boolean,    // is abort/cancellation error
+    originalError: Error|null, // the original non-normalized error
+}
+```
+
+#### Auto cancellation
+
+The SDK client auto cancel duplicated pending requests.
+For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with error `null`:
+
+```js
+client.Records.getList("demo", 1, 20) // cancelled
+client.Records.getList("demo", 1, 20) // cancelled
+client.Records.getList("demo", 1, 20) // executed
+```
+
+To change this behavior, you could make use of 2 special query parameters:
+
+- `$autoCancel ` - set it to `false` to disable auto cancellation for this request
+- `$cancelKey` - set it to a string that will be used as request identifier and based on which pending duplicated requests will be matched (default to `HTTP_METHOD + url`, eg. "get /api/users?page=1")
+
+Example:
+
+```js
+client.Records.getList("demo", 1, 20);                           // cancelled
+client.Records.getList("demo", 1, 20);                           // executed
+client.Records.getList("demo", 1, 20, { "$autoCancel": false }); // executed
+client.Records.getList("demo", 1, 20, { "$autoCancel": false })  // executed
+client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // cancelled
+client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // executed
+```
+
+To manually cancel pending requests, you could use `client.cancelAllRequests()` or `client.cancelRequest(cancelKey)`.
+
+#### AuthStore
+
+The SDK keeps track of the authenticated token and auth model for you via the `client.AuthStore` instance.
+It has the following public fields that you can use:
+
+```js
+AuthStore {
+    token:   string,     // the authenticated token
+    model:   User|Admin, // the authenticated User or Admin model
+    isValid: boolean,    // checks if the store has existing and unexpired token
+    clear(),             // "logout" the authenticated User or Admin
+    save(token, model),  // update the store with the new auth data
+}
+```
+
+By default the SDK initialize a `LocalAuthStore`, which uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory store (aka. on page refresh or service restart you'll have to authenticate again).
+
+To "logout" an authenticated user or admin, you can just call `client.AuthStore.clear()`.
+
 ## Definitions
 
 #### Creating new client instance
@@ -75,8 +144,7 @@ const adminData = await client.Admins.authViaEmail("test@example.com", "123456")
 const client = new PocketBase(
     baseUrl = '/',
     lang = 'en-US',
-    authStore = LocalAuthStore,
-    httpConfig = {},
+    authStore = LocalAuthStore
 );
 ```
 
@@ -84,11 +152,12 @@ const client = new PocketBase(
 
 > Each instance method returns the `PocketBase` instance allowing chaining.
 
-| Method                            | Description                                           |
-|:----------------------------------|:------------------------------------------------------|
-| `client.cancelRequest(cancelKey)` | Cancels single request by its cancellation token key. |
-| `client.cancelAllRequests()`      | Cancels all pending requests.                         |
-| `client.send(reqConfig = {})`     | Sends an api http request.                            |
+| Method                                  | Description                                                         |
+|:----------------------------------------|:--------------------------------------------------------------------|
+| `client.send(path, reqConfig = {})`     | Sends an api http request.                                          |
+| `client.cancelAllRequests()`            | Cancels all pending requests.                                       |
+| `client.cancelRequest(cancelKey)`       | Cancels single request by its cancellation token key.               |
+| `client.buildUrl(path, reqConfig = {})` | Builds a full client url by safely concatenating the provided path. |
 
 
 #### API services
@@ -150,36 +219,6 @@ const client = new PocketBase(
 | **[Settings](https://pocketbase.io/docs/api-records)**                                                                                                                                            |                                                                                                       |
 | 🔐`client.Settings.getAll(queryParams = {})`                                                                                                                                                       | Fetch all available app settings.                                                                     |
 | 🔐`client.Settings.update(bodyParams = {}, queryParams = {})`                                                                                                                                      | Bulk updates app settings.                                                                            |
-
-
-## Caveats
-
-The SDK client auto cancel duplicated pending requests.
-For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with error `null`:
-
-```js
-client.Records.getList("demo", 1, 20) // cancelled
-client.Records.getList("demo", 1, 20) // cancelled
-client.Records.getList("demo", 1, 20) // executed
-```
-
-To change this behavior, you could make use of 2 special query parameters:
-
-- `$autoCancel ` - set it to `false` to disable auto cancellation for this request
-- `$cancelKey` - set it to a string that will be used as request identifier and based on which pending duplicated requests will be matched (default to `HTTP_METHOD + url`, eg. "get /api/users?page=1")
-
-Example:
-
-```js
-client.Records.getList("demo", 1, 20);                           // cancelled
-client.Records.getList("demo", 1, 20);                           // executed
-client.Records.getList("demo", 1, 20, { "$autoCancel": false }); // executed
-client.Records.getList("demo", 1, 20, { "$autoCancel": false })  // executed
-client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // cancelled
-client.Records.getList("demo", 1, 20, { "$cancelKey": "test" })  // executed
-```
-
-To manually cancel pending requests, you could use `client.cancelAllRequests()` or `client.cancelRequest(cancelKey)`.
 
 
 ## Development

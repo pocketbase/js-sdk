@@ -24,7 +24,7 @@ describe('Settings', function () {
         it('Should fetch all app settings', async function () {
             fetchMock.on({
                 method: 'GET',
-                url: service.client.fullUrl('/api/settings') + '?q1=123',
+                url: service.client.buildUrl('/api/settings') + '?q1=123',
                 replyCode: 200,
                 replyBody: { 'test': 'abc' },
             });
@@ -39,7 +39,7 @@ describe('Settings', function () {
         it('Should send bulk app settings update', async function () {
             fetchMock.on({
                 method: 'PATCH',
-                url: service.client.fullUrl('/api/settings'),
+                url: service.client.buildUrl('/api/settings'),
                 body: { 'b1': 123 },
                 replyCode: 200,
                 replyBody: { 'test': 'abc' },

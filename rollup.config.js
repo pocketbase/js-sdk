@@ -24,7 +24,7 @@ export default [
         output: [
             {
                 file:      'dist/pocketbase.es.mjs',
-                format:    'esm',
+                format:    'es',
                 sourcemap: true,
             },
         ],
@@ -68,8 +68,9 @@ export default [
         },
     },
 
-    // !!! Deprecated !!!
-    // (kept only for backwards compatibility and will be removed in v1.0.0)
+    // !!!
+    // @deprecated - kept only for backwards compatibility and will be removed in v1.0.0
+    // !!!
     //
     // Browser-friendly iife bundle (only the PocketBase client as default export)
     {

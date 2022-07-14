@@ -28,7 +28,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // getFullList and getList
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath()) + '?page=1&perPage=1&q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath()) + '?page=1&perPage=1&q1=abc',
             replyCode: 200,
             replyBody: {
                 'page': 1,
@@ -39,7 +39,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         });
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath()) + '?page=2&perPage=1&q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath()) + '?page=2&perPage=1&q1=abc',
             replyCode: 200,
             replyBody: {
                 'page': 2,
@@ -52,7 +52,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // getOne
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=abc',
             replyCode: 200,
             replyBody: { 'id': 'item-one' },
         });
@@ -60,7 +60,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // create
         fetchMock.on({
             method: 'POST',
-            url: service.client.fullUrl(service.baseCrudPath()) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath()) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-create' },
@@ -69,7 +69,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // update
         fetchMock.on({
             method: 'PATCH',
-            url: service.client.fullUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-update' },
@@ -78,7 +78,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // delete
         fetchMock.on({
             method: 'DELETE',
-            url: service.client.fullUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 204,
         });
@@ -185,7 +185,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         // getFullList and getList
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '?page=1&perPage=1&q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '?page=1&perPage=1&q1=abc',
             replyCode: 200,
             replyBody: {
                 'page': 1,
@@ -196,7 +196,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         });
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '?page=2&perPage=1&q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '?page=2&perPage=1&q1=abc',
             replyCode: 200,
             replyBody: {
                 'page': 2,
@@ -209,7 +209,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         // getOne
         fetchMock.on({
             method: 'GET',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=abc',
             replyCode: 200,
             replyBody: { 'id': 'item-one' },
         });
@@ -217,7 +217,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         // create
         fetchMock.on({
             method: 'POST',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-create' },
@@ -226,7 +226,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         // update
         fetchMock.on({
             method: 'PATCH',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-update' },
@@ -235,7 +235,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         // delete
         fetchMock.on({
             method: 'DELETE',
-            url: service.client.fullUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=456',
+            url: service.client.buildUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=456',
             body: { 'b1': 123 },
             replyCode: 204,
         });

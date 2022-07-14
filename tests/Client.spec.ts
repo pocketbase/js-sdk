@@ -48,17 +48,17 @@ describe('Client', function() {
         });
     });
 
-    describe('fullUrl()', function() {
+    describe('buildUrl()', function() {
         it('Should properly concatenate path to baseUrl', function() {
             // with trailing slash
             const client1 = new Client('test_base_url/');
-            assert.equal(client1.fullUrl("test123"), 'test_base_url/test123');
-            assert.equal(client1.fullUrl("/test123"), 'test_base_url/test123');
+            assert.equal(client1.buildUrl("test123"), 'test_base_url/test123');
+            assert.equal(client1.buildUrl("/test123"), 'test_base_url/test123');
 
             // no trailing slash
             const client2 = new Client('test_base_url');
-            assert.equal(client2.fullUrl("test123"), 'test_base_url/test123');
-            assert.equal(client2.fullUrl("/test123"), 'test_base_url/test123');
+            assert.equal(client2.buildUrl("test123"), 'test_base_url/test123');
+            assert.equal(client2.buildUrl("/test123"), 'test_base_url/test123');
         });
     });
 

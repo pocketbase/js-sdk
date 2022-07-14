@@ -12,8 +12,8 @@ export default class ClientResponseError extends Error {
     constructor(errData?: any) {
         super("ClientResponseError");
 
-        if (errData instanceof Error) {
-            this.originalError = errData instanceof Error ? errData : null;
+        if (errData instanceof Error && !(errData instanceof this.constructor)) {
+            this.originalError = errData;
         }
 
         if (errData !== null && typeof errData === 'object') {
@@ -28,5 +28,11 @@ export default class ClientResponseError extends Error {
 
         this.name = "ClientResponseError " + this.status;
         this.message = this.data?.message || 'Something went wrong while processing your request.'
+    }
+
+    // Make a POJO's copy of the current error class instance.
+    // @see https://github.com/vuex-orm/vuex-orm/issues/255
+    toJSON () {
+        return { ...this };
     }
 }

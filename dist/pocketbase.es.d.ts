@@ -501,9 +501,9 @@ declare class Client {
         [key: string]: any;
     }): Promise<any>;
     /**
-     * Returns a full client url by safely concatenating the provided path.
+     * Builds a full client url by safely concatenating the provided path.
      */
-    fullUrl(path: string): string;
+    buildUrl(path: string): string;
     /**
      * Serializes the provided query parameters into a query string.
      */
@@ -522,6 +522,9 @@ declare class ClientResponseError extends Error {
     isAbort: boolean;
     originalError: any;
     constructor(errData?: any);
+    // Make a POJO's copy of the current error class instance.
+    // @see https://github.com/vuex-orm/vuex-orm/issues/255
+    toJSON(): this;
 }
 /**
  * Default token store for browsers with auto fallback

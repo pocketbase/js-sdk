@@ -13,8 +13,8 @@
         "./cjs": "./dist/pocketbase.cjs.js",
         "./umd": "./dist/pocketbase.umd.js"
     },
+    "main": "./dist/pocketbase.cjs.js",
     "module": "./dist/pocketbase.es.mjs",
-    "browser": "./dist/pocketbase.umd.js",
     "types": "./dist/pocketbase.es.d.ts",
     "keywords": [
         "pocketbase",

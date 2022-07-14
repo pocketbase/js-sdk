@@ -510,12 +510,12 @@ declare class Client {
         [key: string]: any;
     }): Promise<any>;
     /**
-     * Returns a full client url by safely concatenating the provided path.
+     * Builds a full client url by safely concatenating the provided path.
      */
     /**
-     * Returns a full client url by safely concatenating the provided path.
+     * Builds a full client url by safely concatenating the provided path.
      */
-    fullUrl(path: string): string;
+    buildUrl(path: string): string;
     /**
      * Serializes the provided query parameters into a query string.
      */

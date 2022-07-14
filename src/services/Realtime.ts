@@ -126,7 +126,7 @@ export default class Realtime extends BaseService {
 
     private connect(): void {
         this.disconnect();
-        this.eventSource = new EventSource(this.client.fullUrl('/api/realtime'))
+        this.eventSource = new EventSource(this.client.buildUrl('/api/realtime'))
         this.eventSource.addEventListener('PB_CONNECT', (e) => this.connectHandler(e));
     }
 

@@ -46,7 +46,7 @@ describe('Users', function() {
         it('Should fetch all available authorization methods', async function () {
             fetchMock.on({
                 method: 'GET',
-                url: service.client.fullUrl('/api/users/auth-methods') + '?q1=123',
+                url: service.client.buildUrl('/api/users/auth-methods') + '?q1=123',
                 replyCode: 200,
                 replyBody: {
                     'emailPassword': true,
@@ -78,7 +78,7 @@ describe('Users', function() {
         it('Should authViaEmail a user by its email and password', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/auth-via-email') + '?q1=456',
+                url: service.client.buildUrl('/api/users/auth-via-email') + '?q1=456',
                 body: {
                     'email': 'test@example.com',
                     'password': '123456',
@@ -101,7 +101,7 @@ describe('Users', function() {
         it('Should authViaOAuth2 a user by an oauth2 client', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/auth-via-oauth2') + '?q1=456',
+                url: service.client.buildUrl('/api/users/auth-via-oauth2') + '?q1=456',
                 body: {
                     'provider':     'test',
                     'code':         'c123',
@@ -126,7 +126,7 @@ describe('Users', function() {
         it('Should refresh an authorized user instance', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/refresh') + '?q1=456',
+                url: service.client.buildUrl('/api/users/refresh') + '?q1=456',
                 body: { 'b1': 123 },
                 replyCode: 200,
                 replyBody: {
@@ -145,7 +145,7 @@ describe('Users', function() {
         it('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/request-password-reset') + '?q1=456',
+                url: service.client.buildUrl('/api/users/request-password-reset') + '?q1=456',
                 body: {
                     'email': 'test@example.com',
                     'b1': 123,
@@ -164,7 +164,7 @@ describe('Users', function() {
         it('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/confirm-password-reset') + '?q1=456',
+                url: service.client.buildUrl('/api/users/confirm-password-reset') + '?q1=456',
                 body: {
                     'token': 'test',
                     'password': '123',
@@ -188,7 +188,7 @@ describe('Users', function() {
         it('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/request-verification') + '?q1=456',
+                url: service.client.buildUrl('/api/users/request-verification') + '?q1=456',
                 body: {
                     'email': 'test@example.com',
                     'b1': 123,
@@ -207,7 +207,7 @@ describe('Users', function() {
         it('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/confirm-verification') + '?q1=456',
+                url: service.client.buildUrl('/api/users/confirm-verification') + '?q1=456',
                 body: {
                     'token': 'test',
                     'b1': 123,
@@ -229,7 +229,7 @@ describe('Users', function() {
         it('Should send an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/request-email-change') + '?q1=456',
+                url: service.client.buildUrl('/api/users/request-email-change') + '?q1=456',
                 body: {
                     'newEmail': 'test@example.com',
                     'b1': 123,
@@ -247,7 +247,7 @@ describe('Users', function() {
         it('Should confirm an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/users/confirm-email-change') + '?q1=456',
+                url: service.client.buildUrl('/api/users/confirm-email-change') + '?q1=456',
                 body: {
                     'token': 'test',
                     'password': '1234',

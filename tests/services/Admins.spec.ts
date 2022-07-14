@@ -46,7 +46,7 @@ describe('Admins', function() {
         it('Should auth an admin by its email and password', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/admins/auth-via-email') + '?q1=456',
+                url: service.client.buildUrl('/api/admins/auth-via-email') + '?q1=456',
                 body: {
                     'email': 'test@example.com',
                     'password': '123456',
@@ -69,7 +69,7 @@ describe('Admins', function() {
         it('Should refresh an authorized admin instance', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/admins/refresh') + '?q1=456',
+                url: service.client.buildUrl('/api/admins/refresh') + '?q1=456',
                 body: { 'b1': 123 },
                 replyCode: 200,
                 replyBody: {
@@ -88,7 +88,7 @@ describe('Admins', function() {
         it('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/admins/request-password-reset') + '?q1=456',
+                url: service.client.buildUrl('/api/admins/request-password-reset') + '?q1=456',
                 body: {
                     'email': 'test@example.com',
                     'b1': 123,
@@ -107,7 +107,7 @@ describe('Admins', function() {
         it('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
-                url: service.client.fullUrl('/api/admins/confirm-password-reset') + '?q1=456',
+                url: service.client.buildUrl('/api/admins/confirm-password-reset') + '?q1=456',
                 body: {
                     'token': 'test',
                     'password': '123',

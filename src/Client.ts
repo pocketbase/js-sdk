@@ -75,20 +75,23 @@ export default class Client {
     send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
         const config = Object.assign({}, reqConfig);
 
-        if (!(config.body instanceof FormData)) {
-            if (config.body && typeof config.body !== 'string') {
+        // serialize the body if needed and set the correct content type
+        // note1: for FormData body the Content-Type header should be skipped
+        // note2: we are checking the constructor name because FormData is not available natively in node
+        if (config.body && config.body.constructor.name !== 'FormData') {
+            if (typeof config.body !== 'string') {
                 config.body = JSON.stringify(config.body);
             }
 
-            // check if Content-Type header need to added
-            if (typeof config?.headers?.['Contentt-Type'] === 'undefined') {
+            // add the json header (if not already)
+            if (typeof config?.headers?.['Content-Type'] === 'undefined') {
                 config.headers = Object.assign({}, config.headers, {
                     'Content-Type': 'application/json',
                 });
             }
         }
 
-        // check if Accept-Language header can be added
+        // add Accept-Language header (if not already)
         if (typeof config?.headers?.['Accept-Language'] === 'undefined') {
             config.headers = Object.assign({}, config.headers, {
                 'Accept-Language': this.lang,
@@ -127,8 +130,8 @@ export default class Client {
         delete config?.params?.$autoCancel;
         delete config?.params?.$cancelKey;
 
-        // build full url
-        let url = this.fullUrl(path);
+        // build url + path
+        let url = this.buildUrl(path);
 
         // serialize the query parameters
         if (typeof config.params !== 'undefined') {
@@ -139,13 +142,11 @@ export default class Client {
             delete config.params;
         }
 
-        const finalParams = Object.assign({
+        // send the request
+        return fetch(url, Object.assign({
             method: 'GET',
             mode:   ('cors' as RequestMode),
-        }, config);
-
-        // send the request
-        return fetch(url, finalParams)
+        }, config))
             .then(async (response) => {
                 const data = await response.json();
 
@@ -169,9 +170,9 @@ export default class Client {
     }
 
     /**
-     * Returns a full client url by safely concatenating the provided path.
+     * Builds a full client url by safely concatenating the provided path.
      */
-    fullUrl(path: string): string {
+    buildUrl(path: string): string {
         let url = this.baseUrl + (this.baseUrl.endsWith('/') ? '' : '/');
         if (path) {
             url += (path.startsWith('/') ? path.substring(1) : path);
