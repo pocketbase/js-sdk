@@ -148,7 +148,14 @@ export default class Client {
             mode:   ('cors' as RequestMode),
         }, config))
             .then(async (response) => {
-                const data = await response.json();
+                let data = {};
+
+                try {
+                    data = await response.json();
+                } catch (_) {
+                    // all api responses are expected to return json
+                    // with the exception of the realtime event and 204
+                }
 
                 if (response.status >= 400) {
                     throw new ClientResponseError({
