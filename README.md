@@ -41,10 +41,7 @@ const PocketBase = require('pocketbase/cjs')
 ```
 
 > ⚠️ For Node < 17 you may need to add a `fetch()` polyfill.
-    I recommend [cross-fetch](https://github.com/lquixada/cross-fetch):
-    ```js
-    import 'cross-fetch/polyfill';
-    ```
+    I recommend [cross-fetch](https://github.com/lquixada/cross-fetch): `import 'cross-fetch/polyfill'`
 
 
 ## Examples
