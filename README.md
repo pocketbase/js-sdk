@@ -40,10 +40,20 @@ import PocketBase from 'pocketbase'
 const PocketBase = require('pocketbase/cjs')
 ```
 
-> ⚠️ For Node < 17 you may need to add a `fetch()` polyfill.
->
-> I recommend [cross-fetch](https://github.com/lquixada/cross-fetch): `import 'cross-fetch/polyfill'`
-
+> 🔧 For **Node < 17** you'll need to load a `fetch()` polyfill.
+> I recommend [lquixada/cross-fetch](https://github.com/lquixada/cross-fetch):
+> ```js
+> // npm install cross-fetch --save
+> require('cross-fetch/polyfill');
+> ```
+---
+> 🔧 Node doesn't have native `EvenSource` implementation, so in order to use the realtime service (aka. `client.Realtime.subscribe()`) you'll need to load a `EventSource` polyfill.
+> I recommend [EventSource/eventsource](https://github.com/EventSource/eventsource):
+> ```js
+> // npm install eventsource --save
+> global.EventSource = require('eventsource');
+> ```
+---
 
 ## Examples
 
@@ -75,7 +85,7 @@ const adminData = await client.Admins.authViaEmail("test@example.com", "123456")
 
 #### Errors handling
 
-Each request error response is wrapped and in a normalized `ClientResponseError` object with the following fields:
+Each request error response is wrapped and normalized in a `ClientResponseError` object with the following fields:
 ```js
 ClientResponseError {
     url:           string,     // requested url
@@ -89,7 +99,7 @@ ClientResponseError {
 #### Auto cancellation
 
 The SDK client auto cancel duplicated pending requests.
-For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with error `null`:
+For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
 
 ```js
 client.Records.getList("demo", 1, 20) // cancelled
