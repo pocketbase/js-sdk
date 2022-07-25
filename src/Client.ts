@@ -73,7 +73,7 @@ export default class Client {
      * Sends an api http request.
      */
     send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
-        const config = Object.assign({}, reqConfig);
+        const config = Object.assign({ method: 'GET' }, reqConfig);
 
         // serialize the body if needed and set the correct content type
         // note1: for FormData body the Content-Type header should be skipped
@@ -116,8 +116,8 @@ export default class Client {
         }
 
         // handle auto cancelation for duplicated pending request
-        if (config?.params?.$autoCancel !== false) {
-            const cancelKey = config?.params?.$cancelKey || ((config.method || 'GET') + path);
+        if (config.params?.$autoCancel !== false) {
+            const cancelKey = config.params?.$cancelKey || ((config.method || 'GET') + path);
 
             // cancel previous pending requests
             this.cancelRequest(cancelKey);
@@ -127,8 +127,8 @@ export default class Client {
             config.signal = controller.signal;
         }
         // remove the special cancellation params from the other valid query params
-        delete config?.params?.$autoCancel;
-        delete config?.params?.$cancelKey;
+        delete config.params?.$autoCancel;
+        delete config.params?.$cancelKey;
 
         // build url + path
         let url = this.buildUrl(path);
@@ -143,10 +143,7 @@ export default class Client {
         }
 
         // send the request
-        return fetch(url, Object.assign({
-            method: 'GET',
-            mode:   ('cors' as RequestMode),
-        }, config))
+        return fetch(url, config)
             .then(async (response) => {
                 let data = {};
 
