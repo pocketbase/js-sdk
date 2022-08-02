@@ -170,9 +170,8 @@ AuthStore {
     isValid: boolean    // checks if the store has existing and unexpired token
 
     // methods
-    clear()                    // "logout" the authenticated User or Admin
-    save(token, model)         // update the store with the new auth data
-    onChange(fn(token, model)) // register a store change listener callback function
+    clear()            // "logout" the authenticated User or Admin
+    save(token, model) // update the store with the new auth data
 }
 ```
 
