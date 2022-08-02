@@ -179,7 +179,7 @@ By default the SDK initialize a [`LocalAuthStore`](https://github.com/pocketbase
 
 To _"logout"_ an authenticated user or admin, you can just call `client.authStore.clear()`.
 
-To _"listen"_ for changes in the auth store, you can register a new listener via the `client.authStore.onChange`, eg:
+To _"listen"_ for changes in the auth store, you can register a new listener via `client.authStore.onChange`, eg:
 ```js
 const removeListener = client.authStore.onChange((token, model) => {
     console.log('New store data:', token, model)
