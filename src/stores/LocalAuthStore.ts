@@ -1,17 +1,18 @@
-import { AuthStore } from '@/stores/utils/AuthStore';
-import JWT           from '@/stores/utils/JWT';
+import BaseAuthStore from '@/stores/BaseAuthStore';
 import User          from '@/models/User';
 import Admin         from '@/models/Admin';
 
 /**
- * Default token store for browsers with auto fallback
- * to runtime/memory if local storage is undefined (eg. node env).
+ * The default token store for browsers with auto fallback
+ * to runtime/memory if local storage is undefined (eg. in node env).
  */
-export default class LocalAuthStore implements AuthStore {
+export default class LocalAuthStore extends BaseAuthStore {
     private fallback: { [key: string]: any } = {};
     private storageKey: string
 
     constructor(storageKey = "pocketbase_auth") {
+        super();
+
         this.storageKey = storageKey;
     }
 
@@ -50,25 +51,22 @@ export default class LocalAuthStore implements AuthStore {
     /**
      * @inheritdoc
      */
-    get isValid(): boolean {
-        return !JWT.isExpired(this.token);
-    }
-
-    /**
-     * @inheritdoc
-     */
     save(token: string, model: User | Admin | {}) {
         this._storageSet(this.storageKey, {
             'token': token,
             'model': model,
         });
+
+        super.save(token, model);
     }
 
     /**
      * @inheritdoc
      */
     clear() {
-        return this._storageRemove(this.storageKey);
+        this._storageRemove(this.storageKey);
+
+        super.clear();
     }
 
     // ---------------------------------------------------------------

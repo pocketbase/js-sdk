@@ -1,6 +1,15 @@
 import User  from '@/models/User';
 import Admin from '@/models/Admin';
 
+/**
+ * The minimal AuthStore interface.
+ *
+ * This interface predates the abstract BaseAuthStore class
+ * and it is kept mainly for backward compatibility.
+ *
+ * New AuthStore implementations should extend directly the
+ * BaseAuthStore abstract class.
+ */
 export type AuthStore = {
     /**
      * Retrieves the stored token (if any).

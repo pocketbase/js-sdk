@@ -29,7 +29,7 @@ describe('Client', function() {
             const client = new Client('test_base_url', 'test_language', null);
 
             assert.equal(client.baseUrl, 'test_base_url');
-            assert.instanceOf(client.AuthStore, LocalAuthStore);
+            assert.instanceOf(client.authStore, LocalAuthStore);
         });
 
         it('Should load all api resources', async function() {
@@ -40,8 +40,15 @@ describe('Client', function() {
 
             for (let i = 0; i < services.length; i++) {
                 const serviceClass = ((await import('./../' + services[i])).default)
+                const serviceClassName = serviceClass.prototype.constructor.name;
                 assert.instanceOf(
-                    (client as any)[serviceClass.prototype.constructor.name],
+                    (client as any)[serviceClassName.charAt(0).toLowerCase() + serviceClassName.slice(1)],
+                    serviceClass.prototype.constructor
+                );
+
+                // check deprecated aliases
+                assert.instanceOf(
+                    (client as any)[serviceClassName],
                     serviceClass.prototype.constructor
                 );
             }
@@ -138,7 +145,7 @@ describe('Client', function() {
                 replyCode: 200,
             });
             const admin = new Admin({ 'id': 'test-admin' });
-            client.AuthStore.save('token123', admin);
+            client.authStore.save('token123', admin);
             await client.send('/admin', { method: 'GET' });
 
             // user token
@@ -151,8 +158,49 @@ describe('Client', function() {
                 replyCode: 200,
             });
             const user = new User({ 'id': 'test-user', "@collectionId": 'test-user' });
-            client.AuthStore.save('token123', user);
+            client.authStore.save('token123', user);
             await client.send('/user', { method: 'GET' });
+        });
+        it('Should trigger the before and after hooks', async function() {
+            const client = new Client('test_base_url');
+
+            client.beforeSend = function (url, reqConfig) {
+                reqConfig.headers = Object.assign(reqConfig.headers, {
+                    'X-Custom-Header': url,
+                });
+                return reqConfig;
+            };
+
+            client.afterSend = function (response, _) {
+                if (response.url === 'test_base_url/failure') {
+                    throw new Error("test_error");
+                }
+
+                return '789';
+            };
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/success',
+                replyCode: 200,
+                replyBody: '123',
+                additionalMatcher: function (url, config) {
+                    return url != "" && (config?.headers as any)?.['X-Custom-Header'] == url;
+                },
+            });
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/failure',
+                replyCode: 200,
+                replyBody: '456',
+            });
+
+            const responseSuccess = await client.send('/success', { method: 'GET' })
+            assert.equal(responseSuccess, '789');
+
+            const responseFailure = client.send('/failure', { method: 'GET' })
+            await assert.isRejected(responseFailure, null);
         });
     });
 

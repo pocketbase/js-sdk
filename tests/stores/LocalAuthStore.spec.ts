@@ -69,4 +69,45 @@ describe('LocalAuthStore', function() {
             assert.isTrue(store.isValid, 'valid token');
         });
     });
+
+    describe('onChange()', function() {
+        it('Should trigger the onChange() callbacks', function() {
+            const store = new LocalAuthStore();
+
+            let callback1Calls = 0;
+            let callback2Calls = 0;
+
+            const removal1 = store.onChange(() => {
+                callback1Calls++;
+            });
+
+            const removal2 = store.onChange(() => {
+                callback2Calls++;
+            });
+
+            // trigger save() change
+            store.save('test', { 'id': 1 });
+            assert.equal(callback1Calls, 1);
+            assert.equal(callback2Calls, 1);
+
+            // trigger clear() change
+            store.clear();
+            assert.equal(callback1Calls, 2);
+            assert.equal(callback2Calls, 2);
+
+            // remove the second listener (aka. callback1Calls shouldn't be called anymore)
+            removal1();
+
+            store.save('test', { 'id': 1 });
+            assert.equal(callback1Calls, 2);
+            assert.equal(callback2Calls, 3);
+
+            // remove the second listener (aka. callback2Calls shouldn't be called anymore)
+            removal2();
+
+            store.save('test', { 'id': 1 });
+            assert.equal(callback1Calls, 2);
+            assert.equal(callback2Calls, 3);
+        });
+    });
 });

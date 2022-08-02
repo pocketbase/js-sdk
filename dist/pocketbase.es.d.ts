@@ -64,6 +64,15 @@ declare class Admin extends BaseModel {
         [key: string]: any;
     }): void;
 }
+/**
+ * The minimal AuthStore interface.
+ *
+ * This interface predates the abstract BaseAuthStore class
+ * and it is kept mainly for backward compatibility.
+ *
+ * New AuthStore implementations should extend directly the
+ * BaseAuthStore abstract class.
+ */
 type AuthStore = {
     /**
      * Retrieves the stored token (if any).
@@ -474,18 +483,127 @@ declare class Realtime extends BaseService {
  * PocketBase JS Client.
  */
 declare class Client {
+    /**
+     * The base PocketBase backend url address (eg. 'http://localhost.8090').
+     */
     baseUrl: string;
+    /**
+     * Hook that get triggered right before sending the fetch request,
+     * allowing you to inspect/modify the request config.
+     *
+     * Returns the new modified config that will be used to send the request.
+     *
+     * For list of the possible options check https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
+     *
+     * Example:
+     * ```js
+     * client.beforeSend = function (url, reqConfig) {
+     *     reqConfig.headers = Object.assign(reqConfig.headers, {
+     *         'X-Custom-Header': 'example',
+     *     });
+     *
+     *     return reqConfig;
+     * };
+     * ```
+     */
+    beforeSend?: (url: string, reqConfig: {
+        [key: string]: any;
+    }) => {
+        [key: string]: any;
+    };
+    /**
+     * Hook that get triggered after successfully sending the fetch request,
+     * allowing you to inspect/modify the response object and its parsed data.
+     *
+     * Returns the new Promise resolved `data` that will be returned to the client.
+     *
+     * Example:
+     * ```js
+     * client.afterSend = function (response, data) {
+     *     if (response.status != 200) {
+     *         throw new ClientResponseError({
+     *             url:      response.url,
+     *             status:   response.status,
+     *             data:     data,
+     *         });
+     *     }
+     *
+     *     return data;
+     * };
+     * ```
+     */
+    afterSend?: (response: Response, data: any) => any;
+    /**
+     * Optional language code (default to `en-US`) that will be sent
+     * with the requests to the server as `Accept-Language` header.
+     */
     lang: string;
-    AuthStore: AuthStore;
-    readonly Settings: Settings;
-    readonly Admins: Admins;
-    readonly Users: Users;
-    readonly Collections: Collections;
-    readonly Records: Records;
-    readonly Logs: Logs;
-    readonly Realtime: Realtime;
+    /**
+     * A replacable instance of the local `AuthStore` service.
+     */
+    authStore: AuthStore;
+    /**
+     * An instance of the service that handles the **Settings APIs**.
+     */
+    readonly settings: Settings;
+    /**
+     * An instance of the service that handles the **Admin APIs**.
+     */
+    readonly admins: Admins;
+    /**
+     * An instance of the service that handles the **User APIs**.
+     */
+    readonly users: Users;
+    /**
+     * An instance of the service that handles the **Collection APIs**.
+     */
+    readonly collections: Collections;
+    /**
+     * An instance of the service that handles the **Record APIs**.
+     */
+    readonly records: Records;
+    /**
+     * An instance of the service that handles the **Log APIs**.
+     */
+    readonly logs: Logs;
+    /**
+     * An instance of the service that handles the **Realtime APIs**.
+     */
+    readonly realtime: Realtime;
     private cancelControllers;
     constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | null);
+    /**
+     * @deprecated Legacy alias for `this.authStore`.
+     */
+    get AuthStore(): AuthStore;
+    /**
+     * @deprecated Legacy alias for `this.settings`.
+     */
+    get Settings(): Settings;
+    /**
+     * @deprecated Legacy alias for `this.admins`.
+     */
+    get Admins(): Admins;
+    /**
+     * @deprecated Legacy alias for `this.users`.
+     */
+    get Users(): Users;
+    /**
+     * @deprecated Legacy alias for `this.collections`.
+     */
+    get Collections(): Collections;
+    /**
+     * @deprecated Legacy alias for `this.records`.
+     */
+    get Records(): Records;
+    /**
+     * @deprecated Legacy alias for `this.logs`.
+     */
+    get Logs(): Logs;
+    /**
+     * @deprecated Legacy alias for `this.realtime`.
+     */
+    get Realtime(): Realtime;
     /**
      * Cancels single request by its cancellation key.
      */
@@ -527,10 +645,46 @@ declare class ClientResponseError extends Error {
     toJSON(): this;
 }
 /**
- * Default token store for browsers with auto fallback
- * to runtime/memory if local storage is undefined (eg. node env).
+ * Base AuthStore class that is intented to be extended by all other
+ * PocketBase AuthStore implementations.
  */
-declare class LocalAuthStore implements AuthStore {
+declare abstract class BaseAuthStore implements AuthStore {
+    protected baseToken: string;
+    protected baseModel: User | Admin | {};
+    private _onChangeCallbacks;
+    /**
+     * Retrieves the stored token (if any).
+     */
+    get token(): string;
+    /**
+     * Retrieves the stored model data (if any).
+     */
+    get model(): User | Admin | {};
+    /**
+     * Checks if the store has valid (aka. existing and unexpired) token.
+     */
+    get isValid(): boolean;
+    /**
+     * Saves the provided new token and model data in the auth store.
+     */
+    save(token: string, model: User | Admin | {}): void;
+    /**
+     * Removes the stored token and model data form the auth store.
+     */
+    clear(): void;
+    /**
+     * Register a callback function that will be called on store change.
+     *
+     * Returns a removal function that you could call to "unsubscibe" from the changes.
+     */
+    onChange(callback: () => void): () => void;
+    private _triggerChange;
+}
+/**
+ * The default token store for browsers with auto fallback
+ * to runtime/memory if local storage is undefined (eg. in node env).
+ */
+declare class LocalAuthStore extends BaseAuthStore {
     private fallback;
     private storageKey;
     constructor(storageKey?: string);
@@ -542,10 +696,6 @@ declare class LocalAuthStore implements AuthStore {
      * @inheritdoc
      */
     get model(): User | Admin | {};
-    /**
-     * @inheritdoc
-     */
-    get isValid(): boolean;
     /**
      * @inheritdoc
      */
@@ -572,4 +722,4 @@ declare class LocalAuthStore implements AuthStore {
      */
     private _storageRemove;
 }
-export { Client as default, ClientResponseError, LocalAuthStore, User, Admin, Collection, Record, LogRequest, SchemaField };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, User, Admin, Collection, Record, LogRequest, SchemaField };

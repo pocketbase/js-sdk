@@ -60,6 +60,7 @@ export class FetchMock {
                 }
 
                 const response = ({
+                    url: url,
                     status: mock.replyCode,
                     statusText: 'test',
                     json: async () => (mock.replyBody || {}),

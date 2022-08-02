@@ -13,17 +13,100 @@ import Realtime            from '@/services/Realtime';
  * PocketBase JS Client.
  */
 export default class Client {
-    baseUrl:   string;
-    lang:      string;
-    AuthStore: AuthStore;
+    /**
+     * The base PocketBase backend url address (eg. 'http://localhost.8090').
+     */
+    baseUrl: string;
 
-    readonly Settings:    Settings;
-    readonly Admins:      Admins;
-    readonly Users:       Users;
-    readonly Collections: Collections;
-    readonly Records:     Records;
-    readonly Logs:        Logs;
-    readonly Realtime:    Realtime;
+    /**
+     * Hook that get triggered right before sending the fetch request,
+     * allowing you to inspect/modify the request config.
+     *
+     * Returns the new modified config that will be used to send the request.
+     *
+     * For list of the possible options check https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
+     *
+     * Example:
+     * ```js
+     * client.beforeSend = function (url, reqConfig) {
+     *     reqConfig.headers = Object.assign(reqConfig.headers, {
+     *         'X-Custom-Header': 'example',
+     *     });
+     *
+     *     return reqConfig;
+     * };
+     * ```
+     */
+    beforeSend?: (url: string, reqConfig: { [key: string]: any }) => { [key: string]: any };
+
+    /**
+     * Hook that get triggered after successfully sending the fetch request,
+     * allowing you to inspect/modify the response object and its parsed data.
+     *
+     * Returns the new Promise resolved `data` that will be returned to the client.
+     *
+     * Example:
+     * ```js
+     * client.afterSend = function (response, data) {
+     *     if (response.status != 200) {
+     *         throw new ClientResponseError({
+     *             url:      response.url,
+     *             status:   response.status,
+     *             data:     data,
+     *         });
+     *     }
+     *
+     *     return data;
+     * };
+     * ```
+     */
+    afterSend?: (response: Response, data: any) => any;
+
+    /**
+     * Optional language code (default to `en-US`) that will be sent
+     * with the requests to the server as `Accept-Language` header.
+     */
+    lang: string;
+
+    /**
+     * A replacable instance of the local `AuthStore` service.
+     */
+    authStore: AuthStore;
+
+    /**
+     * An instance of the service that handles the **Settings APIs**.
+     */
+    readonly settings: Settings;
+
+    /**
+     * An instance of the service that handles the **Admin APIs**.
+     */
+    readonly admins: Admins;
+
+    /**
+     * An instance of the service that handles the **User APIs**.
+     */
+    readonly users: Users;
+
+    /**
+     * An instance of the service that handles the **Collection APIs**.
+     */
+    readonly collections: Collections;
+
+    /**
+     * An instance of the service that handles the **Record APIs**.
+     */
+    readonly records: Records;
+
+    /**
+     * An instance of the service that handles the **Log APIs**.
+     */
+    readonly logs: Logs;
+
+    /**
+     * An instance of the service that handles the **Realtime APIs**.
+     */
+    readonly realtime: Realtime;
 
     private cancelControllers: { [key: string]: AbortController } = {}
 
@@ -32,17 +115,75 @@ export default class Client {
         lang = 'en-US',
         authStore?: AuthStore | null,
     ) {
-        this.baseUrl     = baseUrl;
-        this.lang        = lang;
-        this.AuthStore   = authStore || new LocalAuthStore();
-        this.Settings    = new Settings(this);
-        this.Admins      = new Admins(this);
-        this.Users       = new Users(this);
-        this.Collections = new Collections(this);
-        this.Records     = new Records(this);
-        this.Logs        = new Logs(this);
-        this.Realtime    = new Realtime(this);
+        this.baseUrl   = baseUrl;
+        this.lang      = lang;
+        this.authStore = authStore || new LocalAuthStore();
+
+        // services
+        this.admins      = new Admins(this);
+        this.users       = new Users(this);
+        this.records     = new Records(this);
+        this.collections = new Collections(this);
+        this.logs        = new Logs(this);
+        this.settings    = new Settings(this);
+        this.realtime    = new Realtime(this);
     }
+
+    /**
+     * @deprecated Legacy alias for `this.authStore`.
+     */
+    get AuthStore(): AuthStore {
+        return this.authStore;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.settings`.
+     */
+    get Settings(): Settings {
+        return this.settings;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.admins`.
+     */
+    get Admins(): Admins {
+        return this.admins;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.users`.
+     */
+    get Users(): Users {
+        return this.users;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.collections`.
+     */
+    get Collections(): Collections {
+        return this.collections;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.records`.
+     */
+    get Records(): Records {
+        return this.records;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.logs`.
+     */
+    get Logs(): Logs {
+        return this.logs;
+    };
+
+    /**
+     * @deprecated Legacy alias for `this.realtime`.
+     */
+    get Realtime(): Realtime {
+        return this.realtime;
+    };
 
     /**
      * Cancels single request by its cancellation key.
@@ -72,8 +213,8 @@ export default class Client {
     /**
      * Sends an api http request.
      */
-    send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
-        const config = Object.assign({ method: 'GET' }, reqConfig);
+    async send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
+        let config = Object.assign({ method: 'GET' } as { [key: string]: any }, reqConfig);
 
         // serialize the body if needed and set the correct content type
         // note1: for FormData body the Content-Type header should be skipped
@@ -101,17 +242,17 @@ export default class Client {
         // check if Authorization header can be added
         if (
             // has stored token
-            this.AuthStore?.token &&
+            this.authStore?.token &&
             // auth header is not explicitly set
             (typeof config?.headers?.Authorization === 'undefined')
         ) {
             let authType = 'Admin';
-            if (typeof (this.AuthStore.model as any)?.verified !== 'undefined') {
+            if (typeof (this.authStore.model as any)?.verified !== 'undefined') {
                 authType = 'User'; // admins don't have verified
             }
 
             config.headers = Object.assign({}, config.headers, {
-                'Authorization': (authType + ' ' + this.AuthStore.token),
+                'Authorization': (authType + ' ' + this.authStore.token),
             });
         }
 
@@ -142,16 +283,24 @@ export default class Client {
             delete config.params;
         }
 
+        if (this.beforeSend) {
+            config = Object.assign({}, this.beforeSend(url, config));
+        }
+
         // send the request
         return fetch(url, config)
             .then(async (response) => {
-                let data = {};
+                let data : any = {};
 
                 try {
                     data = await response.json();
                 } catch (_) {
                     // all api responses are expected to return json
                     // with the exception of the realtime event and 204
+                }
+
+                if (this.afterSend) {
+                    data = this.afterSend(response, data);
                 }
 
                 if (response.status >= 400) {

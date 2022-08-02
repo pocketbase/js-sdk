@@ -15,7 +15,7 @@ describe('Users', function() {
     const fetchMock = new FetchMock();
 
     beforeEach(function() {
-        service.client.AuthStore.clear(); // reset
+        service.client.authStore.clear(); // reset
     });
 
     before(function () {
@@ -35,8 +35,8 @@ describe('Users', function() {
         assert.equal(result.token, expectedToken);
         assert.instanceOf(result.user, User);
         assert.deepEqual(result.user, expectedUser);
-        assert.equal(service.client.AuthStore.token, expectedToken);
-        assert.deepEqual(service.client.AuthStore.model, expectedUser);
+        assert.equal(service.client.authStore.token, expectedToken);
+        assert.deepEqual(service.client.authStore.model, expectedUser);
     }
 
     // more tests:

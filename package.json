@@ -2,7 +2,7 @@
     "version": "0.2.2",
     "name": "pocketbase",
     "description": "PocketBase JavaScript SDK",
-    "author": "Gani Georgiev <gani.georgiev@gmail.com>",
+    "author": "Gani Georgiev",
     "license": "MIT",
     "repository": {
         "type": "git",

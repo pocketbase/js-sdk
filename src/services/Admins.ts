@@ -29,7 +29,7 @@ export default class Admins extends CrudService<Admin> {
         const admin = this.decode(responseData?.admin || {});
 
         if (responseData?.token && responseData?.admin) {
-            this.client.AuthStore.save(responseData.token, admin);
+            this.client.authStore.save(responseData.token, admin);
         }
 
         return Object.assign({}, responseData, {

@@ -44,7 +44,7 @@ export default class Users extends CrudService<User> {
         const user = this.decode(responseData?.user || {});
 
         if (responseData?.token && responseData?.user) {
-            this.client.AuthStore.save(responseData.token, user);
+            this.client.authStore.save(responseData.token, user);
         }
 
         return Object.assign({}, responseData, {
