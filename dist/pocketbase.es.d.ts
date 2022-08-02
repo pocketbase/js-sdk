@@ -678,7 +678,7 @@ declare abstract class BaseAuthStore implements AuthStore {
      * Returns a removal function that you could call to "unsubscibe" from the changes.
      */
     onChange(callback: () => void): () => void;
-    private _triggerChange;
+    protected triggerChange(): void;
 }
 /**
  * The default token store for browsers with auto fallback

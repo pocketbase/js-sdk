@@ -42,14 +42,14 @@ export default abstract class BaseAuthStore implements AuthStore {
     save(token: string, model: User | Admin | {}): void {
         this.baseToken = token;
         this.baseModel = model;
-        this._triggerChange();
+        this.triggerChange();
     }
 
     /**
      * Removes the stored token and model data form the auth store.
      */
     clear(): void {
-        this._triggerChange();
+        this.triggerChange();
     }
 
     /**
@@ -71,7 +71,7 @@ export default abstract class BaseAuthStore implements AuthStore {
         }
     }
 
-    private _triggerChange(): void {
+    protected triggerChange(): void {
         for (const callback of this._onChangeCallbacks) {
             callback && callback(this.token, this.model);
         }
