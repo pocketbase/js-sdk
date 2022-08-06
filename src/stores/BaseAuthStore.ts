@@ -49,6 +49,8 @@ export default abstract class BaseAuthStore implements AuthStore {
      * Removes the stored token and model data form the auth store.
      */
     clear(): void {
+        this.baseToken = '';
+        this.baseModel = {};
         this.triggerChange();
     }
 
