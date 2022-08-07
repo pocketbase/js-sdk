@@ -14,7 +14,7 @@ import Realtime            from '@/services/Realtime';
  */
 export default class Client {
     /**
-     * The base PocketBase backend url address (eg. 'http://localhost.8090').
+     * The base PocketBase backend url address (eg. 'http://127.0.0.1.8090').
      */
     baseUrl: string;
 

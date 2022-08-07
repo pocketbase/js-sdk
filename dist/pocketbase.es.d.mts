@@ -153,7 +153,7 @@ declare abstract class BaseCrudService<M extends BaseModel> extends BaseService 
     /**
      * Deletes an existing item by its id.
      */
-    protected _delete(basePath: string, id: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
+    protected _delete(basePath: string, id: string, queryParams?: {}): Promise<boolean>;
 }
 declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<M> {
     /**
@@ -183,7 +183,7 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
     /**
      * Deletes an existing item by its id.
      */
-    delete(id: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
+    delete(id: string, queryParams?: {}): Promise<boolean>;
 }
 type AdminAuthResponse = {
     [key: string]: any;
@@ -363,6 +363,10 @@ declare class Collections extends CrudService<Collection> {
      * @inheritdoc
      */
     baseCrudPath(): string;
+    /**
+     * Imports the provided collections.
+     */
+    import(collections: Array<Collection>, deleteOthers?: boolean, queryParams?: {}): Promise<true>;
 }
 declare abstract class SubCrudService<M extends BaseModel> extends BaseCrudService<M> {
     /**
@@ -392,7 +396,7 @@ declare abstract class SubCrudService<M extends BaseModel> extends BaseCrudServi
     /**
      * Deletes an existing item by its id.
      */
-    delete(sub: string, id: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
+    delete(sub: string, id: string, queryParams?: {}): Promise<boolean>;
 }
 declare class Records extends SubCrudService<Record> {
     /**
@@ -484,7 +488,7 @@ declare class Realtime extends BaseService {
  */
 declare class Client {
     /**
-     * The base PocketBase backend url address (eg. 'http://localhost.8090').
+     * The base PocketBase backend url address (eg. 'http://127.0.0.1.8090').
      */
     baseUrl: string;
     /**

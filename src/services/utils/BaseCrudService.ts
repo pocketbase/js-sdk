@@ -98,11 +98,10 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Deletes an existing item by its id.
      */
-    protected _delete(basePath: string, id: string, bodyParams = {}, queryParams = {}): Promise<boolean> {
+    protected _delete(basePath: string, id: string, queryParams = {}): Promise<boolean> {
         return this.client.send(basePath + '/' + encodeURIComponent(id), {
             'method': 'DELETE',
             'params': queryParams,
-            'body':   bodyParams,
         }).then(() => true);
     }
 }

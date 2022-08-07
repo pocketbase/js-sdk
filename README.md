@@ -65,7 +65,7 @@ const PocketBase = require('pocketbase/cjs')
 ```js
 import PocketBase from 'pocketbase';
 
-const client = new PocketBase('http://localhost:8090');
+const client = new PocketBase('http://127.0.0.1:8090');
 
 ...
 
@@ -101,7 +101,7 @@ Here is a simple browser example of uploading multiple files together with some 
 ```js
 import PocketBase from 'pocketbase';
 
-const client = new PocketBase('http://localhost:8090');
+const client = new PocketBase('http://127.0.0.1:8090');
 
 ...
 
@@ -197,7 +197,7 @@ class CustomAuthStore extends BaseAuthStore {
     ...
 }
 
-const client = new PocketBase('http://localhost:8090', 'en-US', CustomAuthStore());
+const client = new PocketBase('http://127.0.0.1:8090', 'en-US', CustomAuthStore());
 ```
 
 #### Auto cancellation
@@ -237,7 +237,7 @@ To accomplish this, the SDK provides 2 function hooks:
 
 - `beforeSend` - triggered right before sending the `fetch` request, allowing you to inspect/modify the request config.
     ```js
-    const client = new PocketBase('http://localhost:8090');
+    const client = new PocketBase('http://127.0.0.1:8090');
 
     client.beforeSend = function (url, reqConfig) {
         // For list of the possible reqConfig properties check
@@ -252,7 +252,7 @@ To accomplish this, the SDK provides 2 function hooks:
 
 - `afterSend` - triggered after successfully sending the `fetch` request, allowing you to inspect/modify the response object and its parsed data.
     ```js
-    const client = new PocketBase('http://localhost:8090');
+    const client = new PocketBase('http://127.0.0.1:8090');
 
     client.afterSend = function (response, data) {
         // do something with the response state
@@ -306,7 +306,7 @@ const client = new PocketBase(
 | 🔐`client.admins.getOne(id, queryParams = {})`                                                                                                                                                     | Returns single admin by its id.                                                                       |
 | 🔐`client.admins.create(bodyParams = {}, queryParams = {})`                                                                                                                                        | Creates a new admin.                                                                                  |
 | 🔐`client.admins.update(id, bodyParams = {}, queryParams = {})`                                                                                                                                    | Updates an existing admin by its id.                                                                  |
-| 🔐`client.admins.delete(id, bodyParams = {}, queryParams = {})`                                                                                                                                    | Deletes an existing admin by its id.                                                                  |
+| 🔐`client.admins.delete(id, queryParams = {})`                                                                                                                                                     | Deletes an existing admin by its id.                                                                  |
 | **[Users](https://pocketbase.io/docs/api-users)**                                                                                                                                                 |                                                                                                       |
 | 🔓`client.users.listAuthMethods(queryParams = {})`                                                                                                                                                 | Returns all available application auth methods.                                                       |
 | 🔓`client.users.authViaEmail(email, password, bodyParams = {}, queryParams = {})`                                                                                                                  | Authenticate a user account by its email and password and returns a new user token and user data.     |
@@ -323,7 +323,7 @@ const client = new PocketBase(
 | 🔐`client.users.getOne(id, queryParams = {})`                                                                                                                                                      | Returns single user by its id.                                                                        |
 | 🔐`client.users.create(bodyParams = {}, queryParams = {})`                                                                                                                                         | Creates a new user.                                                                                   |
 | 🔐`client.users.update(id, bodyParams = {}, queryParams = {})`                                                                                                                                     | Updates an existing user by its id.                                                                   |
-| 🔐`client.users.delete(id, bodyParams = {}, queryParams = {})`                                                                                                                                     | Deletes an existing user by its id.                                                                   |
+| 🔐`client.users.delete(id, queryParams = {})`                                                                                                                                                      | Deletes an existing user by its id.                                                                   |
 | **[Realtime](https://pocketbase.io/docs/api-realtime)** <br/> _(for node environments you'll have to install an EventSource polyfill beforehand, eg. https://github.com/EventSource/eventsource)_ |                                                                                                       |
 | 🔓`client.realtime.subscribe(subscription, callback)`                                                                                                                                              | Inits the sse connection (if not already) and register the subscription.                              |
 | 🔓`client.realtime.unsubscribe(subscription = "")`                                                                                                                                                 | Unsubscribe from a subscription (if empty - unsubscibe from all registered subscriptions).            |
@@ -333,7 +333,8 @@ const client = new PocketBase(
 | 🔐`client.collections.getOne(id, queryParams = {})`                                                                                                                                                | Returns single collection by its id.                                                                  |
 | 🔐`client.collections.create(bodyParams = {}, queryParams = {})`                                                                                                                                   | Creates a new collection.                                                                             |
 | 🔐`client.collections.update(id, bodyParams = {}, queryParams = {})`                                                                                                                               | Updates an existing collection by its id.                                                             |
-| 🔐`client.collections.delete(id, bodyParams = {}, queryParams = {})`                                                                                                                               | Deletes an existing collection by its id.                                                             |
+| 🔐`client.collections.delete(id, queryParams = {})`                                                                                                                                                | Deletes an existing collection by its id.                                                             |
+| 🔐`client.collections.import(collections, deleteOthers = true, queryParams = {})`                                                                                                                  | Imports the provided collections.                                                                     |
 | **[Records](https://pocketbase.io/docs/api-records)**                                                                                                                                             |                                                                                                       |
 | 🔓`client.records.getList(collectionIdOrName, page = 1, perPage = 30, queryParams = {})`                                                                                                           | Returns paginated records list.                                                                       |
 | 🔓`client.records.getFullList(collectionIdOrName, batchSize = 100, queryParams = {})`                                                                                                              | Returns a list with all records batch fetched at once.                                                |

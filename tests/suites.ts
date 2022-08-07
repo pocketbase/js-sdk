@@ -79,7 +79,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         fetchMock.on({
             method: 'DELETE',
             url: service.client.buildUrl(service.baseCrudPath()) + '/' + encodeURIComponent(id) + '?q1=456',
-            body: { 'b1': 123 },
             replyCode: 204,
         });
 
@@ -152,7 +151,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
 
         describe('delete()', function() {
             it('Should delete single model item', async function() {
-                const result = await service.delete(id, { "b1": 123 }, { "q1": 456 });
+                const result = await service.delete(id, { "q1": 456 });
 
                 assert.isTrue(result);
             });
@@ -236,7 +235,6 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
         fetchMock.on({
             method: 'DELETE',
             url: service.client.buildUrl(service.baseCrudPath(sub)) + '/' + encodeURIComponent(id) + '?q1=456',
-            body: { 'b1': 123 },
             replyCode: 204,
         });
 
@@ -309,7 +307,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
 
         describe('delete()', function() {
             it('Should delete single model item', async function() {
-                const result = await service.delete(sub, id, { "b1": 123 }, { "q1": 456 });
+                const result = await service.delete(sub, id, { "q1": 456 });
 
                 assert.isTrue(result);
             });

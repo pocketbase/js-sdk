@@ -46,7 +46,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
     /**
      * Deletes an existing item by its id.
      */
-    delete(id: string, bodyParams = {}, queryParams = {}): Promise<boolean> {
-        return this._delete(this.baseCrudPath(), id, bodyParams, queryParams);
+    delete(id: string, queryParams = {}): Promise<boolean> {
+        return this._delete(this.baseCrudPath(), id, queryParams);
     }
 }
