@@ -32,13 +32,13 @@ describe('Collections', function() {
                 url: service.client.buildUrl('/api/collections/import'),
                 body: {
                     'collections': [{'id': 'id1'},{'id': 'id2'}],
-                    'deleteMissing': false,
+                    'deleteMissing': true,
                 },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<Collection>, false);
+            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<Collection>, true);
 
             assert.deepEqual(result, true);
         });

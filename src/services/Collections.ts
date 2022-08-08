@@ -19,7 +19,7 @@ export default class Collections extends CrudService<Collection> {
     /**
      * Imports the provided collections.
      */
-    async import(collections: Array<Collection>, deleteMissing: boolean = true, queryParams = {}): Promise<true> {
+    async import(collections: Array<Collection>, deleteMissing: boolean = false, queryParams = {}): Promise<true> {
         return this.client.send(this.baseCrudPath() + '/import', {
             'method': 'PUT',
             'params': queryParams,
