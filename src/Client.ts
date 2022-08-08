@@ -313,11 +313,7 @@ export default class Client {
 
                 return data;
             }).catch((err) => {
-                if (err instanceof ClientResponseError) {
-                    throw err; // rethrow
-                }
-
-                // wrap any other error
+                // wrap to normalize all errors
                 throw new ClientResponseError(err);
             });
     }

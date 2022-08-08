@@ -12,7 +12,11 @@ export default class ClientResponseError extends Error {
     constructor(errData?: any) {
         super("ClientResponseError");
 
-        if (errData instanceof Error && !(errData instanceof this.constructor)) {
+        // Set the prototype explicitly.
+        // https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
+        Object.setPrototypeOf(this, ClientResponseError.prototype);
+
+        if (!(errData instanceof ClientResponseError)) {
             this.originalError = errData;
         }
 
