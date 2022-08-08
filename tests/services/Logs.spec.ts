@@ -32,6 +32,7 @@ describe('Logs', function () {
                     'page': 2,
                     'perPage': 1,
                     'totalItems': 3,
+                    'totalPages': 3,
                     'items': [{ 'id': 'test123' }],
                 },
             });
@@ -39,7 +40,7 @@ describe('Logs', function () {
             const list = await service.getRequestsList(2, 1, { 'q1': 'abc' });
             const expected = [new LogRequest({ 'id': 'test123' })];
 
-            assert.deepEqual(list, new ListResult(2, 1, 3, expected));
+            assert.deepEqual(list, new ListResult(2, 1, 3, 3, expected));
             for (const i in list.items) {
                 assert.instanceOf(list.items[i], expected[i].constructor);
             }

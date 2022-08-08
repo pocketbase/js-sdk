@@ -32,7 +32,7 @@ describe('Collections', function() {
                 url: service.client.buildUrl('/api/collections/import'),
                 body: {
                     'collections': [{'id': 'id1'},{'id': 'id2'}],
-                    'deleteOthers': false,
+                    'deleteMissing': false,
                 },
                 replyCode: 204,
                 replyBody: true,

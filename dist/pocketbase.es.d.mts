@@ -120,8 +120,9 @@ declare class ListResult<M extends BaseModel> {
     page: number;
     perPage: number;
     totalItems: number;
+    totalPages: number;
     items: Array<M>;
-    constructor(page: number, perPage: number, totalItems: number, items: Array<M>);
+    constructor(page: number, perPage: number, totalItems: number, totalPages: number, items: Array<M>);
 }
 declare abstract class BaseCrudService<M extends BaseModel> extends BaseService {
     /**
@@ -202,7 +203,7 @@ declare class Admins extends CrudService<Admin> {
      */
     baseCrudPath(): string;
     /**
-     * Prepare successfull authorize response.
+     * Prepare successful authorize response.
      */
     protected authResponse(responseData: any): AdminAuthResponse;
     /**
@@ -258,7 +259,7 @@ declare class Users extends CrudService<User> {
      */
     baseCrudPath(): string;
     /**
-     * Prepare successfull authorization response.
+     * Prepare successful authorization response.
      */
     protected authResponse(responseData: any): UserAuthResponse;
     /**
@@ -366,7 +367,7 @@ declare class Collections extends CrudService<Collection> {
     /**
      * Imports the provided collections.
      */
-    import(collections: Array<Collection>, deleteOthers?: boolean, queryParams?: {}): Promise<true>;
+    import(collections: Array<Collection>, deleteMissing?: boolean, queryParams?: {}): Promise<true>;
 }
 declare abstract class SubCrudService<M extends BaseModel> extends BaseCrudService<M> {
     /**

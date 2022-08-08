@@ -33,6 +33,7 @@ export default class Logs extends BaseService {
                 responseData?.page || 1,
                 responseData?.perPage || 0,
                 responseData?.totalItems || 0,
+                responseData?.totalPages || 0,
                 items,
             );
         });

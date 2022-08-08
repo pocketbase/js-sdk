@@ -38,7 +38,7 @@ export default class Users extends CrudService<User> {
     }
 
     /**
-     * Prepare successfull authorization response.
+     * Prepare successful authorization response.
      */
     protected authResponse(responseData: any): UserAuthResponse {
         const user = this.decode(responseData?.user || {});

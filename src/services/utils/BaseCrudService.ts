@@ -58,6 +58,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
                 responseData?.page || 1,
                 responseData?.perPage || 0,
                 responseData?.totalItems || 0,
+                responseData?.totalPages || 0,
                 items,
             );
         });

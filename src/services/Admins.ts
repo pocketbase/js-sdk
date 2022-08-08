@@ -23,7 +23,7 @@ export default class Admins extends CrudService<Admin> {
     }
 
     /**
-     * Prepare successfull authorize response.
+     * Prepare successful authorize response.
      */
     protected authResponse(responseData: any): AdminAuthResponse {
         const admin = this.decode(responseData?.admin || {});

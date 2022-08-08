@@ -34,6 +34,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 'page': 1,
                 'perPage': 1,
                 'totalItems': 3,
+                'totalPages': 3,
                 'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
             },
         });
@@ -45,6 +46,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 'page': 2,
                 'perPage': 1,
                 'totalItems': 3,
+                'totalPages': 3,
                 'items': [{ 'id': 'item3' }],
             },
         });
@@ -112,7 +114,7 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const list = await service.getList(2, 1, { 'q1': 'abc' });
                 const expected = [service.decode({ 'id': 'item3' })];
 
-                assert.deepEqual(list, new ListResult(2, 1, 3, expected));
+                assert.deepEqual(list, new ListResult(2, 1, 3, 3, expected));
                 for (let i in list.items) {
                     assert.instanceOf(list.items[i], expected[i].constructor);
                 }
@@ -190,6 +192,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
                 'page': 1,
                 'perPage': 1,
                 'totalItems': 3,
+                'totalPages': 3,
                 'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
             },
         });
@@ -201,6 +204,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
                 'page': 2,
                 'perPage': 1,
                 'totalItems': 3,
+                'totalPages': 3,
                 'items': [{ 'id': 'item3' }],
             },
         });
@@ -268,7 +272,7 @@ export function subCrudServiceTestsSuite<M extends BaseModel>(
                 const list = await service.getList(sub, 2, 1, { 'q1': 'abc' });
                 const expected = [service.decode({ 'id': 'item3' })];
 
-                assert.deepEqual(list, new ListResult(2, 1, 3, expected));
+                assert.deepEqual(list, new ListResult(2, 1, 3, 3, expected));
                 for (let i in list.items) {
                     assert.instanceOf(list.items[i], expected[i].constructor);
                 }
