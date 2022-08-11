@@ -18,6 +18,10 @@ export default class Collections extends CrudService<Collection> {
 
     /**
      * Imports the provided collections.
+     *
+     * If `deleteMissing` is `true`, all local collections and schema fields,
+     * that are not present in the imported configuration, WILL BE DELETED
+     * (including their related records data)!
      */
     async import(collections: Array<Collection>, deleteMissing: boolean = false, queryParams = {}): Promise<true> {
         return this.client.send(this.baseCrudPath() + '/import', {
