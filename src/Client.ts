@@ -29,7 +29,7 @@ export default class Client {
      * Example:
      * ```js
      * client.beforeSend = function (url, reqConfig) {
-     *     reqConfig.headers = Object.assign(reqConfig.headers, {
+     *     reqConfig.headers = Object.assign({}, reqConfig.headers, {
      *         'X-Custom-Header': 'example',
      *     });
      *

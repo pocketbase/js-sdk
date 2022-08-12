@@ -229,6 +229,9 @@ client.records.getList('example', 1, 20, { '$cancelKey': "test" })  // executed
 
 To manually cancel pending requests, you could use `client.cancelAllRequests()` or `client.cancelRequest(cancelKey)`.
 
+> If you want to completelly disable the auto cancellation behavior, you could use the `client.beforeSend` hook and
+delete the `reqConfig.signal` property.
+
 #### Send hooks
 
 Sometimes you may want to modify the request sent data or to cursomize the response.
@@ -242,7 +245,7 @@ To accomplish this, the SDK provides 2 function hooks:
     client.beforeSend = function (url, reqConfig) {
         // For list of the possible reqConfig properties check
         // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
-        reqConfig.headers = Object.assign(reqConfig.headers, {
+        reqConfig.headers = Object.assign({}, reqConfig.headers, {
             'X-Custom-Header': 'example',
         });
 
