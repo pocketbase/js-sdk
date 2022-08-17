@@ -1,5 +1,5 @@
 {
-    "version": "0.4.0",
+    "version": "0.4.1",
     "name": "pocketbase",
     "description": "PocketBase JavaScript SDK",
     "author": "Gani Georgiev",
@@ -13,7 +13,7 @@
         "./cjs": "./dist/pocketbase.cjs.js",
         "./umd": "./dist/pocketbase.umd.js"
     },
-    "main": "./dist/pocketbase.cjs.js",
+    "main": "./dist/pocketbase.es.mjs",
     "module": "./dist/pocketbase.es.mjs",
     "types": "./dist/pocketbase.es.d.mts",
     "keywords": [

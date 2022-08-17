@@ -475,7 +475,7 @@ declare class Realtime extends BaseService {
      * Unsubscribe from a subscription.
      *
      * If the `subscription` argument is not set,
-     * then the client will unsubscibe from all registered subscriptions.
+     * then the client will unsubscribe from all registered subscriptions.
      *
      * The related sse connection will be autoclosed if after the
      * unsubscribe operations there are no active subscriptions left.
@@ -507,7 +507,7 @@ declare class Client {
      * Example:
      * ```js
      * client.beforeSend = function (url, reqConfig) {
-     *     reqConfig.headers = Object.assign(reqConfig.headers, {
+     *     reqConfig.headers = Object.assign({}, reqConfig.headers, {
      *         'X-Custom-Header': 'example',
      *     });
      *
@@ -684,7 +684,7 @@ declare abstract class BaseAuthStore implements AuthStore {
     /**
      * Register a callback function that will be called on store change.
      *
-     * Returns a removal function that you could call to "unsubscibe" from the changes.
+     * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
     onChange(callback: () => void): () => void;
     protected triggerChange(): void;

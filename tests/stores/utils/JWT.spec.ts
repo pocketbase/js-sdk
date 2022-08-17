@@ -11,7 +11,7 @@ describe('JWT', function () {
             assert.deepEqual(payload, { 'test': 123 });
         });
 
-        it('Should fallback to emty object on invalid JWT string', function () {
+        it('Should fallback to empty object on invalid JWT string', function () {
             const testCases = ['', 'abc', 'a.b.c'];
             for (let i in testCases) {
                 const test = testCases[i];

@@ -54,7 +54,7 @@ export default class Realtime extends BaseService {
      * Unsubscribe from a subscription.
      *
      * If the `subscription` argument is not set,
-     * then the client will unsubscibe from all registered subscriptions.
+     * then the client will unsubscribe from all registered subscriptions.
      *
      * The related sse connection will be autoclosed if after the
      * unsubscribe operations there are no active subscriptions left.

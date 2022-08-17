@@ -57,7 +57,7 @@ export default abstract class BaseAuthStore implements AuthStore {
     /**
      * Register a callback function that will be called on store change.
      *
-     * Returns a removal function that you could call to "unsubscibe" from the changes.
+     * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
     onChange(callback: () => void): () => void {
         this._onChangeCallbacks.push(callback);
