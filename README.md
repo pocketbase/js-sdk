@@ -165,9 +165,9 @@ It has the following public members that you can use:
 ```js
 AuthStore {
     // fields
-    token:   string     // the authenticated token
-    model:   User|Admin // the authenticated User or Admin model
-    isValid: boolean    // checks if the store has existing and unexpired token
+    token:   string        // the authenticated token
+    model:   User|Admin|{} // the authenticated User or Admin model
+    isValid: boolean       // checks if the store has existing and unexpired token
 
     // methods
     clear()            // "logout" the authenticated User or Admin
