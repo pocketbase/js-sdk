@@ -234,7 +234,7 @@ delete the `reqConfig.signal` property.
 
 #### Send hooks
 
-Sometimes you may want to modify the request sent data or to cursomize the response.
+Sometimes you may want to modify the request sent data or to customize the response.
 
 To accomplish this, the SDK provides 2 function hooks:
 
