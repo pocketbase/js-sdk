@@ -50,4 +50,35 @@ describe('Settings', function () {
             assert.deepEqual(result, { 'test': 'abc' });
         });
     });
+
+    describe('testS3()', function () {
+        it('Should send S3 connection test request', async function () {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/settings/test/s3')+ '?q1=123',
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.testS3({ 'q1': 123 });
+
+            assert.isTrue(result);
+        });
+    });
+
+    describe('testEmail()', function () {
+        it('Should send a test email request', async function () {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/settings/test/email')+ '?q1=123',
+                body: { 'template': "abc", "email": "test@example.com" },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.testEmail("test@example.com", "abc", { "q1": 123 });
+
+            assert.isTrue(result);
+        });
+    });
 });

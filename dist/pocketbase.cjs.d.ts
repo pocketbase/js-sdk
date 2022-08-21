@@ -115,6 +115,19 @@ declare class Settings extends BaseService {
     update(bodyParams?: {}, queryParams?: {}): Promise<{
         [key: string]: any;
     }>;
+    /**
+     * Performs a S3 storage connection test.
+     */
+    testS3(queryParams?: {}): Promise<boolean>;
+    /**
+     * Sends a test email.
+     *
+     * The possible `emailTemplate` values are:
+     * - verification
+     * - password-reset
+     * - email-change
+     */
+    testEmail(toEmail: string, emailTemplate: string, queryParams?: {}): Promise<boolean>;
 }
 declare class ListResult<M extends BaseModel> {
     page: number;
@@ -424,7 +437,8 @@ declare class LogRequest extends BaseModel {
     method: string;
     status: number;
     auth: string;
-    ip: string;
+    remoteIp: string;
+    userIp: string;
     referer: string;
     userAgent: string;
     meta: null | {
