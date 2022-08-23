@@ -52,7 +52,7 @@ const PocketBase = require('pocketbase/cjs')
 > require('cross-fetch/polyfill');
 > ```
 ---
-> 🔧 Node doesn't have native `EvenSource` implementation, so in order to use the realtime service (aka. `client.realtime.subscribe()`) you'll need to load a `EventSource` polyfill.
+> 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime service (aka. `client.realtime.subscribe()`) you'll need to load a `EventSource` polyfill.
 > I recommend [EventSource/eventsource](https://github.com/EventSource/eventsource):
 > ```js
 > // npm install eventsource --save
