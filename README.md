@@ -11,13 +11,15 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
     - [AuthStore](#authstore)
     - [Auto cancellation](#auto-cancellation)
     - [Send hooks](#send-hooks)
+    - [SSR integration](#ssr-integration)
+    - [Security](#security)
 - [Definitions](#definitions)
 - [Development](#development)
 
 
 ## Installation
 
-#### Browser (manually via script tag)
+### Browser (manually via script tag)
 
 ```html
 <script src="/path/to/dist/pocketbase.umd.js"></script>
@@ -31,7 +33,7 @@ _OR if you are using ES modules:_
 </script>
 ```
 
-#### Node.js (via npm)
+### Node.js (via npm)
 
 ```sh
 npm install pocketbase --save
@@ -58,7 +60,7 @@ const PocketBase = require('pocketbase/cjs')
 > // npm install eventsource --save
 > global.EventSource = require('eventsource');
 > ```
----
+
 
 ## Usage
 
@@ -77,7 +79,6 @@ const result = await client.records.getList('example', 1, 20, {
 // authenticate as regular user
 const userData = await client.users.authViaEmail('test@example.com', '123456');
 
-
 // or as admin
 const adminData = await client.admins.authViaEmail('test@example.com', '123456');
 
@@ -88,7 +89,7 @@ const adminData = await client.admins.authViaEmail('test@example.com', '123456')
 
 ## Caveats
 
-#### File upload
+### File upload
 
 PocketBase Web API supports file upload via `multipart/form-data` requests,
 which means that to upload a file it is enough to provide a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) object as body.
@@ -125,7 +126,7 @@ formData.append('title', 'Hello world!');
 const createdRecord = await client.Records.create('example', formData);
 ```
 
-#### Errors handling
+### Errors handling
 
 All services return a standard [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based response, so the error handling is straightforward:
 ```js
@@ -157,25 +158,31 @@ ClientResponseError {
 }
 ```
 
-#### AuthStore
+### AuthStore
 
 The SDK keeps track of the authenticated token and auth model for you via the `client.authStore` instance.
-It has the following public members that you can use:
+
+The default [`LocalAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/LocalAuthStore.ts) uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory (aka. on page refresh or service restart you'll have to authenticate again).
+
+The default `client.authStore` extends [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and has the following public members that you can use:
 
 ```js
-AuthStore {
-    // fields
-    token:   string        // the authenticated token
-    model:   User|Admin|{} // the authenticated User or Admin model
-    isValid: boolean       // checks if the store has existing and unexpired token
+BaseAuthStore {
+    // base fields
+    token:   string          // the authenticated token
+    model:   User|Admin|null // the authenticated User or Admin model
+    isValid: boolean         // checks if the store has existing and unexpired token
 
-    // methods
+    // main methods
     clear()            // "logout" the authenticated User or Admin
     save(token, model) // update the store with the new auth data
+    onChange(callback) // register a callback that will be called on store change
+
+    // cookie parse and serialize helpers
+    loadFromCookie(cookieHeader, key = 'pb_auth')
+    exportToCookie(options = {}, key = 'pb_auth')
 }
 ```
-
-By default the SDK initialize a [`LocalAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/LocalAuthStore.ts), which uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory store (aka. on page refresh or service restart you'll have to authenticate again).
 
 To _"logout"_ an authenticated user or admin, you can just call `client.authStore.clear()`.
 
@@ -194,13 +201,16 @@ If you want to create your own `AuthStore`, you can extend [`BaseAuthStore`](htt
 import PocketBase, { BaseAuthStore } from 'pocketbase';
 
 class CustomAuthStore extends BaseAuthStore {
-    ...
+    save(token, model) {
+        super.save(token, model);
+        // your custom business logic...
+    }
 }
 
 const client = new PocketBase('http://127.0.0.1:8090', 'en-US', CustomAuthStore());
 ```
 
-#### Auto cancellation
+### Auto cancellation
 
 The SDK client will auto cancel duplicated pending requests for you.
 For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
@@ -232,7 +242,7 @@ To manually cancel pending requests, you could use `client.cancelAllRequests()` 
 > If you want to completelly disable the auto cancellation behavior, you could use the `client.beforeSend` hook and
 delete the `reqConfig.signal` property.
 
-#### Send hooks
+### Send hooks
 
 Sometimes you may want to modify the request sent data or to customize the response.
 
@@ -268,9 +278,199 @@ To accomplish this, the SDK provides 2 function hooks:
     };
     ```
 
+### SSR integration
+
+Unfortunately, **there is no "one size fits all" solution** because each framework handle SSR differently (_and even in a single framework there is more than one way of doing things_).
+
+But in general, the idea is to use a cookie based flow:
+
+1. Create a new `PocketBase` instance for each server-side request
+2. "Load/Feed" your `client.authStore` with data from the request cookie
+3. Perform your application server-side actions
+4. Before returning the response to the client, update the cookie with the latest `client.authStore` state
+
+All [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) instances have 2 helper methods that
+should make working with cookies a little bit easier:
+
+```js
+// update the store with the parsed data from the cookie string
+client.authStore.loadFromCookie('pb_auth=...');
+
+// exports the store data as cookie, with option to extend the default SameSite, Secure, HttpOnly, Path and Expires attributes
+client.authStore.exportToCookie({ httpOnly: false }); // Output: 'pb_auth=...'
+```
+
+Below you could find several examples:
+
+<details>
+  <summary><strong>SvelteKit</strong></summary>
+
+One way to integrate with SvelteKit SSR could be to create the PocketBase client in a [hook handle](https://kit.svelte.dev/docs/hooks#handle)
+and pass it to the other server-side actions using the `event.locals`.
+
+```js
+// src/hooks.js
+import PocketBase from 'pocketbase';
+
+export async function handle({ event, resolve }) {
+    event.locals.pocketbase = new PocketBase("http://127.0.0.1:8090");
+
+    // load the store data from the request cookie string
+    event.locals.pocketbase.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
+
+    const response = await resolve(event);
+
+    // send back the default 'pb_auth' cookie to the client with the latest store state
+    response.headers.set('set-cookie', event.locals.pocketbase.authStore.exportToCookie());
+
+    return response;
+}
+```
+
+And then, in some of your server-side actions, you could directly access the previously created `event.locals.pocketbase` instance:
+
+```js
+// src/routes/login/+server.js
+//
+// creates a `POST /login` server-side endpoint
+export function POST({ request, locals }) {
+    const { email, password } = await request.json();
+
+    const { token, user } = await locals.pocketbase.users.authViaEmail(email, password);
+
+    return new Response('Success...');
+}
+```
+</details>
+
+<details>
+  <summary><strong>Nuxt 3</strong></summary>
+
+One way to integrate with Nuxt 3 SSR could be to create the PocketBase client in a [nuxt plugin](https://v3.nuxtjs.org/guide/directory-structure/plugins)
+and provide it as a helper to the `nuxtApp` instance:
+
+```js
+// plugins/pocketbase.js
+import PocketBase from 'pocketbase';
+
+export default defineNuxtPlugin((nuxtApp) => {
+  return {
+    provide: {
+      pocketbase: () => {
+        const client = new PocketBase('http://127.0.0.1:8090');
+
+        // load the store data from the request cookie string
+        client.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
+
+        // send back the default 'pb_auth' cookie to the client with the latest store state
+        client.authStore.onChange(() => {
+          if (nuxtApp.ssrContext?.event?.res) {
+            nuxtApp.ssrContext.event.res.setHeader('set-cookie', client.authStore.exportToCookie());
+          }
+        });
+
+        return client;
+      }
+    }
+  }
+});
+```
+
+And then in your component you could access it like this:
+
+```html
+<template>
+  <div>
+    Show: {{ data }}
+  </div>
+</template>
+
+<script setup>
+  const { data } = await useAsyncData(async (nuxtApp) => {
+    const client = nuxtApp.$pocketbase();
+
+    // fetch and return all "demo" records...
+    return await client.records.getFullList('demo');
+  })
+</script>
+```
+
+> For Nuxt 2 you could use similar approach, but instead of `nuxtApp` you could use a store state to store/create the local `PocketBase` instance.
+</details>
+
+<details>
+  <summary><strong>Next.js</strong></summary>
+
+Next.js doesn't seem to have a central place where you can read/modify the server request and response.
+[There is support for middlewares](https://nextjs.org/docs/advanced-features/middleware),
+but they are very limited and, at the time of writing, you can't pass data from a middleware to the `getServerSideProps` functions (https://github.com/vercel/next.js/discussions/31792).
+
+One way to integrate with Next.js SSR could be to create a custom `PocketBase` instance in each of your `getServerSideProps`:
+
+```jsx
+import PocketBase, { BaseAuthStore } from 'pocketbase';
+
+class NextAuthStore extends BaseAuthStore {
+  constructor(req, res) {
+    super();
+
+    this.req = req;
+    this.res = res;
+
+    this.loadFromCookie(this.req?.headers?.cookie);
+  }
+
+  save(token, model) {
+    super.save(token, model);
+
+    this.res?.setHeader('set-cookie', this.exportToCookie());
+  }
+
+  clear() {
+    super.clear();
+
+    this.res?.setHeader('set-cookie', this.exportToCookie());
+  }
+}
+
+export async function getServerSideProps({ req, res }) {
+  const client = new PocketBase("https://pocketbase.io");
+  client.authStore = new NextAuthStore(req, res);
+
+  // fetch example records...
+  const result = await client.records.getList("example", 1, 30);
+
+  return {
+    props: {
+      // ...
+    },
+  }
+}
+
+export default function Home() {
+  return (
+    <div>Hello world!</div>
+  )
+}
+```
+</details>
+
+### Security
+
+The most common frontend related vulnerability is XSS (and CSRF when dealing with cookies).
+Fortunately, modern browsers can detect and mitigate most of this type of attacks if [Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) is provided.
+
+**To prevent a malicious user or 3rd party script to steal your PocketBase auth token, it is recommended to configure a basic CSP for your application (either as `meta` tag or HTTP header).**
+
+This is out of the scope of the SDK, but you could find more resources about CSP at:
+
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
+- https://content-security-policy.com
+
+
 ## Definitions
 
-#### Creating new client instance
+### Creating new client instance
 
 ```js
 const client = new PocketBase(
@@ -280,7 +480,7 @@ const client = new PocketBase(
 );
 ```
 
-#### Instance methods
+### Instance methods
 
 > Each instance method returns the `PocketBase` instance allowing chaining.
 
@@ -292,7 +492,7 @@ const client = new PocketBase(
 | `client.buildUrl(path, reqConfig = {})` | Builds a full client url by safely concatenating the provided path. |
 
 
-#### API services
+### API services
 
 > Each service call returns a `Promise` object with the API response.
 

@@ -1,12 +1,12 @@
 import { assert } from 'chai';
-import JWT        from '@/stores/utils/JWT';
+import { getTokenPayload, isTokenExpired } from '@/stores/utils/jwt';
 
-describe('JWT', function () {
-    describe('getPayload()', function () {
+describe('jwt', function () {
+    describe('getTokenPayload()', function () {
         it('Should extract JWT payload without validation', function () {
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M'
 
-            const payload = JWT.getPayload(token);
+            const payload = getTokenPayload(token);
 
             assert.deepEqual(payload, { 'test': 123 });
         });
@@ -15,13 +15,13 @@ describe('JWT', function () {
             const testCases = ['', 'abc', 'a.b.c'];
             for (let i in testCases) {
                 const test = testCases[i];
-                const payload = JWT.getPayload(test);
+                const payload = getTokenPayload(test);
                 assert.deepEqual(payload, {}, 'scenario ' + i);
             }
         });
     });
 
-    describe('isExpired()', function () {
+    describe('isTokenExpired()', function () {
         it('Should successfully verify that a JWT token is expired or not', function () {
             const testCases = [
                 // invalid JWT string
@@ -37,7 +37,7 @@ describe('JWT', function () {
             ];
             for (let i in testCases) {
                 const test = testCases[i];
-                assert.equal(JWT.isExpired(test[1] as string), test[0], 'scenario ' + i);
+                assert.equal(isTokenExpired(test[1] as string), test[0], 'scenario ' + i);
             }
         });
     });

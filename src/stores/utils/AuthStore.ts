@@ -4,6 +4,7 @@ import Admin from '@/models/Admin';
 /**
  * The minimal AuthStore interface.
  *
+ * @deprecated
  * This interface predates the abstract BaseAuthStore class
  * and it is kept mainly for backward compatibility.
  *
@@ -19,7 +20,7 @@ export type AuthStore = {
     /**
      * Retrieves the stored model data (if any).
      */
-    readonly model: User|Admin|{}
+    readonly model: User|Admin|null
 
     /**
      * Checks if the store has valid (aka. existing and unexpired) token.
@@ -29,7 +30,7 @@ export type AuthStore = {
     /**
      * Saves new token and model data in the auth store.
      */
-    save(token: string, model: User|Admin|{}): void
+    save(token: string, model: User|Admin|null): void
 
     /**
      * Removes the stored token and model data form the auth store.

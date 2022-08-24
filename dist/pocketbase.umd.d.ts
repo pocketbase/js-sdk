@@ -1,3 +1,14 @@
+interface SerializeOptions {
+    encode?: (val: string | number | boolean) => string;
+    maxAge?: number;
+    domain?: string;
+    path?: string;
+    expires?: Date;
+    httpOnly?: boolean;
+    secure?: boolean;
+    priority?: string;
+    sameSite?: boolean | string;
+}
 declare abstract class BaseModel {
     id: string;
     created: string;
@@ -65,8 +76,65 @@ declare class Admin extends BaseModel {
     }): void;
 }
 /**
+ * Base AuthStore class that is intented to be extended by all other
+ * PocketBase AuthStore implementations.
+ */
+declare abstract class BaseAuthStore {
+    protected baseToken: string;
+    protected baseModel: User | Admin | null;
+    private _onChangeCallbacks;
+    /**
+     * Retrieves the stored token (if any).
+     */
+    get token(): string;
+    /**
+     * Retrieves the stored model data (if any).
+     */
+    get model(): User | Admin | null;
+    /**
+     * Checks if the store has valid (aka. existing and unexpired) token.
+     */
+    get isValid(): boolean;
+    /**
+     * Saves the provided new token and model data in the auth store.
+     */
+    save(token: string, model: User | Admin | null): void;
+    /**
+     * Removes the stored token and model data form the auth store.
+     */
+    clear(): void;
+    /**
+     * Parses the provided cookie string and updates the store state
+     * with the cookie's token and model data.
+     */
+    loadFromCookie(cookie: string, key?: string): void;
+    /**
+     * Exports the current store state as cookie string.
+     *
+     * By default the following optional attributes are added:
+     * - Secure
+     * - HttpOnly
+     * - SameSite=Strict
+     * - Path=/
+     * - Expires={the token expiration date}
+     *
+     * NB! If the generated cookie exceeds 4096 bytes, this method will
+     * strip the model data to the bare minimum to try to fit within the
+     * recommended size in https://www.rfc-editor.org/rfc/rfc6265#section-6.1.
+     */
+    exportToCookie(options?: SerializeOptions, key?: string): string;
+    /**
+     * Register a callback function that will be called on store change.
+     *
+     * Returns a removal function that you could call to "unsubscribe" from the changes.
+     */
+    onChange(callback: () => void): () => void;
+    protected triggerChange(): void;
+}
+/**
  * The minimal AuthStore interface.
  *
+ * @deprecated
  * This interface predates the abstract BaseAuthStore class
  * and it is kept mainly for backward compatibility.
  *
@@ -81,7 +149,7 @@ type AuthStore = {
     /**
      * Retrieves the stored model data (if any).
      */
-    readonly model: User | Admin | {};
+    readonly model: User | Admin | null;
     /**
      * Checks if the store has valid (aka. existing and unexpired) token.
      */
@@ -89,7 +157,7 @@ type AuthStore = {
     /**
      * Saves new token and model data in the auth store.
      */
-    save(token: string, model: User | Admin | {}): void;
+    save(token: string, model: User | Admin | null): void;
     /**
      * Removes the stored token and model data form the auth store.
      */
@@ -564,7 +632,7 @@ declare class Client {
     /**
      * A replacable instance of the local `AuthStore` service.
      */
-    authStore: AuthStore;
+    authStore: AuthStore | BaseAuthStore;
     /**
      * An instance of the service that handles the **Settings APIs**.
      */
@@ -594,7 +662,7 @@ declare class Client {
      */
     readonly realtime: Realtime;
     private cancelControllers;
-    constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | null);
+    constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | BaseAuthStore | null);
     /**
      * @deprecated Legacy alias for `this.authStore`.
      */

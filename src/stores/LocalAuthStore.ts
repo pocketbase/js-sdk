@@ -7,7 +7,7 @@ import Admin         from '@/models/Admin';
  * to runtime/memory if local storage is undefined (eg. in node env).
  */
 export default class LocalAuthStore extends BaseAuthStore {
-    private fallback: { [key: string]: any } = {};
+    private storageFallback: { [key: string]: any } = {};
     private storageKey: string
 
     constructor(storageKey = "pocketbase_auth") {
@@ -28,7 +28,7 @@ export default class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    get model(): User | Admin | {} {
+    get model(): User|Admin|null {
         const data = this._storageGet(this.storageKey) || {};
 
         if (
@@ -37,7 +37,7 @@ export default class LocalAuthStore extends BaseAuthStore {
             data.model === null ||
             typeof data.model !== 'object'
         ) {
-            return {};
+            return null;
         }
 
         // admins don't have `verified` prop
@@ -51,7 +51,7 @@ export default class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    save(token: string, model: User | Admin | {}) {
+    save(token: string, model: User|Admin|null) {
         this._storageSet(this.storageKey, {
             'token': token,
             'model': model,
@@ -87,8 +87,8 @@ export default class LocalAuthStore extends BaseAuthStore {
             }
         }
 
-        // fallback to runtime/memory
-        return this.fallback[key];
+        // fallback
+        return this.storageFallback[key];
     }
 
     /**
@@ -104,8 +104,8 @@ export default class LocalAuthStore extends BaseAuthStore {
             }
             window?.localStorage?.setItem(key, normalizedVal);
         } else {
-            // store in runtime/memory
-            this.fallback[key] = value;
+            // store in fallback
+            this.storageFallback[key] = value;
         }
     }
 
@@ -118,7 +118,7 @@ export default class LocalAuthStore extends BaseAuthStore {
             window?.localStorage?.removeItem(key);
         }
 
-        // delete from runtime/memory
-        delete this.fallback[key];
+        // delete from fallback
+        delete this.storageFallback[key];
     }
 }
