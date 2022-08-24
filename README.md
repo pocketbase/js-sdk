@@ -434,7 +434,7 @@ class NextAuthStore extends BaseAuthStore {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const client = new PocketBase("https://pocketbase.io");
+  const client = new PocketBase("http://127.0.0.1:8090");
   client.authStore = new NextAuthStore(req, res);
 
   // fetch example records...
