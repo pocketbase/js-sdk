@@ -70,7 +70,7 @@ export default class Client {
     lang: string;
 
     /**
-     * A replacable instance of the local `AuthStore` service.
+     * A replaceable instance of the local `AuthStore` service.
      */
     authStore: AuthStore | BaseAuthStore;
 

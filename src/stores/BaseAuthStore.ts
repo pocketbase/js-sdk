@@ -8,7 +8,7 @@ type onChangeFunc = (token: string, model: User|Admin|null) => void;
 const defaultCookieKey = 'pb_auth';
 
 /**
- * Base AuthStore class that is intented to be extended by all other
+ * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
  */
 export default abstract class BaseAuthStore {

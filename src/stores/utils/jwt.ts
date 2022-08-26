@@ -30,7 +30,7 @@ export function getTokenPayload(token: string): { [key: string]: any } {
  * Tokens with empty payload (eg. invalid token strings) are considered expired.
  *
  * @param token The token to check.
- * @param [expirationThreshold] Time in seconds that will be substracted from the token `exp` property.
+ * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 export function isTokenExpired(token: string, expirationThreshold = 0): boolean {
     let payload = getTokenPayload(token);
