@@ -1,6 +1,5 @@
 import ClientResponseError from '@/ClientResponseError';
 import BaseAuthStore       from '@/stores/BaseAuthStore';
-import { AuthStore }       from '@/stores/utils/AuthStore';
 import LocalAuthStore      from '@/stores/LocalAuthStore';
 import Settings            from '@/services/Settings';
 import Admins              from '@/services/Admins';
@@ -70,9 +69,9 @@ export default class Client {
     lang: string;
 
     /**
-     * A replaceable instance of the local `AuthStore` service.
+     * A replaceable instance of the local auth store service.
      */
-    authStore: AuthStore | BaseAuthStore;
+    authStore: BaseAuthStore;
 
     /**
      * An instance of the service that handles the **Settings APIs**.
@@ -114,7 +113,7 @@ export default class Client {
     constructor(
         baseUrl = '/',
         lang = 'en-US',
-        authStore?: AuthStore | BaseAuthStore | null,
+        authStore?: BaseAuthStore | null,
     ) {
         this.baseUrl   = baseUrl;
         this.lang      = lang;
@@ -133,7 +132,7 @@ export default class Client {
     /**
      * @deprecated Legacy alias for `this.authStore`.
      */
-    get AuthStore(): AuthStore {
+    get AuthStore(): BaseAuthStore {
         return this.authStore;
     };
 

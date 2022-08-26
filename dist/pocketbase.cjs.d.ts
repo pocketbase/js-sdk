@@ -132,47 +132,6 @@ declare abstract class BaseAuthStore {
     protected triggerChange(): void;
 }
 /**
- * The minimal AuthStore interface.
- *
- * @deprecated
- * This interface predates the abstract BaseAuthStore class
- * and it is kept mainly for backward compatibility.
- *
- * New AuthStore implementations should extend directly the
- * BaseAuthStore abstract class.
- */
-type AuthStore = {
-    /**
-     * Retrieves the stored token (if any).
-     */
-    readonly token: string;
-    /**
-     * Retrieves the stored model data (if any).
-     */
-    readonly model: User | Admin | null;
-    /**
-     * Checks if the store has valid (aka. existing and unexpired) token.
-     */
-    readonly isValid: boolean;
-    /**
-     * Saves new token and model data in the auth store.
-     */
-    save(token: string, model: User | Admin | null): void;
-    /**
-     * Removes the stored token and model data form the auth store.
-     */
-    clear(): void;
-    /**
-     * Parses the provided cookie string and updates the store state
-     * with the cookie's token and model data.
-     */
-    loadFromCookie(cookie: string, key?: string): void;
-    /**
-     * Exports the current store state as cookie string.
-     */
-    exportToCookie(options?: SerializeOptions, key?: string): string;
-};
-/**
  * BaseService class that should be inherited from all API services.
  */
 declare abstract class BaseService {
@@ -639,9 +598,9 @@ declare class Client {
      */
     lang: string;
     /**
-     * A replaceable instance of the local `AuthStore` service.
+     * A replaceable instance of the local auth store service.
      */
-    authStore: AuthStore | BaseAuthStore;
+    authStore: BaseAuthStore;
     /**
      * An instance of the service that handles the **Settings APIs**.
      */
@@ -671,11 +630,11 @@ declare class Client {
      */
     readonly realtime: Realtime;
     private cancelControllers;
-    constructor(baseUrl?: string, lang?: string, authStore?: AuthStore | BaseAuthStore | null);
+    constructor(baseUrl?: string, lang?: string, authStore?: BaseAuthStore | null);
     /**
      * @deprecated Legacy alias for `this.authStore`.
      */
-    get AuthStore(): AuthStore;
+    get AuthStore(): BaseAuthStore;
     /**
      * @deprecated Legacy alias for `this.settings`.
      */
