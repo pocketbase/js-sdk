@@ -76,7 +76,7 @@ declare class Admin extends BaseModel {
     }): void;
 }
 /**
- * Base AuthStore class that is intented to be extended by all other
+ * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
  */
 declare abstract class BaseAuthStore {
@@ -162,6 +162,15 @@ type AuthStore = {
      * Removes the stored token and model data form the auth store.
      */
     clear(): void;
+    /**
+     * Parses the provided cookie string and updates the store state
+     * with the cookie's token and model data.
+     */
+    loadFromCookie(cookie: string, key?: string): void;
+    /**
+     * Exports the current store state as cookie string.
+     */
+    exportToCookie(options?: SerializeOptions, key?: string): string;
 };
 /**
  * BaseService class that should be inherited from all API services.
@@ -630,7 +639,7 @@ declare class Client {
      */
     lang: string;
     /**
-     * A replacable instance of the local `AuthStore` service.
+     * A replaceable instance of the local `AuthStore` service.
      */
     authStore: AuthStore | BaseAuthStore;
     /**
