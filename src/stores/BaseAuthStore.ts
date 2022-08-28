@@ -123,8 +123,11 @@ export default abstract class BaseAuthStore {
 
         let result = cookieSerialize(key, JSON.stringify(rawData), options);
 
+        const resultLength = typeof Blob !== 'undefined' ?
+            (new Blob([result])).size : result.length;
+
         // strip down the model data to the bare minimum
-        if (rawData.model && new Blob([result]).size > 4096) {
+        if (rawData.model && resultLength > 4096) {
             rawData.model = {id: rawData?.model?.id, email: rawData?.model?.email};
             if (this.model instanceof User) {
                 rawData.model.verified = this.model.verified;
