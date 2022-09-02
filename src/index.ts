@@ -2,6 +2,7 @@ import Client              from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
 import BaseAuthStore       from '@/stores/BaseAuthStore';
 import LocalAuthStore      from '@/stores/LocalAuthStore';
+import ExternalAuth        from '@/models/ExternalAuth';
 import User                from '@/models/User';
 import Admin               from '@/models/Admin';
 import Collection          from '@/models/Collection';
@@ -13,6 +14,7 @@ export {
     ClientResponseError,
     BaseAuthStore,
     LocalAuthStore,
+    ExternalAuth,
     User,
     Admin,
     Collection,

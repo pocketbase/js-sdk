@@ -278,6 +278,17 @@ declare class Admins extends CrudService<Admin> {
      */
     confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<AdminAuthResponse>;
 }
+declare class ExternalAuth extends BaseModel {
+    userId: string;
+    provider: string;
+    providerId: string;
+    /**
+     * @inheritdoc
+     */
+    load(data: {
+        [key: string]: any;
+    }): void;
+}
 type UserAuthResponse = {
     [key: string]: any;
     token: string;
@@ -365,6 +376,14 @@ declare class Users extends CrudService<User> {
      * Confirms user new email address.
      */
     confirmEmailChange(emailChangeToken: string, password: string, bodyParams?: {}, queryParams?: {}): Promise<UserAuthResponse>;
+    /**
+     * Lists all linked external auth providers for the specified user.
+     */
+    listExternalAuths(userId: string, queryParams?: {}): Promise<Array<ExternalAuth>>;
+    /**
+     * Unlink a single external auth provider from the specified user.
+     */
+    unlinkExternalAuth(userId: string, provider: string, queryParams?: {}): Promise<boolean>;
 }
 declare class SchemaField {
     id: string;
@@ -745,4 +764,4 @@ declare class LocalAuthStore extends BaseAuthStore {
      */
     private _storageRemove;
 }
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, User, Admin, Collection, Record, LogRequest, SchemaField };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, ExternalAuth, User, Admin, Collection, Record, LogRequest, SchemaField };

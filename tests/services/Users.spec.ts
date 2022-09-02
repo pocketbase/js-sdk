@@ -260,10 +260,42 @@ describe('Users', function() {
                 },
             });
 
-
             const result = await service.confirmEmailChange('test', '1234', { 'b1': 123 }, { 'q1': 456 });
 
             authResponseCheck(result, 'token_email_change_confirm', service.decode({ 'id': 'id_email_change_confirm' }));
+        });
+    });
+
+    describe('listExternalAuths()', function() {
+        it('Should send a list external auths request', async function() {
+            fetchMock.on({
+                method: 'GET',
+                url: service.client.buildUrl('/api/users/' + encodeURIComponent('@test_id') + '/external-auths') + '?q1=456',
+                replyCode: 200,
+                replyBody: [
+                    { id: '1', provider: 'google' },
+                    { id: '2', provider: 'github' },
+                ],
+            });
+
+            const result = await service.listExternalAuths('@test_id', { 'q1': 456 });
+            assert.equal(result.length, 2);
+            assert.equal(result[0].provider, 'google');
+            assert.equal(result[1].provider, 'github');
+        });
+    });
+
+    describe('unlinkExternalAuth()', function() {
+        it('Should send a unlinkExternalAuth request', async function() {
+            fetchMock.on({
+                method: 'DELETE',
+                url: service.client.buildUrl('/api/users/' + encodeURIComponent("@test_id") + "/external-auths/" + encodeURIComponent("@test_provider")) + '?q1=456',
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.unlinkExternalAuth('@test_id', '@test_provider', { 'q1': 456 });
+            assert.isTrue(result);
         });
     });
 });

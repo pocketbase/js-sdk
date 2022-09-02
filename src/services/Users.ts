@@ -1,5 +1,6 @@
-import CrudService from '@/services/utils/CrudService';
-import User        from '@/models/User';
+import CrudService  from '@/services/utils/CrudService';
+import User         from '@/models/User';
+import ExternalAuth from '@/models/ExternalAuth';
 
 export type UserAuthResponse = {
     [key: string]: any,
@@ -265,5 +266,42 @@ export default class Users extends CrudService<User> {
             'params': queryParams,
             'body':   bodyParams,
         }).then(this.authResponse.bind(this));
+    }
+
+    /**
+     * Lists all linked external auth providers for the specified user.
+     */
+    listExternalAuths(
+        userId: string,
+        queryParams = {}
+    ): Promise<Array<ExternalAuth>> {
+        return this.client.send(this.baseCrudPath() + '/' + encodeURIComponent(userId) + '/external-auths', {
+            'method': 'GET',
+            'params': queryParams,
+        }).then((responseData) => {
+            const items: Array<ExternalAuth> = [];
+
+            if (Array.isArray(responseData)) {
+                for (const item of responseData) {
+                    items.push(new ExternalAuth(item));
+                }
+            }
+
+            return items;
+        });
+    }
+
+    /**
+     * Unlink a single external auth provider from the specified user.
+     */
+    unlinkExternalAuth(
+        userId: string,
+        provider: string,
+        queryParams = {}
+    ): Promise<boolean> {
+        return this.client.send(this.baseCrudPath() + '/' + encodeURIComponent(userId) + '/external-auths/' + encodeURIComponent(provider), {
+            'method': 'DELETE',
+            'params': queryParams,
+        }).then(() => true);
     }
 }
