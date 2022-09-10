@@ -126,7 +126,7 @@ formData.append('title', 'Hello world!');
 const createdRecord = await client.Records.create('example', formData);
 ```
 
-### Errors handling
+### Error handling
 
 All services return a standard [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based response, so the error handling is straightforward:
 ```js
