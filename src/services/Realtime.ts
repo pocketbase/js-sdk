@@ -93,6 +93,9 @@ export default class Realtime extends BaseService {
                 'clientId': this.clientId,
                 'subscriptions': Object.keys(this.subscriptions),
             },
+            'params': {
+                '$autoCancel': false,
+            },
         }).then(() => true);
     }
 
