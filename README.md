@@ -207,7 +207,7 @@ class CustomAuthStore extends BaseAuthStore {
     }
 }
 
-const client = new PocketBase('http://127.0.0.1:8090', 'en-US', CustomAuthStore());
+const client = new PocketBase('http://127.0.0.1:8090', 'en-US', new CustomAuthStore());
 ```
 
 ### Auto cancellation
