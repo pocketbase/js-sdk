@@ -212,13 +212,13 @@ const client = new PocketBase('http://127.0.0.1:8090', 'en-US', new CustomAuthSt
 
 ### Auto cancellation
 
-The SDK client will auto cancel duplicated (sharing the same path) pending requests for you.
+The SDK client will auto cancel duplicated pending requests for you.
 For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
 
 ```js
 client.records.getList('example', 1, 20) // cancelled
-client.records.getList('example', 1, 20) // cancelled
-client.records.getList('example', 1, 20) // executed
+client.records.getList('example', 2, 20) // cancelled
+client.records.getList('example', 3, 20) // executed
 ```
 
 To change this behavior, you could make use of 2 special query parameters:
