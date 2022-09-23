@@ -224,7 +224,7 @@ client.records.getList('example', 1, 20) // executed
 To change this behavior, you could make use of 2 special query parameters:
 
 - `$autoCancel ` - set it to `false` to disable auto cancellation for this request
-- `$cancelKey` - set it to a string that will be used as request identifier and based on which pending duplicated requests will be matched (default to `HTTP_METHOD + url`, eg. "get /api/users?page=1")
+- `$cancelKey` - set it to a string that will be used as request identifier and based on which pending duplicated requests will be matched (default to `HTTP_METHOD + path`, eg. "GET /api/users")
 
 Example:
 
