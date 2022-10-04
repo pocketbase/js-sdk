@@ -5,6 +5,10 @@ import Admin from '@/models/Admin';
 
 type onChangeFunc = (token: string, model: User|Admin|null) => void;
 
+export type AuthOnChangeOptions = {
+    fireImmediately: boolean
+}
+
 const defaultCookieKey = 'pb_auth';
 
 /**
@@ -143,8 +147,14 @@ export default abstract class BaseAuthStore {
      *
      * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
-    onChange(callback: () => void): () => void {
+    onChange(callback: onChangeFunc, options?: Partial<AuthOnChangeOptions>): () => void {
+        const _options:AuthOnChangeOptions = { fireImmediately: true, ...options }
+        const {fireImmediately} = _options
+        
         this._onChangeCallbacks.push(callback);
+        if (fireImmediately) {
+            callback(this.token,this.model)
+        }
 
         return () => {
             for (let i = this._onChangeCallbacks.length - 1; i >= 0; i--) {
