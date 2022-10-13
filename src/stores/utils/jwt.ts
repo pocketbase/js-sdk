@@ -2,7 +2,10 @@ let atobPolyfill: Function;
 if (typeof atob === 'function') {
     atobPolyfill = atob
 } else {
-    atobPolyfill = (a: any) => Buffer.from(a, 'base64').toString('binary');
+    atobPolyfill = (a: any) => {
+        Buffer = global.Buffer || require('buffer').Buffer;
+        return Buffer.from(a, 'base64').toString('binary');
+    };
 }
 
 /**
