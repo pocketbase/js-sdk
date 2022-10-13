@@ -61,7 +61,7 @@ const PocketBase = require('pocketbase/cjs')
 > global.EventSource = require('eventsource');
 > ```
 ---
-> 🔧 If you are using ESM style imports with React Native you may have to explicitly allow the `.mjs` files to be loaded by creating a `metro.config.js` at the root of your project and append it to the `sourceExts`:
+> 🔧 If you are using ESM style imports with React Native you may have to explicitly allow the `.mjs` extension by creating a `metro.config.js` at the root of your project and append it to the `sourceExts`:
 > ```js
 > const { getDefaultConfig } = require('expo/metro-config');
 > const config = getDefaultConfig(__dirname);
