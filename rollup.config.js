@@ -25,7 +25,7 @@ export default [
             {
                 file:      'dist/pocketbase.es.mjs',
                 format:    'es',
-                sourcemap: true,
+                sourcemap: isProduction,
             },
         ],
         plugins: basePlugins(),
@@ -39,10 +39,11 @@ export default [
         input: 'src/Client.ts',
         output: [
             {
-                name:    'PocketBase',
-                file:    'dist/pocketbase.umd.js',
-                format:  'umd',
-                exports: 'default',
+                name:      'PocketBase',
+                file:      'dist/pocketbase.umd.js',
+                format:    'umd',
+                exports:   'default',
+                sourcemap: isProduction,
             },
         ],
         plugins: basePlugins(),
@@ -56,10 +57,11 @@ export default [
         input: 'src/Client.ts',
         output: [
             {
-                name:    'PocketBase',
-                file:    'dist/pocketbase.cjs.js',
-                format:  'cjs',
-                exports: 'default',
+                name:      'PocketBase',
+                file:      'dist/pocketbase.cjs.js',
+                format:    'cjs',
+                exports:   'default',
+                sourcemap: isProduction,
             }
         ],
         plugins: basePlugins(),
@@ -77,9 +79,10 @@ export default [
         input: 'src/Client.ts',
         output: [
             {
-                name:   'PocketBase',
-                file:   'dist/pocketbase.iife.js',
-                format: 'iife',
+                name:      'PocketBase',
+                file:      'dist/pocketbase.iife.js',
+                format:    'iife',
+                sourcemap: isProduction,
             },
         ],
         plugins: basePlugins(),
