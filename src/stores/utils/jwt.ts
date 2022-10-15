@@ -2,9 +2,37 @@ let atobPolyfill: Function;
 if (typeof atob === 'function') {
     atobPolyfill = atob
 } else {
-    atobPolyfill = (a: any) => {
-        Buffer = global.Buffer || require('buffer').Buffer;
-        return Buffer.from(a, 'base64').toString('binary');
+    /**
+     * The code was extracted from:
+     * https://github.com/davidchambers/Base64.js
+     */
+    atobPolyfill = (input: any) => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+
+        let str = String(input).replace(/=+$/, "");
+        if (str.length % 4 == 1) {
+            throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+        }
+
+        for (
+            // initialize result and counters
+            var bc = 0, bs, buffer, idx = 0, output = "";
+            // get next character
+            (buffer = str.charAt(idx++));
+            // character found in table? initialize bit storage and add its ascii value;
+            ~buffer &&
+            ((bs = bc % 4 ? (bs as any) * 64 + buffer : buffer),
+                // and if not first of each 4 characters,
+                // convert the first 8 bits to one ascii character
+                bc++ % 4) ?
+            (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6)))) :
+            0
+        ) {
+            // try to find character in table (0-63, not found => -1)
+            buffer = chars.indexOf(buffer);
+        }
+
+        return output;
     };
 }
 
