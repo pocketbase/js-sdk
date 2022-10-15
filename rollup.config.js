@@ -18,7 +18,7 @@ function basePlugins() {
 }
 
 export default [
-    // ES bundle (the PocketBase client as default export + additional helper classes)
+    // ES bundle (the PocketBase client as default export + additional helper classes).
     {
         input: 'src/index.ts',
         output: [
@@ -29,12 +29,27 @@ export default [
             },
         ],
         plugins: basePlugins(),
-        watch: {
-            clearScreen: false,
-        },
+        watch: { clearScreen: false },
     },
 
-    // UMD bundle (only the PocketBase client as default export)
+    // ES bundle but with .js extension.
+    //
+    // This is needed mainly because of React Native not recognizing the mjs
+    // extension by default (see https://github.com/pocketbase/js-sdk/issues/47).
+    {
+        input: 'src/index.ts',
+        output: [
+            {
+                file:      'dist/pocketbase.es.js',
+                format:    'es',
+                sourcemap: isProduction,
+            },
+        ],
+        plugins: basePlugins(),
+        watch: { clearScreen: false },
+    },
+
+    // UMD bundle (only the PocketBase client as default export).
     {
         input: 'src/Client.ts',
         output: [
@@ -47,12 +62,10 @@ export default [
             },
         ],
         plugins: basePlugins(),
-        watch: {
-            clearScreen: false
-        },
+        watch: { clearScreen: false },
     },
 
-    // CommonJS bundle (only the PocketBase client as default export)
+    // CommonJS bundle (only the PocketBase client as default export).
     {
         input: 'src/Client.ts',
         output: [
@@ -65,16 +78,14 @@ export default [
             }
         ],
         plugins: basePlugins(),
-        watch: {
-            clearScreen: false
-        },
+        watch: { clearScreen: false },
     },
 
     // !!!
     // @deprecated - kept only for backwards compatibility and will be removed in v1.0.0
     // !!!
     //
-    // Browser-friendly iife bundle (only the PocketBase client as default export)
+    // Browser-friendly iife bundle (only the PocketBase client as default export).
     {
         input: 'src/Client.ts',
         output: [
@@ -86,8 +97,6 @@ export default [
             },
         ],
         plugins: basePlugins(),
-        watch: {
-            clearScreen: false
-        },
+        watch: { clearScreen: false },
     },
 ];

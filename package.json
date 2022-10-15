@@ -15,6 +15,7 @@
     },
     "main": "./dist/pocketbase.es.mjs",
     "module": "./dist/pocketbase.es.mjs",
+    "react-native": "./dist/pocketbase.es.js",
     "types": "./dist/pocketbase.es.d.ts",
     "keywords": [
         "pocketbase",
