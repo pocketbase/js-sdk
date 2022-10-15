@@ -183,7 +183,7 @@ BaseAuthStore {
     // main methods
     clear()            // "logout" the authenticated User or Admin
     save(token, model) // update the store with the new auth data
-    onChange(callback) // register a callback that will be called on store change
+    onChange(callback, fireImmediately = false) // register a callback that will be called on store change
 
     // cookie parse and serialize helpers
     loadFromCookie(cookieHeader, key = 'pb_auth')
@@ -195,11 +195,19 @@ To _"logout"_ an authenticated user or admin, you can just call `client.authStor
 
 To _"listen"_ for changes in the auth store, you can register a new listener via `client.authStore.onChange`, eg:
 ```js
-const removeListener = client.authStore.onChange((token, model) => {
-    console.log('New store data:', token, model)
+// triggered everytime on store change
+const removeListener1 = client.authStore.onChange((token, model) => {
+    console.log('New store data 1:', token, model)
 });
 
-removeListener(); // (optional) removes the attached listener function
+// triggered once right after registration and everytime on store change
+const removeListener2 = client.authStore.onChange((token, model) => {
+    console.log('New store data 2:', token, model)
+}, true);
+
+// (optional) removes the attached listeners
+removeListener1();
+removeListener2();
 ```
 
 If you want to create your own `AuthStore`, you can extend [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and pass the new custom instance as constructor argument to the client:

@@ -157,7 +157,7 @@ describe('LocalAuthStore', function() {
 
             const removal1 = store.onChange(() => {
                 callback1Calls++;
-            });
+            }, true);
 
             const removal2 = store.onChange(() => {
                 callback2Calls++;
@@ -165,26 +165,26 @@ describe('LocalAuthStore', function() {
 
             // trigger save() change
             store.save('test', new User({ 'id': '1' }));
-            assert.equal(callback1Calls, 1);
+            assert.equal(callback1Calls, 2); // +1 because of the immediate invocation
             assert.equal(callback2Calls, 1);
 
             // trigger clear() change
             store.clear();
-            assert.equal(callback1Calls, 2);
+            assert.equal(callback1Calls, 3);
             assert.equal(callback2Calls, 2);
 
             // remove the second listener (aka. callback1Calls shouldn't be called anymore)
             removal1();
 
             store.save('test', new User({ 'id': '1' }));
-            assert.equal(callback1Calls, 2);
+            assert.equal(callback1Calls, 3);
             assert.equal(callback2Calls, 3);
 
             // remove the second listener (aka. callback2Calls shouldn't be called anymore)
             removal2();
 
             store.save('test', new User({ 'id': '1' }));
-            assert.equal(callback1Calls, 2);
+            assert.equal(callback1Calls, 3);
             assert.equal(callback2Calls, 3);
         });
     });

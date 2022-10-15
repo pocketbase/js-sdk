@@ -75,6 +75,7 @@ declare class Admin extends BaseModel {
         [key: string]: any;
     }): void;
 }
+type onChangeFunc = (token: string, model: User | Admin | null) => void;
 /**
  * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
@@ -126,9 +127,12 @@ declare abstract class BaseAuthStore {
     /**
      * Register a callback function that will be called on store change.
      *
+     * You can set the `fireImmediately` argument to true in order to invoke
+     * the provided callback right after registration.
+     *
      * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
-    onChange(callback: () => void): () => void;
+    onChange(callback: onChangeFunc, fireImmediately?: boolean): () => void;
     protected triggerChange(): void;
 }
 /**
