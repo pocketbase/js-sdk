@@ -402,8 +402,6 @@ And then in your component you could access it like this:
   })
 </script>
 ```
-
-> For Nuxt 2 you could use similar approach, but instead of `nuxtApp` you could use a store state to store/create the local `PocketBase` instance.
 </details>
 
 <details>
