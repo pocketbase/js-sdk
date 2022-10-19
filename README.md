@@ -407,6 +407,53 @@ And then in your component you could access it like this:
 </details>
 
 <details>
+  <summary><strong>Nuxt 2</strong></summary>
+
+One way to integrate with Nuxt 2 SSR could be to create the PocketBase client in a [nuxt plugin](https://nuxtjs.org/docs/directory-structure/plugins#plugins-directory) and provide it as a helper to the `$root` context:
+
+```js
+// plugins/pocketbase.js
+import PocketBase from "pocketbase";
+
+export default (ctx, inject) => {
+  const client = new PocketBase("http://127.0.0.1:8090");
+
+  // load the store data from the request cookie string
+  client.authStore.loadFromCookie(ctx.$cookies.get("auth"));
+
+  // send back the default 'pb_auth' cookie to the client with the latest store state
+  client.authStore.onChange(() => {
+    ctx.$cookies.set("auth", client.authStore.exportToCookie());
+  });
+
+  inject("pocketbase", client);
+};
+```
+
+And then in your component you could access it like this:
+
+```html
+<template>
+  <div>
+    Show: {{ demos }}
+  </div>
+</template>
+
+<script>
+  export default {
+    async asyncData({ params, $http }) {
+      const client = this.$pocketbase
+
+      // fetch and return all "demo" records...
+      const demos = await client.records.getFullList('demo');
+      return { demos }
+    }
+  }
+</script>
+```
+</details>
+
+<details>
   <summary><strong>Next.js</strong></summary>
 
 Next.js doesn't seem to have a central place where you can read/modify the server request and response.
