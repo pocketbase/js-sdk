@@ -30,7 +30,7 @@
   pb.records.getFullList('example');                => pb.collection('example').getFullList();
   pb.records.getList('example');                    => pb.collection('example').getList();
   pb.records.getOne('example', 'RECORD_ID');        => pb.collection('example').getOne('RECORD_ID');
-  (no old equivalent)                               => pb.collection('example').getOneByFilter(filter);
+  (no old equivalent)                               => pb.collection('example').getFirstListItem(filter);
   pb.records.create('example', {...});              => pb.collection('example').create({...});
   pb.records.update('example', 'RECORD_ID', {...}); => pb.collection('example').update('RECORD_ID', {...});
   pb.records.delete('example', 'RECORD_ID');        => pb.collection('example').delete('RECORD_ID');
