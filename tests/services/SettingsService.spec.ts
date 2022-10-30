@@ -1,11 +1,11 @@
-import { assert }    from 'chai';
-import Client        from '@/Client';
-import Settings      from '@/services/Settings';
-import { FetchMock } from 'tests/mocks';
+import { assert }      from 'chai';
+import Client          from '@/Client';
+import SettingsService from '@/services/SettingsService';
+import { FetchMock }   from 'tests/mocks';
 
-describe('Settings', function () {
+describe('SettingsService', function () {
     const client = new Client('test_base_url');
-    const service = new Settings(client);
+    const service = new SettingsService(client);
     const fetchMock = new FetchMock();
 
     before(function () {

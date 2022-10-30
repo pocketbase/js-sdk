@@ -1,6 +1,6 @@
 import BaseService from '@/services/utils/BaseService';
 
-export default class Settings extends BaseService {
+export default class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
      */

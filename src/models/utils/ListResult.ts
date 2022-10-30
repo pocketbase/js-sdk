@@ -1,11 +1,11 @@
 import BaseModel from './BaseModel';
 
-export default class ListResult<M extends BaseModel> {
-    page!: number;
-    perPage!: number;
+export default class ListResult<M = BaseModel> {
+    page!:       number;
+    perPage!:    number;
     totalItems!: number;
     totalPages!: number;
-    items!: Array<M>;
+    items!:      Array<M>;
 
     constructor(
         page: number,
@@ -14,10 +14,10 @@ export default class ListResult<M extends BaseModel> {
         totalPages: number,
         items: Array<M>,
     ) {
-        this.page = page > 0 ? page : 1;
-        this.perPage = perPage >= 0 ? perPage : 0;
+        this.page       = page > 0 ? page : 1;
+        this.perPage    = perPage >= 0 ? perPage : 0;
         this.totalItems = totalItems >= 0 ? totalItems : 0;
         this.totalPages = totalPages >= 0 ? totalPages : 0;
-        this.items = items || [];
+        this.items      = items || [];
     }
 }

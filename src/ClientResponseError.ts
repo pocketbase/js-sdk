@@ -31,7 +31,12 @@ export default class ClientResponseError extends Error {
         }
 
         this.name = "ClientResponseError " + this.status;
-        this.message = this.data?.message || 'Something went wrong while processing your request.'
+        this.message = this.data?.message;
+        if (!this.message) {
+            this.message = this.isAbort ?
+                'The request was autocancelled. More info you could find in https://github.com/pocketbase/js-sdk#auto-cancellation.' :
+                'Something went wrong while processing your request.';
+        }
     }
 
     // Make a POJO's copy of the current error class instance.

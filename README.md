@@ -1,15 +1,18 @@
 PocketBase JavaScript SDK
 ======================================================================
 
+> **⚠️ This is a pre-release, contains breaking changes and works only with the new PocketBase v0.8+ API!**
+
 Official JavaScript SDK (browser and node) for interacting with the [PocketBase API](https://pocketbase.io/docs).
 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Caveats](#caveats)
     - [File upload](#file-upload)
-    - [Errors handling](#errors-handling)
+    - [Error handling](#error-handling)
     - [AuthStore](#authstore)
     - [Auto cancellation](#auto-cancellation)
+    - [Custom Record types](#custom-record-types)
     - [Send hooks](#send-hooks)
     - [SSR integration](#ssr-integration)
     - [Security](#security)
@@ -36,7 +39,7 @@ _OR if you are using ES modules:_
 ### Node.js (via npm)
 
 ```sh
-npm install pocketbase --save
+npm install pocketbase@next --save
 ```
 
 ```js
@@ -54,7 +57,7 @@ const PocketBase = require('pocketbase/cjs')
 > require('cross-fetch/polyfill');
 > ```
 ---
-> 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime service (aka. `client.realtime.subscribe()`) you'll need to load a `EventSource` polyfill.
+> 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime subscriptions you'll need to load a `EventSource` polyfill.
 > I recommend [EventSource/eventsource](https://github.com/EventSource/eventsource):
 > ```js
 > // npm install eventsource --save
@@ -67,20 +70,20 @@ const PocketBase = require('pocketbase/cjs')
 ```js
 import PocketBase from 'pocketbase';
 
-const client = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase('http://127.0.0.1:8090');
 
 ...
 
 // list and filter "example" collection records
-const result = await client.records.getList('example', 1, 20, {
+const result = await pb.collection('example').getList(1, 20, {
     filter: 'status = true && created > "2022-08-01 10:00:00"'
 });
 
-// authenticate as regular user
-const userData = await client.users.authViaEmail('test@example.com', '123456');
+// authenticate as auth collection record
+const userData = await pb.collection('users').authWithPassword('test@example.com', '123456');
 
-// or as admin
-const adminData = await client.admins.authViaEmail('test@example.com', '123456');
+// or as super-admin
+const adminData = await pb.admins.authWithPassword('test@example.com', '123456');
 
 // and much more...
 ```
@@ -102,7 +105,7 @@ Here is a simple browser example of uploading multiple files together with some 
 ```js
 import PocketBase from 'pocketbase';
 
-const client = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase('http://127.0.0.1:8090');
 
 ...
 
@@ -123,14 +126,14 @@ formData.append('title', 'Hello world!');
 ...
 
 // upload and create new record
-const createdRecord = await client.Records.create('example', formData);
+const createdRecord = await pb.collection('example').create(formData);
 ```
 
-### Errors handling
+### Error handling
 
 All services return a standard [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based response, so the error handling is straightforward:
 ```js
-client.records.getList('example', 1, 50).then((result) {
+pb.collection('example').getList(1, 50).then((result) {
   // success...
   console.log('Result:', result);
 }).catch((error) {
@@ -140,7 +143,7 @@ client.records.getList('example', 1, 50).then((result) {
 
 // OR if you are using the async/await syntax:
 try {
-  const result = await client.records.getList('example', 1, 50);
+  const result = await pb.collection('example').getList(1, 50);
   console.log('Result:', result);
 } catch (error) {
   console.log('Error:', error);
@@ -160,11 +163,11 @@ ClientResponseError {
 
 ### AuthStore
 
-The SDK keeps track of the authenticated token and auth model for you via the `client.authStore` instance.
+The SDK keeps track of the authenticated token and auth model for you via the `pb.authStore` instance.
 
 The default [`LocalAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/LocalAuthStore.ts) uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory (aka. on page refresh or service restart you'll have to authenticate again).
 
-The default `client.authStore` extends [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and has the following public members that you can use:
+The default `pb.authStore` extends [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and has the following public members that you can use:
 
 ```js
 BaseAuthStore {
@@ -184,17 +187,17 @@ BaseAuthStore {
 }
 ```
 
-To _"logout"_ an authenticated user or admin, you can just call `client.authStore.clear()`.
+To _"logout"_ an authenticated user or admin, you can just call `pb.authStore.clear()`.
 
-To _"listen"_ for changes in the auth store, you can register a new listener via `client.authStore.onChange`, eg:
+To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
 ```js
 // triggered everytime on store change
-const removeListener1 = client.authStore.onChange((token, model) => {
+const removeListener1 = pb.authStore.onChange((token, model) => {
     console.log('New store data 1:', token, model)
 });
 
 // triggered once right after registration and everytime on store change
-const removeListener2 = client.authStore.onChange((token, model) => {
+const removeListener2 = pb.authStore.onChange((token, model) => {
     console.log('New store data 2:', token, model)
 }, true);
 
@@ -215,18 +218,18 @@ class CustomAuthStore extends BaseAuthStore {
     }
 }
 
-const client = new PocketBase('http://127.0.0.1:8090', 'en-US', new CustomAuthStore());
+const pb = new PocketBase('http://127.0.0.1:8090', new CustomAuthStore());
 ```
 
 ### Auto cancellation
 
 The SDK client will auto cancel duplicated pending requests for you.
-For example, if you have the following 3 duplicated calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
+For example, if you have the following 3 duplicated endpoint calls, only the last one will be executed, while the first 2 will be cancelled with `ClientResponseError` error:
 
 ```js
-client.records.getList('example', 1, 20) // cancelled
-client.records.getList('example', 2, 20) // cancelled
-client.records.getList('example', 3, 20) // executed
+pb.collection('example').getList(1, 20) // cancelled
+pb.collection('example').getList(2, 20) // cancelled
+pb.collection('example').getList(3, 20) // executed
 ```
 
 To change this behavior, you could make use of 2 special query parameters:
@@ -237,30 +240,52 @@ To change this behavior, you could make use of 2 special query parameters:
 Example:
 
 ```js
-client.records.getList('example', 1, 20);                           // cancelled
-client.records.getList('example', 1, 20);                           // executed
-client.records.getList('example', 1, 20, { '$autoCancel': false }); // executed
-client.records.getList('example', 1, 20, { '$autoCancel': false })  // executed
-client.records.getList('example', 1, 20, { '$cancelKey': "test" })  // cancelled
-client.records.getList('example', 1, 20, { '$cancelKey': "test" })  // executed
+pb.collection('example').getList(1, 20);                           // cancelled
+pb.collection('example').getList(1, 20);                           // executed
+pb.collection('example').getList(1, 20, { '$cancelKey': "test" })  // cancelled
+pb.collection('example').getList(1, 20, { '$cancelKey': "test" })  // executed
+pb.collection('example').getList(1, 20, { '$autoCancel': false }); // executed
+pb.collection('example').getList(1, 20, { '$autoCancel': false })  // executed
+
+// globally disable auto cancellation
+pb.autoCancellation(false);
+
+pb.collection('example').getList(1, 20); // executed
+pb.collection('example').getList(1, 20); // executed
+pb.collection('example').getList(1, 20); // executed
 ```
 
-To manually cancel pending requests, you could use `client.cancelAllRequests()` or `client.cancelRequest(cancelKey)`.
+**If you want to completelly disable the auto cancellation behavior, you could set `pb.autoCancellation(false)`.**
 
-> If you want to completelly disable the auto cancellation behavior, you could use the `client.beforeSend` hook and
-delete the `reqConfig.signal` property.
+To manually cancel pending requests, you could use `pb.cancelAllRequests()` or `pb.cancelRequest(cancelKey)`.
+
+
+### Custom Record types
+
+You could specify custom TypeScript definitions for your Record models using generics:
+
+```ts
+interface Task {
+  // type the collection fields you want to use...
+  id:   string;
+  name: string;
+}
+
+pb.collection('tasks').getList<Task>("RECORD_ID") // -> results in Promise<ListResult<Task>>
+pb.collection('tasks').getOne<Task>("RECORD_ID")  // -> results in Promise<Task>
+```
 
 ### Send hooks
 
-Sometimes you may want to modify the request sent data or to customize the response.
+Sometimes you may want to modify the request data or to customize the response.
 
 To accomplish this, the SDK provides 2 function hooks:
 
 - `beforeSend` - triggered right before sending the `fetch` request, allowing you to inspect/modify the request config.
     ```js
-    const client = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase('http://127.0.0.1:8090');
 
-    client.beforeSend = function (url, reqConfig) {
+    pb.beforeSend = function (url, reqConfig) {
         // For list of the possible reqConfig properties check
         // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
         reqConfig.headers = Object.assign({}, reqConfig.headers, {
@@ -273,9 +298,9 @@ To accomplish this, the SDK provides 2 function hooks:
 
 - `afterSend` - triggered after successfully sending the `fetch` request, allowing you to inspect/modify the response object and its parsed data.
     ```js
-    const client = new PocketBase('http://127.0.0.1:8090');
+    const pb = new PocketBase('http://127.0.0.1:8090');
 
-    client.afterSend = function (response, data) {
+    pb.afterSend = function (response, data) {
         // do something with the response state
         console.log(response.status);
 
@@ -293,19 +318,19 @@ Unfortunately, **there is no "one size fits all" solution** because each framewo
 But in general, the idea is to use a cookie based flow:
 
 1. Create a new `PocketBase` instance for each server-side request
-2. "Load/Feed" your `client.authStore` with data from the request cookie
+2. "Load/Feed" your `pb.authStore` with data from the request cookie
 3. Perform your application server-side actions
-4. Before returning the response to the client, update the cookie with the latest `client.authStore` state
+4. Before returning the response to the client, update the cookie with the latest `pb.authStore` state
 
 All [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) instances have 2 helper methods that
 should make working with cookies a little bit easier:
 
 ```js
 // update the store with the parsed data from the cookie string
-client.authStore.loadFromCookie('pb_auth=...');
+pb.authStore.loadFromCookie('pb_auth=...');
 
 // exports the store data as cookie, with option to extend the default SameSite, Secure, HttpOnly, Path and Expires attributes
-client.authStore.exportToCookie({ httpOnly: false }); // Output: 'pb_auth=...'
+pb.authStore.exportToCookie({ httpOnly: false }); // Output: 'pb_auth=...'
 ```
 
 Below you could find several examples:
@@ -317,7 +342,7 @@ One way to integrate with SvelteKit SSR could be to create the PocketBase client
 and pass it to the other server-side actions using the `event.locals`.
 
 ```js
-// src/hooks.js
+// src/hooks.server.js
 import PocketBase from 'pocketbase';
 
 export async function handle({ event, resolve }) {
@@ -341,10 +366,10 @@ And then, in some of your server-side actions, you could directly access the pre
 // src/routes/login/+server.js
 //
 // creates a `POST /login` server-side endpoint
-export function POST({ request, locals }) {
+export async function POST({ request, locals }) {
     const { email, password } = await request.json();
 
-    const { token, user } = await locals.pocketbase.users.authViaEmail(email, password);
+    const { token, user } = await locals.pocketbase.collection('users').authWithPassword(email, password);
 
     return new Response('Success...');
 }
@@ -365,19 +390,19 @@ export default defineNuxtPlugin((nuxtApp) => {
   return {
     provide: {
       pocketbase: () => {
-        const client = new PocketBase('http://127.0.0.1:8090');
+        const pb = new PocketBase('http://127.0.0.1:8090');
 
         // load the store data from the request cookie string
-        client.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
+        pb.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
 
         // send back the default 'pb_auth' cookie to the client with the latest store state
-        client.authStore.onChange(() => {
+        pb.authStore.onChange(() => {
           if (nuxtApp.ssrContext?.event?.res) {
-            nuxtApp.ssrContext.event.res.setHeader('set-cookie', client.authStore.exportToCookie());
+            nuxtApp.ssrContext.event.res.setHeader('set-cookie', pb.authStore.exportToCookie());
           }
         });
 
-        return client;
+        return pb;
       }
     }
   }
@@ -395,10 +420,10 @@ And then in your component you could access it like this:
 
 <script setup>
   const { data } = await useAsyncData(async (nuxtApp) => {
-    const client = nuxtApp.$pocketbase();
+    const pb = nuxtApp.$pocketbase();
 
-    // fetch and return all "demo" records...
-    return await client.records.getFullList('demo');
+    // fetch and return all "example" records...
+    return await pb.collection('example').getFullList();
   })
 </script>
 ```
@@ -414,17 +439,17 @@ One way to integrate with Nuxt 2 SSR could be to create the PocketBase client in
 import PocketBase from  'pocketbase';
 
 export default (ctx, inject) => {
-  const client = new PocketBase('http://127.0.0.1:8090');
+  const pb = new PocketBase('http://127.0.0.1:8090');
 
   // load the store data from the request cookie string
-  client.authStore.loadFromCookie(ctx.req?.headers?.cookie || '');
+  pb.authStore.loadFromCookie(ctx.req?.headers?.cookie || '');
 
   // send back the default 'pb_auth' cookie to the client with the latest store state
-  client.authStore.onChange(() => {
-    ctx.res?.setHeader('set-cookie', client.authStore.exportToCookie());
+  pb.authStore.onChange(() => {
+    ctx.res?.setHeader('set-cookie', pb.authStore.exportToCookie());
   });
 
-  inject('pocketbase', client);
+  inject('pocketbase', pb);
 };
 ```
 
@@ -433,17 +458,17 @@ And then in your component you could access it like this:
 ```html
 <template>
   <div>
-    Show: {{ demos }}
+    Show: {{ items }}
   </div>
 </template>
 
 <script>
   export default {
     async asyncData({ $pocketbase }) {
-      // fetch and return all "demo" records...
-      const demos = await $pocketbase.records.getFullList('demo');
+      // fetch and return all "example" records...
+      const items = await $pocketbase.records.getFullList('example');
 
-      return { demos }
+      return { items }
     }
   }
 </script>
@@ -486,11 +511,11 @@ class NextAuthStore extends BaseAuthStore {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const client = new PocketBase("http://127.0.0.1:8090");
-  client.authStore = new NextAuthStore(req, res);
+  const pb = new PocketBase('http://127.0.0.1:8090');
+  pb.authStore = new NextAuthStore(req, res);
 
   // fetch example records...
-  const result = await client.records.getList("example", 1, 30);
+  const result = await pb.collection('example').getList(1, 30);
 
   return {
     props: {
@@ -525,89 +550,227 @@ This is out of the scope of the SDK, but you could find more resources about CSP
 ### Creating new client instance
 
 ```js
-const client = new PocketBase(
-    baseUrl = '/',
-    lang = 'en-US',
-    authStore = LocalAuthStore
-);
+const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 ```
 
 ### Instance methods
 
 > Each instance method returns the `PocketBase` instance allowing chaining.
 
-| Method                                  | Description                                                         |
-|:----------------------------------------|:--------------------------------------------------------------------|
-| `client.send(path, reqConfig = {})`     | Sends an api http request.                                          |
-| `client.cancelAllRequests()`            | Cancels all pending requests.                                       |
-| `client.cancelRequest(cancelKey)`       | Cancels single request by its cancellation token key.               |
-| `client.buildUrl(path, reqConfig = {})` | Builds a full client url by safely concatenating the provided path. |
+| Method                                            | Description                                                                   |
+|:--------------------------------------------------|:------------------------------------------------------------------------------|
+| `pb.send(path, reqConfig = {})`                   | Sends an api http request.                                                    |
+| `pb.autoCancellation(enable)`                     | Globally enable or disable auto cancellation for pending duplicated requests. |
+| `pb.cancelAllRequests()`                          | Cancels all pending requests.                                                 |
+| `pb.cancelRequest(cancelKey)`                     | Cancels single request by its cancellation token key.                         |
+| `pb.getFileUrl(record, filename, reqConfig = {})` | Builds and returns an absolute record file url for the provided filename.     |
+| `pb.buildUrl(path, reqConfig = {})`               | Builds a full client url by safely concatenating the provided path.           |
 
 
-### API services
+### Services
 
 > Each service call returns a `Promise` object with the API response.
 
+##### RecordService
 
-| Resource                                                                                                                                                                                          | Description                                                                                           |
-|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------|
-| **[Admins](https://pocketbase.io/docs/api-admins)**                                                                                                                                               |                                                                                                       |
-| 🔓`client.admins.authViaEmail(email, password, bodyParams = {}, queryParams = {})`                                                                                                                 | Authenticate an admin account by its email and password and returns a new admin token and admin data. |
-| 🔐`client.admins.refresh(bodyParams = {}, queryParams = {})`                                                                                                                                       | Refreshes the current admin authenticated instance and returns a new admin token and admin data.      |
-| 🔓`client.admins.requestPasswordReset(email, bodyParams = {}, queryParams = {})`                                                                                                                   | Sends admin password reset request.                                                                   |
-| 🔓`client.admins.confirmPasswordReset(passwordResetToken, password, passwordConfirm, bodyParams = {}, queryParams = {})`                                                                           | Confirms admin password reset request.                                                                |
-| 🔐`client.admins.getList(page = 1, perPage = 30, queryParams = {})`                                                                                                                                | Returns paginated admins list.                                                                        |
-| 🔐`client.admins.getFullList(batchSize = 100, queryParams = {})`                                                                                                                                   | Returns a list with all admins batch fetched at once.                                                 |
-| 🔐`client.admins.getOne(id, queryParams = {})`                                                                                                                                                     | Returns single admin by its id.                                                                       |
-| 🔐`client.admins.create(bodyParams = {}, queryParams = {})`                                                                                                                                        | Creates a new admin.                                                                                  |
-| 🔐`client.admins.update(id, bodyParams = {}, queryParams = {})`                                                                                                                                    | Updates an existing admin by its id.                                                                  |
-| 🔐`client.admins.delete(id, queryParams = {})`                                                                                                                                                     | Deletes an existing admin by its id.                                                                  |
-| **[Users](https://pocketbase.io/docs/api-users)**                                                                                                                                                 |                                                                                                       |
-| 🔓`client.users.listAuthMethods(queryParams = {})`                                                                                                                                                 | Returns all available application auth methods.                                                       |
-| 🔓`client.users.authViaEmail(email, password, bodyParams = {}, queryParams = {})`                                                                                                                  | Authenticate a user account by its email and password and returns a new user token and user data.     |
-| 🔓`client.users.authViaOAuth2(clientName, code, codeVerifier, redirectUrl, bodyParams = {}, queryParams = {})`                                                                                     | Authenticate a user via OAuth2 client provider.                                                       |
-| 🔐`client.users.refresh(bodyParams = {}, queryParams = {})`                                                                                                                                        | Refreshes the current user authenticated instance and returns a new user token and user data.         |
-| 🔓`client.users.requestPasswordReset(email, bodyParams = {}, queryParams = {})`                                                                                                                    | Sends user password reset request.                                                                    |
-| 🔓`client.users.confirmPasswordReset(passwordResetToken, password, passwordConfirm, bodyParams = {}, queryParams = {})`                                                                            | Confirms user password reset request.                                                                 |
-| 🔓`client.users.requestVerification(email, bodyParams = {}, queryParams = {})`                                                                                                                     | Sends user verification email request.                                                                |
-| 🔓`client.users.confirmVerification(verificationToken, bodyParams = {}, queryParams = {})`                                                                                                         | Confirms user email verification request.                                                             |
-| 🔐`client.users.requestEmailChange(newEmail, bodyParams = {}, queryParams = {})`                                                                                                                   | Sends an email change request to the authenticated user.                                              |
-| 🔓`client.users.confirmEmailChange(emailChangeToken, password, bodyParams = {}, queryParams = {})`                                                                                                 | Confirms user new email address.                                                                      |
-| 🔐`client.users.getList(page = 1, perPage = 30, queryParams = {})`                                                                                                                                 | Returns paginated users list.                                                                         |
-| 🔐`client.users.getFullList(batchSize = 100, queryParams = {})`                                                                                                                                    | Returns a list with all users batch fetched at once.                                                  |
-| 🔐`client.users.getOne(id, queryParams = {})`                                                                                                                                                      | Returns single user by its id.                                                                        |
-| 🔐`client.users.create(bodyParams = {}, queryParams = {})`                                                                                                                                         | Creates a new user.                                                                                   |
-| 🔐`client.users.update(id, bodyParams = {}, queryParams = {})`                                                                                                                                     | Updates an existing user by its id.                                                                   |
-| 🔐`client.users.delete(id, queryParams = {})`                                                                                                                                                      | Deletes an existing user by its id.                                                                   |
-| 🔐`client.users.listExternalAuths(id, queryParams = {})`                                                                                                                                           | Lists all linked external auth providers for the specified user.                                      |
-| 🔐`client.users.unlinkExternalAuth(id, provider, queryParams = {})`                                                                                                                                | Unlink a single external auth provider from the specified user.                                       |
-| **[Realtime](https://pocketbase.io/docs/api-realtime)** <br/> _(for node environments you'll have to install an EventSource polyfill beforehand, eg. https://github.com/EventSource/eventsource)_ |                                                                                                       |
-| 🔓`client.realtime.subscribe(subscription, callback)`                                                                                                                                              | Inits the sse connection (if not already) and register the subscription.                              |
-| 🔓`client.realtime.unsubscribe(subscription = "")`                                                                                                                                                 | Unsubscribe from a subscription (if empty - unsubscribe from all registered subscriptions).           |
-| **[Collections](https://pocketbase.io/docs/api-collections)**                                                                                                                                     |                                                                                                       |
-| 🔐`client.collections.getList(page = 1, perPage = 30, queryParams = {})`                                                                                                                           | Returns paginated collections list.                                                                   |
-| 🔐`client.collections.getFullList(batchSize = 100, queryParams = {})`                                                                                                                              | Returns a list with all collections batch fetched at once.                                            |
-| 🔐`client.collections.getOne(id, queryParams = {})`                                                                                                                                                | Returns single collection by its id.                                                                  |
-| 🔐`client.collections.create(bodyParams = {}, queryParams = {})`                                                                                                                                   | Creates a new collection.                                                                             |
-| 🔐`client.collections.update(id, bodyParams = {}, queryParams = {})`                                                                                                                               | Updates an existing collection by its id.                                                             |
-| 🔐`client.collections.delete(id, queryParams = {})`                                                                                                                                                | Deletes an existing collection by its id.                                                             |
-| 🔐`client.collections.import(collections, deleteMissing = false, queryParams = {})`                                                                                                                | Imports the provided collections.                                                                     |
-| **[Records](https://pocketbase.io/docs/api-records)**                                                                                                                                             |                                                                                                       |
-| 🔓`client.records.getList(collectionIdOrName, page = 1, perPage = 30, queryParams = {})`                                                                                                           | Returns paginated records list.                                                                       |
-| 🔓`client.records.getFullList(collectionIdOrName, batchSize = 100, queryParams = {})`                                                                                                              | Returns a list with all records batch fetched at once.                                                |
-| 🔓`client.records.getOne(collectionIdOrName, id, queryParams = {})`                                                                                                                                | Returns single record by its id.                                                                      |
-| 🔓`client.records.create(collectionIdOrName, bodyParams = {}, queryParams = {})`                                                                                                                   | Creates a new record.                                                                                 |
-| 🔓`client.records.update(collectionIdOrName, id, bodyParams = {}, queryParams = {})`                                                                                                               | Updates an existing record by its id.                                                                 |
-| 🔓`client.records.delete(collectionIdOrName, id, bodyParams = {}, queryParams = {})`                                                                                                               | Deletes an existing record by its id.                                                                 |
-| **[Logs](https://pocketbase.io/docs/api-logs)**                                                                                                                                                   |                                                                                                       |
-| 🔐`client.logs.getRequestsList(page = 1, perPage = 30, queryParams = {})`                                                                                                                          | Returns paginated request logs list.                                                                  |
-| 🔐`client.logs.getRequest(id, queryParams = {})`                                                                                                                                                   | Returns a single request log by its id.                                                               |
-| 🔐`client.logs.getRequestsStats(queryParams = {})`                                                                                                                                                 | Returns request logs statistics.                                                                      |
-| **[Settings](https://pocketbase.io/docs/api-records)**                                                                                                                                            |                                                                                                       |
-| 🔐`client.settings.getAll(queryParams = {})`                                                                                                                                                       | Fetch all available app settings.                                                                     |
-| 🔐`client.settings.update(bodyParams = {}, queryParams = {})`                                                                                                                                      | Bulk updates app settings.                                                                            |
-| 🔐`client.settings.testS3(queryParams = {})`                                                                                                                                                       | Performs a S3 storage connection test.                                                                |
-| 🔐`client.settings.testEmail(toEmail, emailTemplate, queryParams = {})`                                                                                                                            | Sends a test email.                                                                                   |
+###### _Crud handlers_
+
+```js
+// Returns a paginated records list.
+🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, queryParams = {});
+
+// Returns a list with all records batch fetched at once.
+🔓 pb.collection(collectionIdOrName).getFullList(batch = 200, queryParams = {});
+
+// Returns the first found record matching the specified filter.
+🔓 pb.collection(collectionIdOrName).getFirstListItem(filter, queryParams = {});
+
+// Returns a single record by its id.
+🔓 pb.collection(collectionIdOrName).getOne(recordId, queryParams = {});
+
+// Creates (aka. register) a new record.
+🔓 pb.collection(collectionIdOrName).create(bodyParams = {}, queryParams = {});
+
+// Updates an existing record by its id.
+🔓 pb.collection(collectionIdOrName).update(recordId, bodyParams = {}, queryParams = {});
+
+// Deletes a single record by its id.
+🔓 pb.collection(collectionIdOrName).delete(recordId, queryParams = {});
+
+```
+
+###### _Realtime handlers_
+
+```js
+// Subscribe to realtime changes of any record from the collection.
+🔓 pb.collection(collectionIdOrName).subscribe(callback);
+
+// Subscribe to the realtime changes of a single record in the collection.
+🔓 pb.collection(collectionIdOrName).subscribeOne(recordId, callback);
+
+// Unsubscribe from the collection record subscription(s).
+🔓 pb.collection(collectionIdOrName).unsubscribe(...recordIds);
+```
+
+###### _Auth handlers_
+
+> Available only for "auth" type collections.
+
+```js
+// Returns all available application auth methods.
+🔓 pb.collection(collectionIdOrName).listAuthMethods(queryParams = {});
+
+// Authenticates a record with their username/email and password.
+🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, bodyParams = {}, queryParams = {});
+
+// Authenticates a record with OAuth2 client provider.
+🔓 pb.collection(collectionIdOrName).authWithOAuth2(provider, code, codeVerifier, redirectUrl, createData = {}, bodyParams = {}, queryParams = {});
+
+// Refreshes the current authenticated record model and auth token.
+🔐 pb.collection(collectionIdOrName).authRefresh(bodyParams = {}, queryParams = {});
+
+// Sends a user password reset email.
+🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, bodyParams = {}, queryParams = {});
+
+// Confirms a record password reset request.
+🔓 pb.collection(collectionIdOrName).confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, bodyParams = {}, queryParams = {});
+
+// Sends a record verification email request.
+🔓 pb.collection(collectionIdOrName).requestVerification(email, bodyParams = {}, queryParams = {});
+
+// Confirms a record email verification request.
+🔓 pb.collection(collectionIdOrName).confirmVerification(verificationToken, bodyParams = {}, queryParams = {});
+
+// Sends a record email change request to the provider email.
+🔐 pb.collection(collectionIdOrName).requestEmailChange(newEmail, bodyParams = {}, queryParams = {});
+
+// Confirms record new email address.
+🔓 pb.collection(collectionIdOrName).confirmEmailChange(emailChangeToken, userPassword, bodyParams = {}, queryParams = {});
+
+// Lists all linked external auth providers for the specified record.
+🔐 pb.collection(collectionIdOrName).listExternalAuths(recordId, queryParams = {});
+
+// Unlinks a single external auth provider relation from the specified record.
+🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, queryParams = {});
+```
+
+---
+
+##### AdminService
+
+```js
+// Authenticates an admin account by its email and password.
+🔓 pb.admins.authWithPassword(email, password, bodyParams = {}, queryParams = {});
+
+// Refreshes the current admin authenticated model and token.
+🔐 pb.admins.authRefresh(bodyParams = {}, queryParams = {});
+
+// Sends an admin password reset email.
+🔓 pb.admins.requestPasswordReset(email, bodyParams = {}, queryParams = {});
+
+// Confirms an admin password reset request.
+🔓 pb.admins.confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, bodyParams = {}, queryParams = {});
+
+// Returns a paginated admins list.
+🔐 pb.admins.getList(page = 1, perPage = 30, queryParams = {});
+
+// Returns a list with all admins batch fetched at once.
+🔐 pb.admins.getFullList(batch = 200, queryParams = {});
+
+// Returns the first found admin matching the specified filter.
+🔐 pb.admins.getFirstListItem(filter, queryParams = {});
+
+// Returns a single admin by their id.
+🔐 pb.admins.getOne(id, queryParams = {});
+
+// Creates a new admin.
+🔐 pb.admins.create(bodyParams = {}, queryParams = {});
+
+// Updates an existing admin by their id.
+🔐 pb.admins.update(id, bodyParams = {}, queryParams = {});
+
+// Deletes a single admin by their id.
+🔐 pb.admins.delete(id, queryParams = {});
+```
+
+---
+
+##### CollectionService
+
+```js
+// Returns a paginated collections list.
+🔐 pb.collections.getList(page = 1, perPage = 30, queryParams = {});
+
+// Returns a list with all collections batch fetched at once.
+🔐 pb.collections.getFullList(batch = 200, queryParams = {});
+
+// Returns the first found collection matching the specified filter.
+🔐 pb.collections.getFirstListItem(filter, queryParams = {});
+
+// Returns a single collection by its id.
+🔐 pb.collections.getOne(id, queryParams = {});
+
+// Creates (aka. register) a new collection.
+🔐 pb.collections.create(bodyParams = {}, queryParams = {});
+
+// Updates an existing collection by its id.
+🔐 pb.collections.update(id, bodyParams = {}, queryParams = {});
+
+// Deletes a single collection by its id.
+🔐 pb.collections.delete(id, queryParams = {});
+
+// Imports the provided collections.
+🔐 pb.collections.import(collections, deleteMissing = false, queryParams = {});
+```
+
+---
+
+##### LogService
+
+```js
+// Returns a paginated log requests list.
+🔐 pb.logs.getRequestsList(page = 1, perPage = 30, queryParams = {});
+
+// Returns a single log request by its id.
+🔐 pb.logs.getRequest(id, queryParams = {});
+```
+
+---
+
+##### SettingsService
+
+```js
+// Returns a map with all available app settings.
+🔐 pb.settings.getAll(queryParams = {});
+
+// Bulk updates app settings.
+🔐 pb.settings.update(bodyParams = {}, queryParams = {});
+
+// Performs a S3 storage connection test.
+🔐 pb.settings.testS3(queryParams = {});
+
+// Sends a test email (verification, password-reset, email-change).
+🔐 pb.settings.testEmail(toEmail, template, queryParams = {});
+```
+
+---
+
+##### RealtimeService
+
+> This service is usually used with custom realtime actions.
+> For records realtime subscriptions you can use the subscribe/unsubscribe
+> methods available in the `pb.collection()` RecordService.
+
+```js
+// Initialize the realtime connection (if not already) and register the subscription.
+🔓 pb.realtime.subscribe(subscription, callback);
+
+// Unsubscribe from a subscription (if empty - unsubscibe from all registered subscriptions).
+🔓 pb.realtime.unsubscribe(...subscriptions);
+
+// Unsubscribe from all subscriptions starting with the provided prefix.
+🔓 pb.realtime.unsubscribeByPrefix(subscriptionsPrefix);
+```
 
 
 ## Development

@@ -7,7 +7,7 @@ export type HourlyStats = {
     date:  string,
 }
 
-export default class Logs extends BaseService {
+export default class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */

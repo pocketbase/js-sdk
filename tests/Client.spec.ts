@@ -1,11 +1,11 @@
-import glob             from 'glob';
 import chai, { assert } from 'chai';
 import chaiAsPromised   from 'chai-as-promised';
 import Client           from '@/Client';
 import LocalAuthStore   from '@/stores/LocalAuthStore';
 import { FetchMock }    from './mocks';
 import Admin            from '@/models/Admin';
-import User             from '@/models/User';
+import Record           from '@/models/Record';
+import RecordService    from '@/services/RecordService';
 
 chai.use(chaiAsPromised);
 
@@ -26,32 +26,46 @@ describe('Client', function() {
 
     describe('constructor()', function() {
         it('Should create a properly configured http client instance', function() {
-            const client = new Client('test_base_url', 'test_language', null);
+            const client = new Client('test_base_url', null, 'test_language');
 
             assert.equal(client.baseUrl, 'test_base_url');
             assert.instanceOf(client.authStore, LocalAuthStore);
+            assert.equal(client.lang, 'test_language');
         });
 
         it('Should load all api resources', async function() {
             const client = new Client('test_base_url');
-            const services = glob.sync('src/services/*.ts');
 
-            assert.isNotEmpty(services);
+            const baseServices = [
+                'admins',
+                'collections',
+                'logs',
+                'settings',
+                'realtime',
+            ];
 
-            for (let i = 0; i < services.length; i++) {
-                const serviceClass = ((await import('./../' + services[i])).default)
-                const serviceClassName = serviceClass.prototype.constructor.name;
-                assert.instanceOf(
-                    (client as any)[serviceClassName.charAt(0).toLowerCase() + serviceClassName.slice(1)],
-                    serviceClass.prototype.constructor
-                );
-
-                // check deprecated aliases
-                assert.instanceOf(
-                    (client as any)[serviceClassName],
-                    serviceClass.prototype.constructor
-                );
+            for (const service of baseServices) {
+                assert.isNotEmpty((client as any)[service]);
             }
+        });
+    });
+
+    describe('collection()', function() {
+        it('Should initialize the related collection record service', function() {
+            const client = new Client('test_base_url');
+
+            const service1 = client.collection('test1');
+            const service2 = client.collection('test2');
+            const service3 = client.collection('test1'); // same as service1
+
+            assert.instanceOf(service1, RecordService);
+            assert.instanceOf(service2, RecordService);
+            assert.instanceOf(service3, RecordService);
+            assert.equal(service1, service3);
+            assert.notEqual(service1, service2);
+            assert.equal(service1.baseCrudPath, '/api/collections/test1/records');
+            assert.equal(service2.baseCrudPath, '/api/collections/test2/records');
+            assert.equal(service3.baseCrudPath, '/api/collections/test1/records');
         });
     });
 
@@ -69,9 +83,27 @@ describe('Client', function() {
         });
     });
 
+    describe('getFileUrl()', function () {
+        const client = new Client('test_base_url');
+
+        it('Should return a formatted url', async function () {
+            const record = new Record({'id': '456', 'collectionId': '123'});
+            const result = client.getFileUrl(record, 'demo.png')
+
+            assert.deepEqual(result, 'test_base_url/api/files/123/456/demo.png');
+        });
+
+        it('Should return a formatted url + query params', async function () {
+            const record = new Record({'id': '456', 'collectionId': '123'});
+            const result = client.getFileUrl(record, 'demo=', {'test': 'abc'})
+
+            assert.deepEqual(result, 'test_base_url/api/files/123/456/demo%3D?test=abc');
+        });
+    });
+
     describe('send()', function() {
         it('Should build and send http request', async function() {
-            const client = new Client('test_base_url', 'test_language_A');
+            const client = new Client('test_base_url', null, 'test_language_A');
 
             fetchMock.on({
                 method:    'GET',
@@ -93,7 +125,6 @@ describe('Client', function() {
                 replyCode: 200,
                 replyBody: 'successPut',
             });
-
 
             fetchMock.on({
                 method:    'PATCH',
@@ -122,7 +153,7 @@ describe('Client', function() {
             }
         });
         it('Should auto add authorization header if missing', async function() {
-            const client = new Client('test_base_url', 'test_language_A');
+            const client = new Client('test_base_url', null, 'test_language_A');
 
             // none
             fetchMock.on({
@@ -140,7 +171,7 @@ describe('Client', function() {
                 method:    'GET',
                 url:       'test_base_url/admin',
                 additionalMatcher: (_, config: any): boolean => {
-                    return config?.headers?.Authorization === 'Admin token123';
+                    return config?.headers?.Authorization === 'token123';
                 },
                 replyCode: 200,
             });
@@ -153,11 +184,11 @@ describe('Client', function() {
                 method:    'GET',
                 url:       'test_base_url/user',
                 additionalMatcher: (_, config: any): boolean => {
-                    return config?.headers?.Authorization === 'User token123';
+                    return config?.headers?.Authorization === 'token123';
                 },
                 replyCode: 200,
             });
-            const user = new User({ 'id': 'test-user', "@collectionId": 'test-user' });
+            const user = new Record({ 'id': 'test-user', "collectionId": 'test-user' });
             client.authStore.save('token123', user);
             await client.send('/user', { method: 'GET' });
         });
@@ -252,6 +283,23 @@ describe('Client', function() {
     });
 
     describe('auto cancellation', function() {
+        it('Should disable auto cancellation', async function() {
+            const client = new Client('test_base_url').autoCancellation(false);
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/123',
+                delay:     5,
+                replyCode: 200,
+            })
+
+            const requestA = client.send('/123', { method: 'GET' });
+            const requestB = client.send('/123', { method: 'GET' });
+
+            await assert.isFulfilled(requestA);
+            await assert.isFulfilled(requestB);
+        });
+
         it('Should auto cancel duplicated requests with default key', async function() {
             const client = new Client('test_base_url');
 

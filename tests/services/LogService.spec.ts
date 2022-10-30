@@ -2,12 +2,12 @@ import { assert }    from 'chai';
 import Client        from '@/Client';
 import LogRequest    from '@/models/LogRequest';
 import ListResult    from '@/models/utils/ListResult';
-import Logs          from '@/services/Logs';
+import LogService    from '@/services/LogService';
 import { FetchMock } from 'tests/mocks';
 
-describe('Logs', function () {
+describe('LogService', function () {
     const client = new Client('test_base_url');
-    const service = new Logs(client);
+    const service = new LogService(client);
     const fetchMock = new FetchMock();
 
     before(function () {

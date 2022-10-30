@@ -1,9 +1,8 @@
 import BaseModel from '@/models/utils/BaseModel';
 
 export default class Admin extends BaseModel {
-    avatar!:          number;
-    email!:           string;
-    lastResetSentAt!: string;
+    avatar!: number;
+    email!:  string;
 
     /**
      * @inheritdoc
@@ -13,6 +12,5 @@ export default class Admin extends BaseModel {
 
         this.avatar = typeof data.avatar === 'number' ? data.avatar : 0;
         this.email  = typeof data.email  === 'string' ? data.email  : '';
-        this.lastResetSentAt = typeof data.lastResetSentAt === 'string' ? data.lastResetSentAt : '';
     }
 }

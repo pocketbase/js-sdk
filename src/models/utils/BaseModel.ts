@@ -1,4 +1,6 @@
 export default abstract class BaseModel {
+    [key: string]: any,
+
     id!:      string;
     created!: string;
     updated!: string;
@@ -11,7 +13,12 @@ export default abstract class BaseModel {
      * Loads `data` into the current model.
      */
     load(data: { [key: string]: any }) {
-        this.id = typeof data.id !== 'undefined' ? data.id : '';
+        for (const [key, value] of Object.entries(data)) {
+            this[key] = value;
+        }
+
+        // normalize known fields
+        this.id      = typeof data.id      !== 'undefined' ? data.id      : '';
         this.created = typeof data.created !== 'undefined' ? data.created : '';
         this.updated = typeof data.updated !== 'undefined' ? data.updated : '';
     }
@@ -20,16 +27,11 @@ export default abstract class BaseModel {
      * Returns whether the current loaded data represent a stored db record.
      */
     get isNew(): boolean {
-        return (
-            // id is not set
-            !this.id ||
-            // zero uuid value
-            this.id === '00000000-0000-0000-0000-000000000000'
-        );
+        return !this.id;
     }
 
     /**
-     * Robust deep clone of a model.
+     * Creates a seep clone of the current model.
      */
     clone(): BaseModel {
         return new (this.constructor as any)(JSON.parse(JSON.stringify(this)));

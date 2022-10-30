@@ -3,6 +3,7 @@ import SchemaField from '@/models/utils/SchemaField';
 
 export default class Collection extends BaseModel {
     name!:       string;
+    type!:       string;
     schema!:     Array<SchemaField>;
     system!:     boolean;
     listRule!:   null|string;
@@ -10,6 +11,7 @@ export default class Collection extends BaseModel {
     createRule!: null|string;
     updateRule!: null|string;
     deleteRule!: null|string;
+    options!:    {[key:string]: any};
 
     /**
      * @inheritdoc
@@ -17,8 +19,10 @@ export default class Collection extends BaseModel {
     load(data: { [key: string]: any }) {
         super.load(data);
 
-        this.name   = typeof data.name === 'string' ? data.name : '';
-        this.system = !!data.system;
+        this.system    = !!data.system;
+        this.name      = typeof data.name    === 'string'    ? data.name    : '';
+        this.type      = typeof data.type    === 'string'    ? data.type    : 'base';
+        this.options   = typeof data.options !== 'undefined' ? data.options : {};
 
         // rules
         this.listRule   = typeof data.listRule   === 'string' ? data.listRule   : null;
@@ -33,5 +37,26 @@ export default class Collection extends BaseModel {
         for (let field of data.schema) {
             this.schema.push(new SchemaField(field));
         }
+    }
+
+    /**
+     * Checks if the current model is "base" collection.
+     */
+    get isBase(): boolean {
+        return this.type === 'base';
+    }
+
+    /**
+     * Checks if the current model is "auth" collection.
+     */
+    get isAuth(): boolean {
+        return this.type === 'auth';
+    }
+
+    /**
+     * Checks if the current model is "single" collection.
+     */
+    get isSingle(): boolean {
+        return this.type === 'single';
     }
 }

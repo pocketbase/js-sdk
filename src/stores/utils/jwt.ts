@@ -42,12 +42,11 @@ if (typeof atob === 'function') {
 export function getTokenPayload(token: string): { [key: string]: any } {
     if (token) {
         try {
-
-            let base64 = decodeURIComponent(atobPolyfill(token.split('.')[1]).split('').map(function (c: string) {
+            const encodedPayload = decodeURIComponent(atobPolyfill(token.split('.')[1]).split('').map(function (c: string) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
 
-            return JSON.parse(base64) || {};
+            return JSON.parse(encodedPayload) || {};
         } catch (e) {
         }
     }

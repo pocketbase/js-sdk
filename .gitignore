@@ -8,5 +8,7 @@
 # @see https://github.com/npm/npm/issues/20603
 package-lock.json
 
-# generated markdown preview
+# generated markdown previews
 README.html
+CHANGELOG.html
+LICENSE.html

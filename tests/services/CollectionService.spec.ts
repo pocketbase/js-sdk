@@ -2,12 +2,12 @@ import { assert }                from 'chai';
 import { FetchMock }             from 'tests/mocks';
 import { crudServiceTestsSuite } from '../suites';
 import Client                    from '@/Client';
-import Collections               from '@/services/Collections';
+import CollectionService         from '@/services/CollectionService';
 import Collection                from '@/models/Collection';
 
-describe('Collections', function() {
+describe('CollectionService', function() {
     const client = new Client('test_base_url');
-    const service = new Collections(client);
+    const service = new CollectionService(client);
 
     crudServiceTestsSuite(service, '/api/collections');
 

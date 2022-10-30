@@ -7,7 +7,7 @@ export type AdminAuthResponse = {
     admin: Admin,
 }
 
-export default class Admins extends CrudService<Admin> {
+export default class AdminService extends CrudService<Admin> {
     /**
      * @inheritdoc
      */
@@ -18,9 +18,59 @@ export default class Admins extends CrudService<Admin> {
     /**
      * @inheritdoc
      */
-    baseCrudPath(): string {
+    get baseCrudPath(): string {
         return '/api/admins';
     }
+
+    // ---------------------------------------------------------------
+    // Post update/delete AuthStore sync
+    // ---------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     *
+     * If the current `client.authStore.model` matches with the updated id, then
+     * on success the `client.authStore.model` will be updated with the result.
+     */
+    update<T = Admin>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+        return super.update<Admin>(id, bodyParams, queryParams).then((item) => {
+            // update the store state if the updated item id matches with the stored model
+            if (
+                this.client.authStore.model &&
+                typeof this.client.authStore.model?.collectionId === 'undefined' && // is not record auth
+                this.client.authStore.model?.id === item?.id
+            ) {
+                this.client.authStore.save(this.client.authStore.token, item);
+            }
+
+            return item as any as T;
+        });
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * If the current `client.authStore.model` matches with the deleted id,
+     * then on success the `client.authStore` will be cleared.
+     */
+    delete(id: string, queryParams = {}): Promise<boolean> {
+        return super.delete(id, queryParams).then((success) => {
+            // clear the store state if the deleted item id matches with the stored model
+            if (
+                success &&
+                this.client.authStore.model &&
+                typeof this.client.authStore.model?.collectionId === 'undefined' && // is not record auth
+                this.client.authStore.model?.id === id
+            ) {
+                this.client.authStore.clear();
+            }
+            return success;
+        });
+    }
+
+    // ---------------------------------------------------------------
+    // Auth handlers
+    // ---------------------------------------------------------------
 
     /**
      * Prepare successful authorize response.
@@ -40,23 +90,23 @@ export default class Admins extends CrudService<Admin> {
     }
 
     /**
-     * Authenticate an admin account by its email and password
+     * Authenticate an admin account with its email and password
      * and returns a new admin token and data.
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    authViaEmail(
+    authWithPassword(
         email: string,
         password: string,
         bodyParams = {},
         queryParams = {},
     ): Promise<AdminAuthResponse> {
         bodyParams = Object.assign({
-            'email':    email,
+            'identity': email,
             'password': password,
         }, bodyParams);
 
-        return this.client.send(this.baseCrudPath() + '/auth-via-email', {
+        return this.client.send(this.baseCrudPath + '/auth-with-password', {
             'method':  'POST',
             'params':  queryParams,
             'body':    bodyParams,
@@ -72,8 +122,8 @@ export default class Admins extends CrudService<Admin> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    refresh(bodyParams = {}, queryParams = {}): Promise<AdminAuthResponse> {
-        return this.client.send(this.baseCrudPath() + '/refresh', {
+    authRefresh(bodyParams = {}, queryParams = {}): Promise<AdminAuthResponse> {
+        return this.client.send(this.baseCrudPath + '/auth-refresh', {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
@@ -92,7 +142,7 @@ export default class Admins extends CrudService<Admin> {
             'email': email,
         }, bodyParams);
 
-        return this.client.send(this.baseCrudPath() + '/request-password-reset', {
+        return this.client.send(this.baseCrudPath + '/request-password-reset', {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
@@ -115,7 +165,7 @@ export default class Admins extends CrudService<Admin> {
             'passwordConfirm': passwordConfirm,
         }, bodyParams);
 
-        return this.client.send(this.baseCrudPath() + '/confirm-password-reset', {
+        return this.client.send(this.baseCrudPath + '/confirm-password-reset', {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,

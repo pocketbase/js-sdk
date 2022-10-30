@@ -1,5 +1,5 @@
 import BaseAuthStore from '@/stores/BaseAuthStore';
-import User          from '@/models/User';
+import Record        from '@/models/Record';
 import Admin         from '@/models/Admin';
 
 /**
@@ -28,7 +28,7 @@ export default class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    get model(): User|Admin|null {
+    get model(): Record|Admin|null {
         const data = this._storageGet(this.storageKey) || {};
 
         if (
@@ -40,18 +40,18 @@ export default class LocalAuthStore extends BaseAuthStore {
             return null;
         }
 
-        // admins don't have `verified` prop
-        if (typeof data.model?.verified !== 'undefined') {
-            return new User(data.model);
+        // admins don't have `collectionId` prop
+        if (typeof data.model?.collectionId === 'undefined') {
+            return new Admin(data.model);
         }
 
-        return new Admin(data.model);
+        return new Record(data.model);
     }
 
     /**
      * @inheritdoc
      */
-    save(token: string, model: User|Admin|null) {
+    save(token: string, model: Record|Admin|null) {
         this._storageSet(this.storageKey, {
             'token': token,
             'model': model,
@@ -79,7 +79,7 @@ export default class LocalAuthStore extends BaseAuthStore {
      */
     private _storageGet(key: string): any {
         if (typeof window !== 'undefined' && window?.localStorage) {
-            const rawValue = window?.localStorage?.getItem(key) || '';
+            const rawValue = window.localStorage.getItem(key) || '';
             try {
                 return JSON.parse(rawValue);
             } catch (e) { // not a json
@@ -102,7 +102,7 @@ export default class LocalAuthStore extends BaseAuthStore {
             if (typeof value !== 'string') {
                 normalizedVal = JSON.stringify(value);
             }
-            window?.localStorage?.setItem(key, normalizedVal);
+            window.localStorage.setItem(key, normalizedVal);
         } else {
             // store in fallback
             this.storageFallback[key] = value;
@@ -114,8 +114,8 @@ export default class LocalAuthStore extends BaseAuthStore {
      */
     private _storageRemove(key: string) {
         // delete from local storage
-        if (typeof window !== 'undefined') {
-            window?.localStorage?.removeItem(key);
+        if (typeof window !== 'undefined' && window?.localStorage) {
+            window.localStorage?.removeItem(key);
         }
 
         // delete from fallback

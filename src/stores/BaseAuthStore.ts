@@ -1,9 +1,9 @@
 import { cookieParse, cookieSerialize, SerializeOptions } from '@/stores/utils/cookie';
 import { isTokenExpired, getTokenPayload } from '@/stores/utils/jwt';
-import User  from '@/models/User';
+import Record  from '@/models/Record';
 import Admin from '@/models/Admin';
 
-type onChangeFunc = (token: string, model: User|Admin|null) => void;
+type onChangeFunc = (token: string, model: Record|Admin|null) => void;
 
 const defaultCookieKey = 'pb_auth';
 
@@ -13,7 +13,7 @@ const defaultCookieKey = 'pb_auth';
  */
 export default abstract class BaseAuthStore {
     protected baseToken: string = '';
-    protected baseModel: User|Admin|null = null;
+    protected baseModel: Record|Admin|null = null;
 
     private _onChangeCallbacks: Array<onChangeFunc> = [];
 
@@ -27,7 +27,7 @@ export default abstract class BaseAuthStore {
     /**
      * Retrieves the stored model data (if any).
      */
-    get model(): User|Admin|null {
+    get model(): Record|Admin|null {
         return this.baseModel;
     }
 
@@ -41,13 +41,13 @@ export default abstract class BaseAuthStore {
     /**
      * Saves the provided new token and model data in the auth store.
      */
-    save(token: string, model: User|Admin|null): void {
+    save(token: string, model: Record|Admin|null): void {
         this.baseToken = token || '';
 
         // normalize the model instance
         if (model !== null && typeof model === 'object') {
-            this.baseModel = (model as any)?.verified !== 'undefined' ?
-                new User(model) : new Admin(model);
+            this.baseModel = typeof (model as any).collectionId !== 'undefined' ?
+                new Record(model) : new Admin(model);
         } else {
             this.baseModel = null;
         }
@@ -80,7 +80,7 @@ export default abstract class BaseAuthStore {
             }
         } catch (_) {}
 
-        this.save(data.token || '', data.model || {});
+        this.save(data.token || '', data.model || null);
     }
 
     /**
@@ -129,8 +129,10 @@ export default abstract class BaseAuthStore {
         // strip down the model data to the bare minimum
         if (rawData.model && resultLength > 4096) {
             rawData.model = {id: rawData?.model?.id, email: rawData?.model?.email};
-            if (this.model instanceof User) {
-                rawData.model.verified = this.model.verified;
+            if (this.model instanceof Record) {
+                rawData.model.username     = this.model.username;
+                rawData.model.verified     = this.model.verified;
+                rawData.model.collectionId = this.model.collectionId;
             }
             result = cookieSerialize(key, JSON.stringify(rawData), options);
         }
