@@ -76,6 +76,9 @@ const result = await client.records.getList('example', 1, 20, {
     filter: 'status = true && created > "2022-08-01 10:00:00"'
 });
 
+// create a new user
+const response = await client.users.create({email:"test@example.com",password:"123456",passwordConfirm:"123456"})
+
 // authenticate as regular user
 const userData = await client.users.authViaEmail('test@example.com', '123456');
 
