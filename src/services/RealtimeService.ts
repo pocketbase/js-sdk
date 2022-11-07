@@ -63,7 +63,6 @@ export default class RealtimeService extends BaseService {
      */
     async unsubscribe(topic?: string): Promise<void> {
         if (!this.hasSubscriptionListeners(topic)) {
-            this.disconnect();
             return; // already unsubscribed
         }
 
