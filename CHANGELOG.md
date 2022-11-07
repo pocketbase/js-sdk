@@ -1,3 +1,23 @@
+## 0.8.0-rc2
+
+Refactored the realtime handler per [#pocketbase-954](https://github.com/pocketbase/pocketbase/discussions/954#discussioncomment-4071150) to allow registering multiple subscriptions to the same topic.
+
+The collection realtime handler api now is:
+```js
+// subscribe:
+pb.collection("foo").subscribe("*", (e) => {});
+pb.collection("foo").subscribe("YOUR_RECORD_ID", (e) => {});
+
+// unsubscribe:
+pb.collection("foo").unsubscribe("YOUR_RECORD_ID"); // remove every "YOUR_RECORD_ID" subscription
+pb.collection("foo").unsubscribe("*");              // remove every "*" topic subscription
+pb.collection("foo").unsubscribe();                 // remove every subscription in foo
+```
+Additionally, `subscribe()` now return `UnsubscribeFunc` that could be used to unsubscribe only from a single subscription listener.
+
+The realtime handler from v0.8.0-rc1 are soft-deprecated and will still work but there will be a console warning to replace them with their newer equivalent.
+
+
 ## 0.8.0-rc1
 
 > **⚠️ This is a pre-release, contains breaking changes and works only with the new PocketBase v0.8+ API!**

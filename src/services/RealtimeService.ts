@@ -82,7 +82,7 @@ export default class RealtimeService extends BaseService {
             // no other active subscriptions -> close the sse connection
             this.disconnect();
         } else if (!this.hasSubscriptionListeners(topic)) {
-            // submit subscriptions change if there are other active subscriptions
+            // submit subscriptions change if there are no other active subscriptions related to the topic
             await this.submitSubscriptions();
         }
     }
@@ -161,7 +161,7 @@ export default class RealtimeService extends BaseService {
             // no other active subscriptions -> close the sse connection
             this.disconnect();
         } else if (!this.hasSubscriptionListeners(topic)) {
-            // submit subscriptions change if there are other active subscriptions
+            // submit subscriptions change if there are no other active subscriptions related to the topic
             await this.submitSubscriptions();
         }
     }
