@@ -321,6 +321,59 @@ declare class AdminService extends CrudService<Admin> {
      */
     confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<AdminAuthResponse>;
 }
+type UnsubscribeFunc = () => Promise<void>;
+declare class RealtimeService extends BaseService {
+    private clientId;
+    private eventSource;
+    private subscriptions;
+    /**
+     * Register the subscription listener.
+     *
+     * You can subscribe multiple times to the same topic.
+     *
+     * If the SSE connection is not started yet,
+     * this method will also initialize it.
+     */
+    subscribe(topic: string, callback: (data: any) => void): Promise<UnsubscribeFunc>;
+    /**
+     * Unsubscribe from all subscription listeners with the specified topic.
+     *
+     * If `topic` is not provided, then this method will unsubscribe
+     * from all active subscriptions.
+     *
+     * This method is no-op if there are no active subscriptions.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribe(topic?: string): Promise<void>;
+    /**
+     * Unsubscribe from all subscription listeners starting with the specified topic prefix.
+     *
+     * This method is no-op if there are no active subscriptions with the specified topic prefix.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribeByPrefix(topicPrefix: string): Promise<void>;
+    /**
+     * Unsubscribe from all subscriptions matching the specified topic and listener function.
+     *
+     * This method is no-op if there are no active subscription with
+     * the specified topic and listener.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void>;
+    private hasSubscriptionListeners;
+    private submitSubscriptions;
+    private addAllSubscriptionListeners;
+    private removeAllSubscriptionListeners;
+    private connectHandler;
+    private connect;
+    private disconnect;
+}
 declare class ExternalAuth extends BaseModel {
     recordId: string;
     collectionId: string;
@@ -378,20 +431,36 @@ declare class RecordService extends CrudService<Record> {
     // Realtime handlers
     // ---------------------------------------------------------------
     /**
-     * Subscribe to realtime changes of any record from the collection.
-     */
-    subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<void>;
-    /**
+     * @deprecated Use subscribe(recordId, callback) instead.
+     *
      * Subscribe to the realtime changes of a single record in the collection.
      */
-    subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<void>;
+    subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    /**
+     * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
+     */
+    subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    /**
+     * Subscribe to realtime changes to the specified topic ("*" or recordId).
+     *
+     * If `topic` is the wildcard "*", then this method will subscribe to
+     * any record changes in the collection.
+     *
+     * If `topic` is a record id, then this method will subscribe only
+     * to changes of the specified record id.
+     *
+     * It's OK to subscribe multiple times to the same topic.
+     * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
+     * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
+     */
+    subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from the specified realtime record subscription(s).
      *
      * If `recordIds` is not set, then this method will unsubscribe from
      * all subscriptions associated to the current collection.
      */
-    unsubscribe(...recordIds: Array<string>): Promise<void>;
+    unsubscribe(topic?: string): Promise<void>;
     // ---------------------------------------------------------------
     // Post update/delete AuthStore sync
     // ---------------------------------------------------------------
@@ -587,40 +656,6 @@ declare class LogService extends BaseService {
      * Returns request logs statistics.
      */
     getRequestsStats(queryParams?: {}): Promise<Array<HourlyStats>>;
-}
-declare class RealtimeService extends BaseService {
-    private clientId;
-    private eventSource;
-    private subscriptions;
-    /**
-     * Inits the sse connection (if not already) and register the subscription.
-     */
-    subscribe(subscription: string, callback: (data: any) => void): Promise<void>;
-    /**
-     * Unsubscribe from all subscriptions starting with the provided prefix.
-     *
-     * This method is no-op if there are no active subscriptions with the provided prefix.
-     *
-     * The related sse connection will be autoclosed if after the
-     * unsubscribe operation there are no active subscriptions left.
-     */
-    unsubscribeByPrefix(subscriptionPrefix: string): Promise<void>;
-    /**
-     * Unsubscribe from the specified subscription(s).
-     *
-     * If the `subscriptions` argument is not set,
-     * then the client will unsubscribe from all registered subscriptions.
-     *
-     * The related sse connection will be autoclosed if after the
-     * unsubscribe operations there are no active subscriptions left.
-     */
-    unsubscribe(...subscriptions: Array<string>): Promise<void>;
-    private submitSubscriptions;
-    private addSubscriptionListeners;
-    private removeSubscriptionListeners;
-    private connectHandler;
-    private connect;
-    private disconnect;
 }
 /**
  * PocketBase JS Client.

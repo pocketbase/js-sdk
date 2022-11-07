@@ -1,7 +1,8 @@
-import Client       from '@/Client';
-import CrudService  from '@/services/utils/CrudService';
-import Record       from '@/models/Record';
-import ExternalAuth from '@/models/ExternalAuth';
+import Client              from '@/Client';
+import CrudService         from '@/services/utils/CrudService';
+import { UnsubscribeFunc } from '@/services/RealtimeService';
+import Record              from '@/models/Record';
+import ExternalAuth        from '@/models/ExternalAuth';
 
 export interface RecordAuthResponse<T = Record> {
     [key: string]: any;
@@ -69,17 +70,58 @@ export default class RecordService extends CrudService<Record> {
     // ---------------------------------------------------------------
 
     /**
-     * Subscribe to realtime changes of any record from the collection.
+     * @deprecated Use subscribe(recordId, callback) instead.
+     *
+     * Subscribe to the realtime changes of a single record in the collection.
      */
-    async subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<void> {
-        return this.client.realtime.subscribe(this.collectionIdOrName, callback)
+    async subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
+        console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subsribe(recordId, callback).");
+        return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
     }
 
     /**
-     * Subscribe to the realtime changes of a single record in the collection.
+     * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
      */
-    async subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<void> {
-        return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
+    async subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+
+    /**
+     * Subscribe to realtime changes to the specified topic ("*" or recordId).
+     *
+     * If `topic` is the wildcard "*", then this method will subscribe to
+     * any record changes in the collection.
+     *
+     * If `topic` is a record id, then this method will subscribe only
+     * to changes of the specified record id.
+     *
+     * It's OK to subscribe multiple times to the same topic.
+     * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
+     * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
+     */
+    async subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+
+    async subscribe<T = Record>(
+        topicOrCallback: string|((data: RecordSubscription<T>) => void),
+        callback?: (data: RecordSubscription<T>) => void
+    ): Promise<UnsubscribeFunc> {
+        if (typeof topicOrCallback === 'function') {
+            console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subsribe('*', callback).");
+            return this.client.realtime.subscribe(this.collectionIdOrName, topicOrCallback);
+        }
+
+        if (!callback) {
+            throw new Error("Missing subscription callback.");
+        }
+
+        if (topicOrCallback === "") {
+            throw new Error("Missing topic.");
+        }
+
+        let topic = this.collectionIdOrName;
+        if (topicOrCallback !== "*") {
+            topic = this.collectionIdOrName + '/' + topicOrCallback;
+        }
+
+        return this.client.realtime.subscribe(topic, callback)
     }
 
     /**
@@ -88,15 +130,18 @@ export default class RecordService extends CrudService<Record> {
      * If `recordIds` is not set, then this method will unsubscribe from
      * all subscriptions associated to the current collection.
      */
-    async unsubscribe(...recordIds: Array<string>): Promise<void> {
-        if (recordIds && recordIds.length) {
-            const subs = [];
-            for (let id of recordIds) {
-                subs.push(this.collectionIdOrName + "/" + id);
-            }
-            return this.client.realtime.unsubscribe(...subs);
+    async unsubscribe(topic?: string): Promise<void> {
+        // unsubscribe wildcard topic
+        if (topic === "*") {
+            return this.client.realtime.unsubscribe(this.collectionIdOrName);
         }
 
+        // unsubscribe recordId topic
+        if (topic) {
+            return this.client.realtime.unsubscribe(this.collectionIdOrName + "/" + topic);
+        }
+
+        // unsubscribe from everything related to the collection
         return this.client.realtime.unsubscribeByPrefix(this.collectionIdOrName);
     }
 

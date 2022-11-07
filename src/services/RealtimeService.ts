@@ -1,25 +1,26 @@
 import BaseService from '@/services/utils/BaseService';
 
+export type UnsubscribeFunc = () => Promise<void>;
+
 export default class RealtimeService extends BaseService {
     private clientId: string = "";
     private eventSource: EventSource | null = null;
-    private subscriptions: { [key: string]: EventListener } = {};
+    private subscriptions: { [key: string]: Array<EventListener> } = {};
 
     /**
-     * Inits the sse connection (if not already) and register the subscription.
+     * Register the subscription listener.
+     *
+     * You can subscribe multiple times to the same topic.
+     *
+     * If the SSE connection is not started yet,
+     * this method will also initialize it.
      */
-    async subscribe(subscription: string, callback: (data: any) => void): Promise<void> {
-        if (!subscription) {
-            throw new Error('subscription must be set.')
+    async subscribe(topic: string, callback: (data: any) => void): Promise<UnsubscribeFunc> {
+        if (!topic) {
+            throw new Error('topic must be set.')
         }
 
-        // unsubscribe existing
-        if (this.subscriptions[subscription]) {
-            this.eventSource?.removeEventListener(subscription, this.subscriptions[subscription]);
-        }
-
-        // register subscription
-        this.subscriptions[subscription] = function (e: Event) {
+        const listener = function (e: Event) {
             const msgEvent = (e as MessageEvent);
 
             let data;
@@ -28,81 +29,168 @@ export default class RealtimeService extends BaseService {
             } catch {}
 
             callback(data || {});
+        };
+
+        // register the listener
+        if (!this.subscriptions[topic]) {
+            this.subscriptions[topic] = [];
         }
+        this.subscriptions[topic].push(listener);
 
         if (!this.eventSource) {
             // start a new sse connection
             this.connect();
-        } else if (this.clientId) {
-            // otherwise - just persist the updated subscriptions
+        } else if (this.clientId && this.subscriptions[topic].length === 1) {
+            // send the updated subscriptions (if it is the first for the topic)
             await this.submitSubscriptions();
         }
+
+        return async (): Promise<void> => {
+            return this.unsubscribeByTopicAndListener(topic, listener);
+        };
     }
 
     /**
-     * Unsubscribe from all subscriptions starting with the provided prefix.
+     * Unsubscribe from all subscription listeners with the specified topic.
      *
-     * This method is no-op if there are no active subscriptions with the provided prefix.
+     * If `topic` is not provided, then this method will unsubscribe
+     * from all active subscriptions.
+     *
+     * This method is no-op if there are no active subscriptions.
      *
      * The related sse connection will be autoclosed if after the
      * unsubscribe operation there are no active subscriptions left.
      */
-    async unsubscribeByPrefix(subscriptionPrefix: string): Promise<void> {
-        const toUnsubscribe = [];
-        for (let sub in this.subscriptions) {
-            if (sub.startsWith(subscriptionPrefix)) {
-                toUnsubscribe.push(sub);
+    async unsubscribe(topic?: string): Promise<void> {
+        if (!this.hasSubscriptionListeners(topic)) {
+            this.disconnect();
+            return; // already unsubscribed
+        }
+
+        if (!topic) {
+            // remove all subscriptions
+            this.subscriptions = {};
+        } else {
+            // remove all topic listeners
+            for (let listener of this.subscriptions[topic]) {
+                this.eventSource?.removeEventListener(topic, listener);
             }
+            delete this.subscriptions[topic];
         }
 
-        if (!toUnsubscribe.length) {
-            return;
+        if (!this.hasSubscriptionListeners()) {
+            // no other active subscriptions -> close the sse connection
+            this.disconnect();
+        } else if (!this.hasSubscriptionListeners(topic)) {
+            // submit subscriptions change if there are other active subscriptions
+            await this.submitSubscriptions();
         }
-
-        return this.unsubscribe(...toUnsubscribe);
     }
 
     /**
-     * Unsubscribe from the specified subscription(s).
+     * Unsubscribe from all subscription listeners starting with the specified topic prefix.
      *
-     * If the `subscriptions` argument is not set,
-     * then the client will unsubscribe from all registered subscriptions.
+     * This method is no-op if there are no active subscriptions with the specified topic prefix.
      *
      * The related sse connection will be autoclosed if after the
-     * unsubscribe operations there are no active subscriptions left.
+     * unsubscribe operation there are no active subscriptions left.
      */
-    async unsubscribe(...subscriptions: Array<string>): Promise<void> {
-        if (!subscriptions || subscriptions.length == 0) {
-            // remove all subscriptions
-            this.removeSubscriptionListeners();
-            this.subscriptions = {};
-        } else {
-            // remove each passed subscription
-            let found = false;
-            for (let sub of subscriptions) {
-                found = true;
-                this.eventSource?.removeEventListener(sub, this.subscriptions[sub]);
-                delete this.subscriptions[sub];
+    async unsubscribeByPrefix(topicPrefix: string): Promise<void> {
+        let hasAtleastOneTopic = false;
+        for (let topic in this.subscriptions) {
+            if (!topic.startsWith(topicPrefix)) {
+                continue;
             }
-            if (!found) {
-                // not subscribed to any of specified subscriptions
-                return;
+
+            hasAtleastOneTopic = true;
+
+            for (let listener of this.subscriptions[topic]) {
+                this.eventSource?.removeEventListener(topic, listener);
             }
+
+            delete this.subscriptions[topic];
         }
 
-        if (this.clientId) {
+        if (!hasAtleastOneTopic) {
+            return; // nothing to unsubscribe from
+        }
+
+        if (this.hasSubscriptionListeners()) {
+            // submit the deleted subscriptions
             await this.submitSubscriptions();
-        }
-
-        // no more subscriptions -> close the sse connection
-        if (!Object.keys(this.subscriptions).length) {
+        } else {
+            // no other active subscriptions -> close the sse connection
             this.disconnect();
         }
     }
 
+    /**
+     * Unsubscribe from all subscriptions matching the specified topic and listener function.
+     *
+     * This method is no-op if there are no active subscription with
+     * the specified topic and listener.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    async unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void> {
+        if (!Array.isArray(this.subscriptions[topic]) || !this.subscriptions[topic].length) {
+            if (!this.hasSubscriptionListeners()) {
+                // no other active subscriptions -> close the sse connection
+                this.disconnect();
+            }
+            return; // already unsubscribed
+        }
+
+        let exist = false;
+        for (let i = this.subscriptions[topic].length - 1; i >= 0; i--) {
+            if (this.subscriptions[topic][i] !== listener) {
+                continue;
+            }
+
+            exist = true;                           // has at least one matching listener
+            delete this.subscriptions[topic][i];    // removes the function reference
+            this.subscriptions[topic].splice(i, 1); // reindex the array
+            this.eventSource?.removeEventListener(topic, listener);
+        }
+        if (!exist) {
+            return;
+        }
+
+        if (!this.hasSubscriptionListeners()) {
+            // no other active subscriptions -> close the sse connection
+            this.disconnect();
+        } else if (!this.hasSubscriptionListeners(topic)) {
+            // submit subscriptions change if there are other active subscriptions
+            await this.submitSubscriptions();
+        }
+    }
+
+    private hasSubscriptionListeners(topicToCheck?: string): boolean {
+        this.subscriptions = this.subscriptions || {};
+
+        // check the specified topic
+        if (topicToCheck) {
+            return !!this.subscriptions[topicToCheck]?.length;
+        }
+
+        // check for at least one non-empty topic
+        for (let topic in this.subscriptions) {
+            if (this.subscriptions[topic].length) {
+                return true
+            }
+        }
+
+        return false;
+    }
+
     private async submitSubscriptions(): Promise<boolean> {
+        if (!this.clientId) {
+            return false;
+        }
+
         // optimistic update
-        this.addSubscriptionListeners();
+        this.addAllSubscriptionListeners();
 
         return this.client.send('/api/realtime', {
             'method': 'POST',
@@ -116,25 +204,29 @@ export default class RealtimeService extends BaseService {
         }).then(() => true);
     }
 
-    private addSubscriptionListeners(): void {
+    private addAllSubscriptionListeners(): void {
         if (!this.eventSource) {
             return;
         }
 
-        this.removeSubscriptionListeners();
+        this.removeAllSubscriptionListeners();
 
-        for (let sub in this.subscriptions) {
-            this.eventSource.addEventListener(sub, this.subscriptions[sub]);
+        for (let topic in this.subscriptions) {
+            for (let listener of this.subscriptions[topic]) {
+                this.eventSource.addEventListener(topic, listener);
+            }
         }
     }
 
-    private removeSubscriptionListeners(): void {
+    private removeAllSubscriptionListeners(): void {
         if (!this.eventSource) {
             return;
         }
 
-        for (let sub in this.subscriptions) {
-            this.eventSource.removeEventListener(sub, this.subscriptions[sub]);
+        for (let topic in this.subscriptions) {
+            for (let listener of this.subscriptions[topic]) {
+                this.eventSource.removeEventListener(topic, listener);
+            }
         }
     }
 
@@ -151,7 +243,7 @@ export default class RealtimeService extends BaseService {
     }
 
     private disconnect(): void {
-        this.removeSubscriptionListeners();
+        this.removeAllSubscriptionListeners();
         this.eventSource?.removeEventListener('PB_CONNECT', (e) => this.connectHandler(e));
         this.eventSource?.close();
         this.eventSource = null;

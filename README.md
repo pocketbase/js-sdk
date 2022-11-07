@@ -602,14 +602,17 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 ###### _Realtime handlers_
 
 ```js
-// Subscribe to realtime changes of any record from the collection.
-🔓 pb.collection(collectionIdOrName).subscribe(callback);
+// Subscribe to realtime changes to the specified topic ("*" or recordId).
+//
+// It is safe to subscribe multiple times to the same topic.
+//
+// You can use the returned UnsubscribeFunc to remove a single registered subscription.
+// If you want to remove all subscriptions related to the topic use unsubscribe(topic).
+🔓 pb.collection(collectionIdOrName).subscribe(topic, callback);
 
-// Subscribe to the realtime changes of a single record in the collection.
-🔓 pb.collection(collectionIdOrName).subscribeOne(recordId, callback);
-
-// Unsubscribe from the collection record subscription(s).
-🔓 pb.collection(collectionIdOrName).unsubscribe(...recordIds);
+// Unsubscribe from all registered subscriptions to the specified topic ("*" or recordId).
+// If topic is not set, then it will remove all registered collection subscriptions.
+🔓 pb.collection(collectionIdOrName).unsubscribe([topic]);
 ```
 
 ###### _Auth handlers_
@@ -762,14 +765,17 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 > methods available in the `pb.collection()` RecordService.
 
 ```js
-// Initialize the realtime connection (if not already) and register the subscription.
-🔓 pb.realtime.subscribe(subscription, callback);
+// Initialize the realtime connection (if not already) and register the subscription listener.
+🔓 pb.realtime.subscribe(topic, callback);
 
-// Unsubscribe from a subscription (if empty - unsubscibe from all registered subscriptions).
-🔓 pb.realtime.unsubscribe(...subscriptions);
+// Unsubscribe from all subscription listeners with the specified topic.
+🔓 pb.realtime.unsubscribe(topic?);
 
-// Unsubscribe from all subscriptions starting with the provided prefix.
-🔓 pb.realtime.unsubscribeByPrefix(subscriptionsPrefix);
+// Unsubscribe from all subscription listeners starting with the specified topic prefix.
+🔓 pb.realtime.unsubscribeByPrefix(topicPrefix);
+
+// Unsubscribe from all subscriptions matching the specified topic and listener function.
+🔓 pb.realtime.unsubscribeByTopicAndListener(topic, callback);
 ```
 
 
