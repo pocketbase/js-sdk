@@ -199,9 +199,14 @@ export default class RealtimeService extends BaseService {
                 'subscriptions': Object.keys(this.subscriptions),
             },
             'params': {
-                '$autoCancel': false,
+                '$cancelKey': "realtime_subscriptions_" + this.clientId,
             },
-        }).then(() => true);
+        }).then(() => true).catch((err) => {
+            if (err?.isAbort) {
+                return true; // silently ignore aborted pending requests
+            }
+            throw err;
+        });
     }
 
     private addAllSubscriptionListeners(): void {
