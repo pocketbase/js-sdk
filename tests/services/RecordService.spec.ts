@@ -235,16 +235,13 @@ describe('RecordService', function() {
                     'passwordConfirm': '456',
                     'b1': 123,
                 },
-                replyCode: 200,
-                replyBody: {
-                    'token': 'token_password_confirm',
-                    'record': { 'id': 'id_password_confirm' },
-                },
+                replyCode: 204,
+                replyBody: true,
             });
 
             const result = await service.confirmPasswordReset('test', '123', '456', { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_password_confirm', new Record({ 'id': 'id_password_confirm' }));
+            assert.isTrue(result);
         });
     });
 
@@ -276,16 +273,13 @@ describe('RecordService', function() {
                     'token': 'test',
                     'b1': 123,
                 },
-                replyCode: 200,
-                replyBody: {
-                    'token': 'token_verification_confirm',
-                    'record': { 'id': 'id_verification_confirm' },
-                },
+                replyCode: 204,
+                replyBody: true,
             });
 
             const result = await service.confirmVerification('test', { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_verification_confirm', new Record({ 'id': 'id_verification_confirm' }));
+            assert.isTrue(result);
         });
     });
 
@@ -318,16 +312,13 @@ describe('RecordService', function() {
                     'password': '1234',
                     'b1': 123,
                 },
-                replyCode: 200,
-                replyBody: {
-                    'token': 'token_email_change_confirm',
-                    'record': { 'id': 'id_email_change_confirm' },
-                },
+                replyCode: 204,
+                replyBody: true,
             });
 
             const result = await service.confirmEmailChange('test', '1234', { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_email_change_confirm', new Record({ 'id': 'id_email_change_confirm' }));
+            assert.isTrue(result);
         });
     });
 

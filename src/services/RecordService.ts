@@ -322,13 +322,13 @@ export default class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record password reset request.
      */
-    confirmPasswordReset<T = Record>(
+    confirmPasswordReset(
         passwordResetToken: string,
         password: string,
         passwordConfirm: string,
         bodyParams = {},
         queryParams = {},
-    ): Promise<RecordAuthResponse<T>> {
+    ): Promise<boolean> {
         bodyParams = Object.assign({
             'token':           passwordResetToken,
             'password':        password,
@@ -339,7 +339,7 @@ export default class RecordService extends CrudService<Record> {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+        }).then(() => true);
     }
 
     /**
@@ -364,11 +364,11 @@ export default class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record email verification request.
      */
-    confirmVerification<T = Record>(
+    confirmVerification(
         verificationToken: string,
         bodyParams  = {},
         queryParams = {},
-    ): Promise<RecordAuthResponse<T>> {
+    ): Promise<boolean> {
         bodyParams = Object.assign({
             'token': verificationToken,
         }, bodyParams);
@@ -377,7 +377,7 @@ export default class RecordService extends CrudService<Record> {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+        }).then(() => true);
     }
 
     /**
@@ -402,12 +402,12 @@ export default class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record's new email address.
      */
-    confirmEmailChange<T = Record>(
+    confirmEmailChange(
         emailChangeToken: string,
         password: string,
         bodyParams  = {},
         queryParams = {},
-    ): Promise<RecordAuthResponse<T>> {
+    ): Promise<boolean> {
         bodyParams = Object.assign({
             'token': emailChangeToken,
             'password': password,
@@ -417,7 +417,7 @@ export default class RecordService extends CrudService<Record> {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+        }).then(() => true);
     }
 
     /**

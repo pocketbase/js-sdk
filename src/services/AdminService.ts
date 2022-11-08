@@ -158,7 +158,7 @@ export default class AdminService extends CrudService<Admin> {
         passwordConfirm: string,
         bodyParams = {},
         queryParams = {},
-    ): Promise<AdminAuthResponse> {
+    ): Promise<boolean> {
         bodyParams = Object.assign({
             'token':           passwordResetToken,
             'password':        password,
@@ -169,6 +169,6 @@ export default class AdminService extends CrudService<Admin> {
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
-        }).then(this.authResponse.bind(this));
+        }).then(() => true);
     }
 }

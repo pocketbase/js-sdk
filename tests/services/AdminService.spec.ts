@@ -180,16 +180,13 @@ describe('AdminService', function() {
                     'passwordConfirm': '456',
                     'b1': 123,
                 },
-                replyCode: 200,
-                replyBody: {
-                    'token': 'token_password_confirm',
-                    'admin': { 'id': 'id_password_confirm' },
-                },
+                replyCode: 204,
+                replyBody: true,
             });
 
             const result = await service.confirmPasswordReset('test', '123', '456', { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_password_confirm', service.decode({ 'id': 'id_password_confirm' }));
+            assert.isTrue(result);
         });
     });
 });

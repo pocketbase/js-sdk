@@ -1,3 +1,15 @@
+## 0.8.0-rc3
+
+To prevent confusion with the auth method responses, the following methods now returns 204 with empty body (previously 200 with token and auth model):
+
+```js
+pb.admins.confirmPasswordReset(...): Promise<bool>
+pb.collection("foo").confirmPasswordReset(...): Promise<bool>
+pb.collection("foo").confirmVerification(...): Promise<bool>
+pb.collection("foo").confirmEmailChange(...): Promise<bool>
+```
+
+
 ## 0.8.0-rc2
 
 Refactored the realtime handler per [#pocketbase-954](https://github.com/pocketbase/pocketbase/discussions/954#discussioncomment-4071150) to allow registering multiple subscriptions to the same topic.

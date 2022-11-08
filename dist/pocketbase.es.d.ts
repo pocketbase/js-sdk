@@ -319,7 +319,7 @@ declare class AdminService extends CrudService<Admin> {
     /**
      * Confirms admin password reset request.
      */
-    confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<AdminAuthResponse>;
+    confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
 }
 type UnsubscribeFunc = () => Promise<void>;
 declare class RealtimeService extends BaseService {
@@ -523,7 +523,7 @@ declare class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record password reset request.
      */
-    confirmPasswordReset<T = Record>(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<RecordAuthResponse<T>>;
+    confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
     /**
      * Sends auth record verification email request.
      */
@@ -531,7 +531,7 @@ declare class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record email verification request.
      */
-    confirmVerification<T = Record>(verificationToken: string, bodyParams?: {}, queryParams?: {}): Promise<RecordAuthResponse<T>>;
+    confirmVerification(verificationToken: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
     /**
      * Sends an email change request to the authenticated record model.
      */
@@ -539,7 +539,7 @@ declare class RecordService extends CrudService<Record> {
     /**
      * Confirms auth record's new email address.
      */
-    confirmEmailChange<T = Record>(emailChangeToken: string, password: string, bodyParams?: {}, queryParams?: {}): Promise<RecordAuthResponse<T>>;
+    confirmEmailChange(emailChangeToken: string, password: string, bodyParams?: {}, queryParams?: {}): Promise<boolean>;
     /**
      * Lists all linked external auth providers for the specified auth record.
      */
