@@ -102,11 +102,9 @@ export default class RealtimeService extends BaseService {
             }
 
             hasAtleastOneTopic = true;
-
             for (let listener of this.subscriptions[topic]) {
                 this.eventSource?.removeEventListener(topic, listener);
             }
-
             delete this.subscriptions[topic];
         }
 
@@ -134,10 +132,6 @@ export default class RealtimeService extends BaseService {
      */
     async unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void> {
         if (!Array.isArray(this.subscriptions[topic]) || !this.subscriptions[topic].length) {
-            if (!this.hasSubscriptionListeners()) {
-                // no other active subscriptions -> close the sse connection
-                this.disconnect();
-            }
             return; // already unsubscribed
         }
 
@@ -175,7 +169,7 @@ export default class RealtimeService extends BaseService {
 
         // check for at least one non-empty topic
         for (let topic in this.subscriptions) {
-            if (this.subscriptions[topic].length) {
+            if (!!this.subscriptions[topic]?.length) {
                 return true
             }
         }

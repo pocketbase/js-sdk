@@ -441,7 +441,7 @@ declare class RecordService extends CrudService<Record> {
      */
     subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
-     * Subscribe to realtime changes to the specified topic ("*" or recordId).
+     * Subscribe to realtime changes to the specified topic ("*" or record id).
      *
      * If `topic` is the wildcard "*", then this method will subscribe to
      * any record changes in the collection.
@@ -455,9 +455,10 @@ declare class RecordService extends CrudService<Record> {
      */
     subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
-     * Unsubscribe from the specified realtime record subscription(s).
+     * Unsubscribe from all subscriptions of the specified topic
+     * ("*" or record id).
      *
-     * If `recordIds` is not set, then this method will unsubscribe from
+     * If `topic` is not set, then this method will unsubscribe from
      * all subscriptions associated to the current collection.
      */
     unsubscribe(topic?: string): Promise<void>;
