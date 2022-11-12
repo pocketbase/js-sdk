@@ -1,8 +1,5 @@
 import Client              from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
-import BaseAuthStore       from '@/stores/BaseAuthStore';
-import LocalAuthStore      from '@/stores/LocalAuthStore';
-import { getTokenPayload } from '@/stores/utils/jwt';
 import ExternalAuth        from '@/models/ExternalAuth';
 import Admin               from '@/models/Admin';
 import Collection          from '@/models/Collection';
@@ -11,6 +8,18 @@ import LogRequest          from '@/models/LogRequest';
 import BaseModel           from '@/models/utils/BaseModel';
 import ListResult          from '@/models/utils/ListResult';
 import SchemaField         from '@/models/utils/SchemaField';
+import LocalAuthStore      from '@/stores/LocalAuthStore';
+import { getTokenPayload } from '@/stores/utils/jwt';
+import BaseAuthStore, {
+    OnStoreChangeFunc
+} from '@/stores/BaseAuthStore';
+import {
+    RecordAuthResponse,
+    AuthProviderInfo,
+    AuthMethodsList,
+    RecordSubscription,
+} from '@/services/RecordService';
+import { UnsubscribeFunc } from '@/services/RealtimeService';
 
 export {
     ClientResponseError,
@@ -25,6 +34,13 @@ export {
     BaseModel,
     ListResult,
     SchemaField,
+    //types
+    RecordAuthResponse,
+    AuthProviderInfo,
+    AuthMethodsList,
+    RecordSubscription,
+    OnStoreChangeFunc,
+    UnsubscribeFunc,
 };
 
 export default Client;

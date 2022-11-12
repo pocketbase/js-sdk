@@ -31,7 +31,7 @@ export default class RealtimeService extends BaseService {
             callback(data || {});
         };
 
-        // register the listener
+        // store the listener
         if (!this.subscriptions[topic]) {
             this.subscriptions[topic] = [];
         }
@@ -40,9 +40,12 @@ export default class RealtimeService extends BaseService {
         if (!this.eventSource) {
             // start a new sse connection
             this.connect();
-        } else if (this.clientId && this.subscriptions[topic].length === 1) {
+        } else if (this.subscriptions[topic].length === 1) {
             // send the updated subscriptions (if it is the first for the topic)
             await this.submitSubscriptions();
+        } else {
+            // only register the listener
+            this.eventSource.addEventListener(topic, listener);
         }
 
         return async (): Promise<void> => {

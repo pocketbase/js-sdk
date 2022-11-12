@@ -3,7 +3,7 @@ import { isTokenExpired, getTokenPayload } from '@/stores/utils/jwt';
 import Record  from '@/models/Record';
 import Admin from '@/models/Admin';
 
-type onChangeFunc = (token: string, model: Record|Admin|null) => void;
+export type OnStoreChangeFunc = (token: string, model: Record|Admin|null) => void;
 
 const defaultCookieKey = 'pb_auth';
 
@@ -15,7 +15,7 @@ export default abstract class BaseAuthStore {
     protected baseToken: string = '';
     protected baseModel: Record|Admin|null = null;
 
-    private _onChangeCallbacks: Array<onChangeFunc> = [];
+    private _onChangeCallbacks: Array<OnStoreChangeFunc> = [];
 
     /**
      * Retrieves the stored token (if any).
@@ -148,7 +148,7 @@ export default abstract class BaseAuthStore {
      *
      * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
-    onChange(callback: onChangeFunc, fireImmediately = false): () => void {
+    onChange(callback: OnStoreChangeFunc, fireImmediately = false): () => void {
         this._onChangeCallbacks.push(callback);
 
         if (fireImmediately) {

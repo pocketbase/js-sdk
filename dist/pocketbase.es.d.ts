@@ -61,7 +61,7 @@ declare class Admin extends BaseModel {
         [key: string]: any;
     }): void;
 }
-type onChangeFunc = (token: string, model: Record | Admin | null) => void;
+type OnStoreChangeFunc = (token: string, model: Record | Admin | null) => void;
 /**
  * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
@@ -118,7 +118,7 @@ declare abstract class BaseAuthStore {
      *
      * Returns a removal function that you could call to "unsubscribe" from the changes.
      */
-    onChange(callback: onChangeFunc, fireImmediately?: boolean): () => void;
+    onChange(callback: OnStoreChangeFunc, fireImmediately?: boolean): () => void;
     protected triggerChange(): void;
 }
 /**
@@ -387,9 +387,11 @@ declare class ExternalAuth extends BaseModel {
     }): void;
 }
 interface RecordAuthResponse<T = Record> {
-    [key: string]: any;
     token: string;
     record: T;
+    meta?: {
+        [key: string]: any;
+    };
 }
 interface AuthProviderInfo {
     name: string;
@@ -400,13 +402,11 @@ interface AuthProviderInfo {
     authUrl: string;
 }
 interface AuthMethodsList {
-    [key: string]: any;
     usernamePassword: boolean;
     emailPassword: boolean;
     authProviders: Array<AuthProviderInfo>;
 }
 interface RecordSubscription<T = Record> {
-    [key: string]: any;
     action: string;
     record: T;
 }
@@ -848,4 +848,4 @@ declare class LocalAuthStore extends BaseAuthStore {
 declare function getTokenPayload(token: string): {
     [key: string]: any;
 };
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc };

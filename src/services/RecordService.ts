@@ -5,10 +5,9 @@ import Record              from '@/models/Record';
 import ExternalAuth        from '@/models/ExternalAuth';
 
 export interface RecordAuthResponse<T = Record> {
-    [key: string]: any;
-
     token:  string;
     record: T;
+    meta?: {[key: string]: any};
 }
 
 export interface AuthProviderInfo {
@@ -21,16 +20,12 @@ export interface AuthProviderInfo {
 }
 
 export interface AuthMethodsList {
-    [key: string]: any;
-
     usernamePassword: boolean;
     emailPassword:    boolean;
     authProviders:    Array<AuthProviderInfo>;
 }
 
 export interface RecordSubscription<T = Record> {
-    [key: string]: any;
-
     action: string;
     record: T;
 }
