@@ -153,6 +153,11 @@ export default class RealtimeService extends BaseService {
             return;
         }
 
+        // remove the topic from the subscriptions list if there are no other listeners
+        if (!this.subscriptions[topic].length) {
+            delete this.subscriptions[topic];
+        }
+
         if (!this.hasSubscriptionListeners()) {
             // no other active subscriptions -> close the sse connection
             this.disconnect();
@@ -192,7 +197,7 @@ export default class RealtimeService extends BaseService {
             'method': 'POST',
             'body': {
                 'clientId': this.clientId,
-                'subscriptions': Object.keys(this.subscriptions),
+                'subscriptions': this.getNonEmptySubscriptionTopics(),
             },
             'params': {
                 '$cancelKey': "realtime_subscriptions_" + this.clientId,
@@ -203,6 +208,18 @@ export default class RealtimeService extends BaseService {
             }
             throw err;
         });
+    }
+
+    private getNonEmptySubscriptionTopics(): Array<string> {
+        const result : Array<string> = [];
+
+        for (let topic in this.subscriptions) {
+            if (this.subscriptions[topic].length) {
+                result.push(topic);
+            }
+        }
+
+        return result;
     }
 
     private addAllSubscriptionListeners(): void {

@@ -1,40 +1,8 @@
-## 0.8.0-rc3
+## v0.8.0
 
-To prevent confusion with the auth method responses, the following methods now returns 204 with empty body (previously 200 with token and auth model):
-
-```js
-pb.admins.confirmPasswordReset(...): Promise<bool>
-pb.collection("foo").confirmPasswordReset(...): Promise<bool>
-pb.collection("foo").confirmVerification(...): Promise<bool>
-pb.collection("foo").confirmEmailChange(...): Promise<bool>
-```
-
-
-## 0.8.0-rc2
-
-Refactored the realtime handler per [#pocketbase-954](https://github.com/pocketbase/pocketbase/discussions/954#discussioncomment-4071150) to allow registering multiple subscriptions to the same topic.
-
-The collection realtime handler api now is:
-```js
-// subscribe:
-pb.collection("foo").subscribe("*", (e) => {});
-pb.collection("foo").subscribe("YOUR_RECORD_ID", (e) => {});
-
-// unsubscribe:
-pb.collection("foo").unsubscribe("YOUR_RECORD_ID"); // remove every "YOUR_RECORD_ID" subscription
-pb.collection("foo").unsubscribe("*");              // remove every "*" topic subscription
-pb.collection("foo").unsubscribe();                 // remove every subscription in foo
-```
-Additionally, `subscribe()` now return `UnsubscribeFunc` that could be used to unsubscribe only from a single subscription listener.
-
-The realtime handler from v0.8.0-rc1 are soft-deprecated and will still work but there will be a console warning to replace them with their newer equivalent.
-
-
-## 0.8.0-rc1
-
-> **⚠️ This is a pre-release, contains breaking changes and works only with the new PocketBase v0.8+ API!**
+> ⚠️ Please note that this release works only with the new PocketBase v0.8+ API!
 >
-> For a full list with all API changes you could check the main repo's changelog.
+> See the breaking changes below for what has changed since v0.7.x.
 
 #### Non breaking changes
 
@@ -71,11 +39,13 @@ The realtime handler from v0.8.0-rc1 are soft-deprecated and will still work but
 - The `pb.realtime` service has now a more general callback form so that it can be used with custom realtime handlers.
   Dedicated records specific subscribtions could be found under `pb.collection().*`:
   ```
-  pb.realtime.subscribe('example', callback)           => pb.collection('example').subscribe(callback)
-  pb.realtime.subscribe('example/RECORD_ID', callback) => pb.collection('example').subscribeOne('RECORD_ID', callback)
-  pb.realtime.unsubscribe('example')                   => pb.collection('example').unsubscribe()
+  pb.realtime.subscribe('example', callback)           => pb.collection('example').subscribe("*", callback)
+  pb.realtime.subscribe('example/RECORD_ID', callback) => pb.collection('example').subscribe('RECORD_ID', callback)
+  pb.realtime.unsubscribe('example')                   => pb.collection('example').unsubscribe("*")
   pb.realtime.unsubscribe('example/RECORD_ID')         => pb.collection('example').unsubscribe('RECORD_ID')
+  (no old equivalent)                                  => pb.collection('example').unsubscribe()
   ```
+  Additionally, `subscribe()` now return `UnsubscribeFunc` that could be used to unsubscribe only from a single subscription listener.
 
 - Moved all `pb.users.*` handlers under `pb.collection().*`:
   ```
@@ -97,6 +67,14 @@ The realtime handler from v0.8.0-rc1 are soft-deprecated and will still work but
   ```
   pb.admins.authViaEmail(email, password); => pb.admins.authWithPassword(email, password);
   pb.admins.refresh();                     => pb.admins.authRefresh();
+  ```
+
+- To prevent confusion with the auth method responses, the following methods now returns 204 with empty body (previously 200 with token and auth model):
+  ```js
+  pb.admins.confirmPasswordReset(...): Promise<bool>
+  pb.collection("users").confirmPasswordReset(...): Promise<bool>
+  pb.collection("users").confirmVerification(...): Promise<bool>
+  pb.collection("users").confirmEmailChange(...): Promise<bool>
   ```
 
 - Removed the `User` model because users are now regular records (aka. `Record`).

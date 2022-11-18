@@ -368,6 +368,7 @@ declare class RealtimeService extends BaseService {
     unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void>;
     private hasSubscriptionListeners;
     private submitSubscriptions;
+    private getNonEmptySubscriptionTopics;
     private addAllSubscriptionListeners;
     private removeAllSubscriptionListeners;
     private connectHandler;
