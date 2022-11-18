@@ -1,8 +1,6 @@
 PocketBase JavaScript SDK
 ======================================================================
 
-> **⚠️ This is a pre-release, contains breaking changes and works only with the new PocketBase v0.8+ API!**
-
 Official JavaScript SDK (browser and node) for interacting with the [PocketBase API](https://pocketbase.io/docs).
 
 - [Installation](#installation)
@@ -39,7 +37,7 @@ _OR if you are using ES modules:_
 ### Node.js (via npm)
 
 ```sh
-npm install pocketbase@next --save
+npm install pocketbase --save
 ```
 
 ```js
