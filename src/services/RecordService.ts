@@ -30,7 +30,7 @@ export interface RecordSubscription<T = Record> {
     record: T;
 }
 
-export default class RecordService extends CrudService<Record> {
+export default class RecordService<R extends Record = Record> extends CrudService<R> {
     readonly collectionIdOrName: string;
 
     constructor(client: Client, collectionIdOrName: string) {
@@ -42,7 +42,7 @@ export default class RecordService extends CrudService<Record> {
     /**
      * @inheritdoc
      */
-    decode<T = Record>(data: { [key: string]: any }): T {
+    decode<T = R>(data: { [key: string]: any }): T {
         return new Record(data) as any as T;
     }
 
@@ -69,7 +69,7 @@ export default class RecordService extends CrudService<Record> {
      *
      * Subscribe to the realtime changes of a single record in the collection.
      */
-    async subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
+    async subscribeOne<T = R>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
         console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subsribe(recordId, callback).");
         return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
     }
@@ -77,7 +77,7 @@ export default class RecordService extends CrudService<Record> {
     /**
      * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
      */
-    async subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+    async subscribe<T = R>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
 
     /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
@@ -92,9 +92,9 @@ export default class RecordService extends CrudService<Record> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    async subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+    async subscribe<T = R>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
 
-    async subscribe<T = Record>(
+    async subscribe<T = R>(
         topicOrCallback: string|((data: RecordSubscription<T>) => void),
         callback?: (data: RecordSubscription<T>) => void
     ): Promise<UnsubscribeFunc> {
@@ -150,8 +150,8 @@ export default class RecordService extends CrudService<Record> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Record>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
-        return super.update<Record>(id, bodyParams, queryParams).then((item) => {
+    update<T = R>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+        return super.update<R>(id, bodyParams, queryParams).then((item) => {
             if (
                 typeof this.client.authStore.model?.collectionId !== 'undefined' && // is record auth
                 this.client.authStore.model?.id === item?.id
@@ -190,7 +190,7 @@ export default class RecordService extends CrudService<Record> {
     /**
      * Prepare successful collection authorization response.
      */
-    protected authResponse<T = Record>(responseData: any): RecordAuthResponse<T> {
+    protected authResponse<T = R>(responseData: any): RecordAuthResponse<T> {
         const record = this.decode(responseData?.record || {});
 
         this.client.authStore.save(responseData?.token, record);
@@ -227,7 +227,7 @@ export default class RecordService extends CrudService<Record> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = Record>(
+    authWithPassword<T = R>(
         usernameOrEmail: string,
         password: string,
         bodyParams = {},
@@ -257,7 +257,7 @@ export default class RecordService extends CrudService<Record> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2<T = Record>(
+    authWithOAuth2<T = R>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -287,7 +287,7 @@ export default class RecordService extends CrudService<Record> {
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = Record>(bodyParams = {}, queryParams = {}): Promise<RecordAuthResponse<T>> {
+    authRefresh<T = R>(bodyParams = {}, queryParams = {}): Promise<RecordAuthResponse<T>> {
         return this.client.send(this.baseCollectionPath + '/auth-refresh', {
             'method': 'POST',
             'params': queryParams,

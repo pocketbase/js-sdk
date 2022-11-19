@@ -12,7 +12,7 @@ import Record              from '@/models/Record';
 /**
  * PocketBase JS Client.
  */
-export default class Client {
+export default class Client<C extends { [key: string]: any; } = { [key: string]: any; }> {
     /**
      * The base PocketBase backend url address (eg. 'http://127.0.0.1.8090').
      */
@@ -99,7 +99,7 @@ export default class Client {
     readonly realtime: RealtimeService;
 
     private cancelControllers: { [key: string]: AbortController } = {};
-    private recordServices: { [key: string]: RecordService } = {};
+    private recordServices: { [Key in keyof C]?: RecordService<C[Key]> } = {};
     private enableAutoCancellation: boolean = true;
 
     constructor(
@@ -125,12 +125,12 @@ export default class Client {
      * @param  {string} idOrName
      * @return {RecordService}
      */
-    collection(idOrName: string): RecordService {
+    collection<Key extends keyof C, T = C[Key]>(idOrName: Key): RecordService<T & Record> {
         if (!this.recordServices[idOrName]) {
-            this.recordServices[idOrName] = new RecordService(this, idOrName);
+            this.recordServices[idOrName] = new RecordService<T & Record>(this, idOrName as string);
         }
 
-        return this.recordServices[idOrName];
+        return this.recordServices[idOrName] as RecordService<T & Record>;
     }
 
     /**
@@ -202,134 +202,134 @@ export default class Client {
             this.authStore?.token &&
             // auth header is not explicitly set
             (typeof config?.headers?.Authorization === 'undefined')
-        ) {
-            config.headers = Object.assign({}, config.headers, {
-                'Authorization': this.authStore.token,
-            });
-        }
-
-        // handle auto cancelation for duplicated pending request
-        if (this.enableAutoCancellation && config.params?.$autoCancel !== false) {
-            const cancelKey = config.params?.$cancelKey || ((config.method || 'GET') + path);
-
-            // cancel previous pending requests
-            this.cancelRequest(cancelKey);
-
-            const controller = new AbortController();
-            this.cancelControllers[cancelKey] = controller;
-            config.signal = controller.signal;
-        }
-        // remove the special cancellation params from the other valid query params
-        delete config.params?.$autoCancel;
-        delete config.params?.$cancelKey;
-
-        // build url + path
-        let url = this.buildUrl(path);
-
-        // serialize the query parameters
-        if (typeof config.params !== 'undefined') {
-            const query = this.serializeQueryParams(config.params)
-            if (query) {
-                url += (url.includes('?') ? '&' : '?') + query;
-            }
-            delete config.params;
-        }
-
-        if (this.beforeSend) {
-            config = Object.assign({}, this.beforeSend(url, config));
-        }
-
-        // send the request
-        return fetch(url, config)
-            .then(async (response) => {
-                let data : any = {};
-
-                try {
-                    data = await response.json();
-                } catch (_) {
-                    // all api responses are expected to return json
-                    // with the exception of the realtime event and 204
-                }
-
-                if (this.afterSend) {
-                    data = this.afterSend(response, data);
-                }
-
-                if (response.status >= 400) {
-                    throw new ClientResponseError({
-                        url:      response.url,
-                        status:   response.status,
-                        data:     data,
-                    });
-                }
-
-                return data;
-            }).catch((err) => {
-                // wrap to normalize all errors
-                throw new ClientResponseError(err);
-            });
-    }
-
-    /**
-     * Builds and returns an absolute record file url for the provided filename.
-     */
-    getFileUrl(record: Record, filename: string, queryParams = {}): string {
-        const parts = [];
-        parts.push("api")
-        parts.push("files")
-        parts.push(encodeURIComponent(record.collectionId || record.collectionName))
-        parts.push(encodeURIComponent(record.id))
-        parts.push(encodeURIComponent(filename))
-
-        let result = this.buildUrl(parts.join('/'));
-
-        if (Object.keys(queryParams).length) {
-            const params = new URLSearchParams(queryParams);
-            result += (result.includes("?") ? "&" : "?") + params;
-        }
-
-        return result
-    }
-
-    /**
-     * Builds a full client url by safely concatenating the provided path.
-     */
-    buildUrl(path: string): string {
-        let url = this.baseUrl + (this.baseUrl.endsWith('/') ? '' : '/');
-        if (path) {
-            url += (path.startsWith('/') ? path.substring(1) : path);
-        }
-        return url;
-    }
-
-    /**
-     * Serializes the provided query parameters into a query string.
-     */
-    private serializeQueryParams(params: {[key: string]: any}): string {
-        const result: Array<string> = [];
-        for (const key in params) {
-            if (params[key] === null) {
-                // skip null query params
-                continue;
+            ) {
+                config.headers = Object.assign({}, config.headers, {
+                    'Authorization': this.authStore.token,
+                });
             }
 
-            const value = params[key];
-            const encodedKey = encodeURIComponent(key);
+            // handle auto cancelation for duplicated pending request
+            if (this.enableAutoCancellation && config.params?.$autoCancel !== false) {
+                const cancelKey = config.params?.$cancelKey || ((config.method || 'GET') + path);
 
-            if (Array.isArray(value)) {
-                // "repeat" array params
-                for (const v of value) {
-                    result.push(encodedKey + "=" + encodeURIComponent(v));
-                }
-            } else if (value instanceof Date) {
-                result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
-            } else if (typeof value !== null && typeof value === 'object') {
-                result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
-            } else {
-                result.push(encodedKey + "=" + encodeURIComponent(value));
+                // cancel previous pending requests
+                this.cancelRequest(cancelKey);
+
+                const controller = new AbortController();
+                this.cancelControllers[cancelKey] = controller;
+                config.signal = controller.signal;
             }
+            // remove the special cancellation params from the other valid query params
+            delete config.params?.$autoCancel;
+            delete config.params?.$cancelKey;
+
+            // build url + path
+            let url = this.buildUrl(path);
+
+            // serialize the query parameters
+            if (typeof config.params !== 'undefined') {
+                const query = this.serializeQueryParams(config.params)
+                if (query) {
+                    url += (url.includes('?') ? '&' : '?') + query;
+                }
+                delete config.params;
+            }
+
+            if (this.beforeSend) {
+                config = Object.assign({}, this.beforeSend(url, config));
+            }
+
+            // send the request
+            return fetch(url, config)
+                .then(async (response) => {
+                    let data : any = {};
+
+                    try {
+                        data = await response.json();
+                    } catch (_) {
+                        // all api responses are expected to return json
+                        // with the exception of the realtime event and 204
+                    }
+
+                    if (this.afterSend) {
+                        data = this.afterSend(response, data);
+                    }
+
+                    if (response.status >= 400) {
+                        throw new ClientResponseError({
+                            url:      response.url,
+                            status:   response.status,
+                            data:     data,
+                        });
+                    }
+
+                    return data;
+                }).catch((err) => {
+                    // wrap to normalize all errors
+                    throw new ClientResponseError(err);
+                });
         }
 
-        return result.join('&');
+        /**
+         * Builds and returns an absolute record file url for the provided filename.
+         */
+        getFileUrl(record: Record, filename: string, queryParams = {}): string {
+            const parts = [];
+            parts.push("api")
+            parts.push("files")
+            parts.push(encodeURIComponent(record.collectionId || record.collectionName))
+            parts.push(encodeURIComponent(record.id))
+            parts.push(encodeURIComponent(filename))
+
+            let result = this.buildUrl(parts.join('/'));
+
+            if (Object.keys(queryParams).length) {
+                const params = new URLSearchParams(queryParams);
+                result += (result.includes("?") ? "&" : "?") + params;
+            }
+
+            return result
+        }
+
+        /**
+         * Builds a full client url by safely concatenating the provided path.
+         */
+        buildUrl(path: string): string {
+            let url = this.baseUrl + (this.baseUrl.endsWith('/') ? '' : '/');
+            if (path) {
+                url += (path.startsWith('/') ? path.substring(1) : path);
+            }
+            return url;
+        }
+
+        /**
+         * Serializes the provided query parameters into a query string.
+         */
+        private serializeQueryParams(params: {[key: string]: any}): string {
+            const result: Array<string> = [];
+            for (const key in params) {
+                if (params[key] === null) {
+                    // skip null query params
+                    continue;
+                }
+
+                const value = params[key];
+                const encodedKey = encodeURIComponent(key);
+
+                if (Array.isArray(value)) {
+                    // "repeat" array params
+                    for (const v of value) {
+                        result.push(encodedKey + "=" + encodeURIComponent(v));
+                    }
+                } else if (value instanceof Date) {
+                    result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
+                } else if (typeof value !== null && typeof value === 'object') {
+                    result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
+                } else {
+                    result.push(encodedKey + "=" + encodeURIComponent(value));
+                }
+            }
+
+            return result.join('&');
+        }
     }
-}
