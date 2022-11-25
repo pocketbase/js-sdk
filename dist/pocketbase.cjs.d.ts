@@ -79,7 +79,7 @@ declare abstract class BaseAuthStore {
      */
     get model(): Record | Admin | null;
     /**
-     * Checks if the store has valid (aka. existing and unexpired) token.
+     * Loosely checks if the store has valid token (aka. existing and unexpired exp claim).
      */
     get isValid(): boolean;
     /**
@@ -93,6 +93,26 @@ declare abstract class BaseAuthStore {
     /**
      * Parses the provided cookie string and updates the store state
      * with the cookie's token and model data.
+     *
+     * NB! This function doesn't validate the token or its data.
+     * Usually this isn't a concern if you are interacting only with the
+     * PocketBase API because it has the proper server-side security checks in place,
+     * but if you are using the store `isValid` state for permission controls
+     * in a node server (eg. SSR), then it is recommended to call `authRefresh()`
+     * after loading the cookie to ensure an up-to-date token and model state.
+     * For example:
+     *
+     * ```js
+     * pb.authStore.loadFromCookie("cookie string...");
+     *
+     * try {
+     *     // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+     *     pb.authStore.isValid && await pb.collection('users').authRefresh();
+     * } catch (_) {
+     *     // clear the auth store on failed refresh
+     *     pb.authStore.clear();
+     * }
+     * ```
      */
     loadFromCookie(cookie: string, key?: string): void;
     /**

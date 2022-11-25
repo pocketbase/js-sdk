@@ -344,21 +344,29 @@ and pass it to the other server-side actions using the `event.locals`.
 import PocketBase from 'pocketbase';
 
 export async function handle({ event, resolve }) {
-    event.locals.pocketbase = new PocketBase("http://127.0.0.1:8090");
+    event.locals.pb = new PocketBase("http://127.0.0.1:8090");
 
     // load the store data from the request cookie string
-    event.locals.pocketbase.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
+    event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
+
+    try {
+        // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+        event.locals.pb.authStore.isValid && await event.locals.pb.collection('users').authRefresh();
+    } catch (_) {
+        // clear the auth store on failed refresh
+        event.locals.pb.authStore.clear();
+    }
 
     const response = await resolve(event);
 
     // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.set('set-cookie', event.locals.pocketbase.authStore.exportToCookie());
+    response.headers.set('set-cookie', event.locals.pb.authStore.exportToCookie());
 
     return response;
 }
 ```
 
-And then, in some of your server-side actions, you could directly access the previously created `event.locals.pocketbase` instance:
+And then, in some of your server-side actions, you could directly access the previously created `event.locals.pb` instance:
 
 ```js
 // src/routes/login/+server.js
@@ -367,7 +375,7 @@ And then, in some of your server-side actions, you could directly access the pre
 export async function POST({ request, locals }) {
     const { email, password } = await request.json();
 
-    const { token, user } = await locals.pocketbase.collection('users').authWithPassword(email, password);
+    const { token, record } = await locals.pb.collection('users').authWithPassword(email, password);
 
     return new Response('Success...');
 }
@@ -384,25 +392,29 @@ and provide it as a helper to the `nuxtApp` instance:
 // plugins/pocketbase.js
 import PocketBase from 'pocketbase';
 
-export default defineNuxtPlugin((nuxtApp) => {
-  return {
-    provide: {
-      pocketbase: () => {
-        const pb = new PocketBase('http://127.0.0.1:8090');
+export default defineNuxtPlugin(async (nuxtApp) => {
+  const pb = new PocketBase('http://127.0.0.1:8090');
 
-        // load the store data from the request cookie string
-        pb.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
+  // load the store data from the request cookie string
+  pb.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
 
-        // send back the default 'pb_auth' cookie to the client with the latest store state
-        pb.authStore.onChange(() => {
-          if (nuxtApp.ssrContext?.event?.res) {
-            nuxtApp.ssrContext.event.res.setHeader('set-cookie', pb.authStore.exportToCookie());
-          }
-        });
-
-        return pb;
-      }
+  // send back the default 'pb_auth' cookie to the client with the latest store state
+  pb.authStore.onChange(() => {
+    if (nuxtApp.ssrContext?.event?.res) {
+      nuxtApp.ssrContext.event.res.setHeader('set-cookie', pb.authStore.exportToCookie());
     }
+  });
+
+  try {
+      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      pb.authStore.isValid && await pb.collection('users').authRefresh();
+  } catch (_) {
+      // clear the auth store on failed refresh
+      pb.authStore.clear();
+  }
+
+  return {
+    provide: { pb }
   }
 });
 ```
@@ -418,10 +430,10 @@ And then in your component you could access it like this:
 
 <script setup>
   const { data } = await useAsyncData(async (nuxtApp) => {
-    const pb = nuxtApp.$pocketbase();
-
     // fetch and return all "example" records...
-    return await pb.collection('example').getFullList();
+    const records = await nuxtApp.$pb.collection('example').getFullList();
+
+    return structuredClone(records);
   })
 </script>
 ```
@@ -436,7 +448,7 @@ One way to integrate with Nuxt 2 SSR could be to create the PocketBase client in
 // plugins/pocketbase.js
 import PocketBase from  'pocketbase';
 
-export default (ctx, inject) => {
+export default async (ctx, inject) => {
   const pb = new PocketBase('http://127.0.0.1:8090');
 
   // load the store data from the request cookie string
@@ -446,6 +458,14 @@ export default (ctx, inject) => {
   pb.authStore.onChange(() => {
     ctx.res?.setHeader('set-cookie', pb.authStore.exportToCookie());
   });
+
+  try {
+      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      pb.authStore.isValid && await pb.collection('users').authRefresh();
+  } catch (_) {
+      // clear the auth store on failed refresh
+      pb.authStore.clear();
+  }
 
   inject('pocketbase', pb);
 };
@@ -483,34 +503,33 @@ but they are very limited and, at the time of writing, you can't pass data from 
 One way to integrate with Next.js SSR could be to create a custom `PocketBase` instance in each of your `getServerSideProps`:
 
 ```jsx
-import PocketBase, { BaseAuthStore } from 'pocketbase';
+import PocketBase from 'pocketbase';
 
-class NextAuthStore extends BaseAuthStore {
-  constructor(req, res) {
-    super();
+// you can place this helper in a separate file so that it can be reused
+async function initPocketBase(req, res) {
+  const pb = new PocketBase('http://127.0.0.1:8090');
 
-    this.req = req;
-    this.res = res;
+  // load the store data from the request cookie string
+  pb.loadFromCookie(req?.headers?.cookie || '');
 
-    this.loadFromCookie(this.req?.headers?.cookie);
+  // send back the default 'pb_auth' cookie to the client with the latest store state
+  pb.authStore.onChange(() => {
+    res?.setHeader('set-cookie', pb.authStore.exportToCookie());
+  });
+
+  try {
+      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      pb.authStore.isValid && await pb.collection('users').authRefresh();
+  } catch (_) {
+      // clear the auth store on failed refresh
+      pb.authStore.clear();
   }
 
-  save(token, model) {
-    super.save(token, model);
-
-    this.res?.setHeader('set-cookie', this.exportToCookie());
-  }
-
-  clear() {
-    super.clear();
-
-    this.res?.setHeader('set-cookie', this.exportToCookie());
-  }
+  return pb
 }
 
 export async function getServerSideProps({ req, res }) {
-  const pb = new PocketBase('http://127.0.0.1:8090');
-  pb.authStore = new NextAuthStore(req, res);
+  const pb = await initPocketBase(req, res)
 
   // fetch example records...
   const result = await pb.collection('example').getList(1, 30);
