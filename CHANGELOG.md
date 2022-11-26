@@ -1,4 +1,15 @@
-## v0.8.0
+## 0.8.1
+
+This release contains only documentation fixes:
+
+- Fixed code comment typos.
+
+- Added note about loadFromCookie that you may need to call authRefresh to validate the loaded cookie state server-side.
+
+- Updated the SSR examples to show the authRefresh call. _For the examples the authRefresh call is not required but it is there to remind users that it needs to be called if you want to do permission checks in a node env (eg. SSR) and rely on the `pb.authStore.isValid`._
+
+
+## 0.8.0
 
 > ⚠️ Please note that this release works only with the new PocketBase v0.8+ API!
 >
