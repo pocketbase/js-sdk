@@ -263,7 +263,7 @@ To manually cancel pending requests, you could use `pb.cancelAllRequests()` or `
 You could specify custom TypeScript definitions for your Record models using generics:
 
 ```ts
-interface Task {
+interface Task extends Record {
   // type the collection fields you want to use...
   id:   string;
   name: string;
