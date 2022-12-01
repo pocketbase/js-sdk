@@ -1,11 +1,33 @@
 import BaseService from '@/services/utils/BaseService';
 
+interface promiseCallbacks {
+    resolve: Function
+    reject: Function
+}
+
 export type UnsubscribeFunc = () => Promise<void>;
 
 export default class RealtimeService extends BaseService {
     private clientId: string = "";
     private eventSource: EventSource | null = null;
     private subscriptions: { [key: string]: Array<EventListener> } = {};
+    private lastSentTopics: Array<string> = [];
+    private connectTimeoutId: any;
+    private maxConnectTimeout: number = 10000;
+    private reconnectTimeoutId: any;
+    private reconnectAttempts: number = 0;
+    private maxReconnectAttempts: number = Infinity;
+    private predefinedReconnectIntervals: Array<number> = [
+        200, 300, 500, 1000, 1200, 1500, 2000,
+    ];
+    private pendingConnects: Array<promiseCallbacks> = [];
+
+    /**
+     * Returns whether the realtime connection has been established.
+     */
+    get isConnected(): boolean {
+        return !!this.eventSource && !!this.clientId && !this.pendingConnects.length;
+    }
 
     /**
      * Register the subscription listener.
@@ -37,15 +59,15 @@ export default class RealtimeService extends BaseService {
         }
         this.subscriptions[topic].push(listener);
 
-        if (!this.eventSource) {
-            // start a new sse connection
-            this.connect();
+        if (!this.isConnected) {
+            // initialize sse connection
+            await this.connect();
         } else if (this.subscriptions[topic].length === 1) {
             // send the updated subscriptions (if it is the first for the topic)
             await this.submitSubscriptions();
         } else {
             // only register the listener
-            this.eventSource.addEventListener(topic, listener);
+            this.eventSource?.addEventListener(topic, listener);
         }
 
         return async (): Promise<void> => {
@@ -185,26 +207,28 @@ export default class RealtimeService extends BaseService {
         return false;
     }
 
-    private async submitSubscriptions(): Promise<boolean> {
+    private async submitSubscriptions(): Promise<void> {
         if (!this.clientId) {
-            return false;
+            return; // no client/subscriber
         }
 
         // optimistic update
         this.addAllSubscriptionListeners();
 
+        this.lastSentTopics = this.getNonEmptySubscriptionTopics();
+
         return this.client.send('/api/realtime', {
             'method': 'POST',
             'body': {
                 'clientId': this.clientId,
-                'subscriptions': this.getNonEmptySubscriptionTopics(),
+                'subscriptions': this.lastSentTopics,
             },
             'params': {
-                '$cancelKey': "realtime_subscriptions_" + this.clientId,
+                '$cancelKey': "realtime_" + this.clientId,
             },
-        }).then(() => true).catch((err) => {
+        }).catch((err) => {
             if (err?.isAbort) {
-                return true; // silently ignore aborted pending requests
+                return; // silently ignore aborted pending requests
             }
             throw err;
         });
@@ -248,23 +272,130 @@ export default class RealtimeService extends BaseService {
         }
     }
 
-    private connectHandler(e: Event): void {
-        const msgEvent = (e as MessageEvent);
-        this.clientId = msgEvent?.lastEventId;
-        this.submitSubscriptions();
+    private async connect(): Promise<void> {
+        if (this.reconnectAttempts > 0)  {
+            // immediately resolve the promise to avoid indefinitely
+            // blocking the client during reconnection
+            return;
+        }
+
+        return new Promise((resolve, reject) => {
+            this.pendingConnects.push({ resolve, reject });
+
+            if (this.pendingConnects.length > 1) {
+                // all promises will be resolved once the connection is established
+                return;
+            }
+
+            this.initConnect();
+        })
     }
 
-    private connect(): void {
-        this.disconnect();
+    private initConnect() {
+        this.disconnect(true);
+
+        // wait up to 10s for connect
+        clearTimeout(this.connectTimeoutId);
+        this.connectTimeoutId = setTimeout(() => {
+            this.connectErrorHandler(new Error("EventSource connect took too long."));
+        }, this.maxConnectTimeout);
+
         this.eventSource = new EventSource(this.client.buildUrl('/api/realtime'))
-        this.eventSource.addEventListener('PB_CONNECT', (e) => this.connectHandler(e));
+
+        this.eventSource.onerror = (_) => {
+            this.connectErrorHandler(new Error("Failed to establish realtime connection."));
+        };
+
+        this.eventSource.addEventListener('PB_CONNECT', (e) => {
+            const msgEvent = (e as MessageEvent);
+            this.clientId = msgEvent?.lastEventId;
+
+            this.submitSubscriptions()
+            .then(async () => {
+                let retries = 3;
+                while (this.hasUnsentSubscriptions() && retries > 0) {
+                    retries--;
+                    // resubscribe to ensure that the latest topics are submitted
+                    //
+                    // This is needed because missed topics could happen on reconnect
+                    // if after the pending sent `submitSubscriptions()` call another `subscribe()`
+                    // was made before the submit was able to complete.
+                    await this.submitSubscriptions();
+                }
+            }).then(() => {
+                for (let p of this.pendingConnects) {
+                    p.resolve();
+                }
+
+                // reset connect meta
+                this.pendingConnects = [];
+                this.reconnectAttempts = 0;
+                clearTimeout(this.reconnectTimeoutId);
+                clearTimeout(this.connectTimeoutId);
+            }).catch((err) => {
+                this.clientId = "";
+                this.connectErrorHandler(err);
+            });
+        });
     }
 
-    private disconnect(): void {
+    private hasUnsentSubscriptions(): boolean {
+        const latestTopics = this.getNonEmptySubscriptionTopics();
+        if (latestTopics.length != this.lastSentTopics.length) {
+            return true;
+        }
+
+        for (const t of latestTopics) {
+            if (!this.lastSentTopics.includes(t)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private connectErrorHandler(err: any) {
+        clearTimeout(this.connectTimeoutId);
+        clearTimeout(this.reconnectTimeoutId);
+
+        if (
+            // wasn't previously connected -> direct reject
+            (!this.clientId && !this.reconnectAttempts) ||
+            // was previously connected but the max reconnection limit has been reached
+            this.reconnectAttempts > this.maxReconnectAttempts
+        ) {
+            for (let p of this.pendingConnects) {
+                p.reject(err);
+            }
+            this.disconnect();
+            return;
+        }
+
+        // otherwise -> reconnect in the background
+        this.disconnect(true);
+        const timeout = this.predefinedReconnectIntervals[this.reconnectAttempts] || this.predefinedReconnectIntervals[this.predefinedReconnectIntervals.length - 1];
+        this.reconnectAttempts++;
+        this.reconnectTimeoutId = setTimeout(() => {
+            this.initConnect();
+        }, timeout);
+    }
+
+    private disconnect(fromReconnect = false): void {
+        clearTimeout(this.connectTimeoutId);
+        clearTimeout(this.reconnectTimeoutId);
         this.removeAllSubscriptionListeners();
-        this.eventSource?.removeEventListener('PB_CONNECT', (e) => this.connectHandler(e));
         this.eventSource?.close();
         this.eventSource = null;
         this.clientId = "";
+
+        if (!fromReconnect) {
+            this.reconnectAttempts = 0;
+
+            // reject any remaining connect promises
+            for (let p of this.pendingConnects) {
+                p.reject(new Error("Realtime disconnected."));
+            }
+            this.pendingConnects = [];
+        }
     }
 }

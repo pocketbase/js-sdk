@@ -346,6 +346,18 @@ declare class RealtimeService extends BaseService {
     private clientId;
     private eventSource;
     private subscriptions;
+    private lastSentTopics;
+    private connectTimeoutId;
+    private maxConnectTimeout;
+    private reconnectTimeoutId;
+    private reconnectAttempts;
+    private maxReconnectAttempts;
+    private predefinedReconnectIntervals;
+    private pendingConnects;
+    /**
+     * Returns whether the realtime connection has been established.
+     */
+    get isConnected(): boolean;
     /**
      * Register the subscription listener.
      *
@@ -391,8 +403,10 @@ declare class RealtimeService extends BaseService {
     private getNonEmptySubscriptionTopics;
     private addAllSubscriptionListeners;
     private removeAllSubscriptionListeners;
-    private connectHandler;
     private connect;
+    private initConnect;
+    private hasUnsentSubscriptions;
+    private connectErrorHandler;
     private disconnect;
 }
 declare class ExternalAuth extends BaseModel {

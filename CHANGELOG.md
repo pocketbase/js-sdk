@@ -1,3 +1,10 @@
+## 0.8.2
+
+- Allowed catching the initial realtime connect error as part of the `subscribe()` Promise resolution.
+
+- Reimplemented the default `EventSource` retry mechanism for better control and more consistent behavior across different browsers.
+
+
 ## 0.8.1
 
 This release contains only documentation fixes:
