@@ -1,4 +1,5 @@
 import BaseService from '@/services/utils/BaseService';
+import ClientResponseError from '@/ClientResponseError';
 
 interface promiseCallbacks {
     resolve: Function
@@ -365,7 +366,7 @@ export default class RealtimeService extends BaseService {
             this.reconnectAttempts > this.maxReconnectAttempts
         ) {
             for (let p of this.pendingConnects) {
-                p.reject(err);
+                p.reject(new ClientResponseError(err));
             }
             this.disconnect();
             return;
@@ -392,8 +393,9 @@ export default class RealtimeService extends BaseService {
             this.reconnectAttempts = 0;
 
             // reject any remaining connect promises
+            const err = new ClientResponseError(new Error("Realtime disconnected."));
             for (let p of this.pendingConnects) {
-                p.reject(new Error("Realtime disconnected."));
+                p.reject(err);
             }
             this.pendingConnects = [];
         }
