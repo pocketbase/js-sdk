@@ -510,7 +510,7 @@ async function initPocketBase(req, res) {
   const pb = new PocketBase('http://127.0.0.1:8090');
 
   // load the store data from the request cookie string
-  pb.loadFromCookie(req?.headers?.cookie || '');
+  pb.authStore.loadFromCookie(req?.headers?.cookie || '');
 
   // send back the default 'pb_auth' cookie to the client with the latest store state
   pb.authStore.onChange(() => {
