@@ -5,7 +5,21 @@ const isProduction = !process.env.ROLLUP_WATCH;
 
 function basePlugins() {
     return [
-        ts(),
+        ts({
+            hook: {
+                outputPath: (path, kind) => {
+                    if (kind === 'declaration') {
+                        // replace .es.d.ts with .es.d.mts (see #92)
+                        //
+                        // this usually is already done in rollup-plugin-ts v3
+                        // and could be removed after upgrading
+                        return path.replace('.es.d.ts', '.es.d.mts');
+                    }
+
+                    return path;
+                }
+            }
+        }),
 
         // minify if we're building for production
         // (aka. npm run build instead of npm run dev)
