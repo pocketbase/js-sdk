@@ -1,7 +1,13 @@
 import BaseModel           from '@/models/utils/BaseModel';
 import ListResult          from '@/models/utils/ListResult';
-import BaseService, { BaseQueryParams, ExpandableQueryParams, FilterableQueryParams, PaginatedQueryParams, SortableQueryParams }         from '@/services/utils/BaseService';
 import ClientResponseError from '@/ClientResponseError';
+import BaseService, {
+    BaseQueryParams,
+    ExpandableQueryParams,
+    FilterableQueryParams,
+    PaginatedQueryParams,
+    SortableQueryParams
+} from '@/services/utils/BaseService';
 
 // @todo since there is no longer need of SubCrudService consider merging with CrudService in v0.9+
 export default abstract class BaseCrudService<M extends BaseModel> extends BaseService {
