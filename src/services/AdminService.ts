@@ -1,5 +1,6 @@
-import CrudService from '@/services/utils/CrudService';
-import Admin       from '@/models/Admin';
+import CrudService         from '@/services/utils/CrudService';
+import Admin               from '@/models/Admin';
+import { BaseQueryParams } from './utils/BaseService';
 
 export type AdminAuthResponse = {
     [key: string]: any,
@@ -32,7 +33,7 @@ export default class AdminService extends CrudService<Admin> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Admin>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+    update<T = Admin>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
         return super.update<Admin>(id, bodyParams, queryParams).then((item) => {
             // update the store state if the updated item id matches with the stored model
             if (
@@ -53,7 +54,7 @@ export default class AdminService extends CrudService<Admin> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, queryParams = {}): Promise<boolean> {
+    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         return super.delete(id, queryParams).then((success) => {
             // clear the store state if the deleted item id matches with the stored model
             if (
@@ -99,7 +100,7 @@ export default class AdminService extends CrudService<Admin> {
         email: string,
         password: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<AdminAuthResponse> {
         bodyParams = Object.assign({
             'identity': email,
@@ -122,7 +123,7 @@ export default class AdminService extends CrudService<Admin> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    authRefresh(bodyParams = {}, queryParams = {}): Promise<AdminAuthResponse> {
+    authRefresh(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<AdminAuthResponse> {
         return this.client.send(this.baseCrudPath + '/auth-refresh', {
             'method': 'POST',
             'params': queryParams,
@@ -136,7 +137,7 @@ export default class AdminService extends CrudService<Admin> {
     requestPasswordReset(
         email: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'email': email,
@@ -157,7 +158,7 @@ export default class AdminService extends CrudService<Admin> {
         password: string,
         passwordConfirm: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'token':           passwordResetToken,

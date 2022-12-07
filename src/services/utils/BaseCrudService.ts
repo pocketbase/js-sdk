@@ -1,6 +1,6 @@
 import BaseModel           from '@/models/utils/BaseModel';
 import ListResult          from '@/models/utils/ListResult';
-import BaseService         from '@/services/utils/BaseService';
+import BaseService, { BaseQueryParams, ExpandableQueryParams, FilterableQueryParams, PaginatedQueryParams, SortableQueryParams }         from '@/services/utils/BaseService';
 import ClientResponseError from '@/ClientResponseError';
 
 // @todo since there is no longer need of SubCrudService consider merging with CrudService in v0.9+
@@ -13,7 +13,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns a promise with all list items batch fetched at once.
      */
-    protected _getFullList<T = M>(basePath: string, batchSize = 100, queryParams = {}): Promise<Array<T>> {
+    protected _getFullList<T = M>(basePath: string, batchSize = 100, queryParams: ListQueryParams = {}): Promise<Array<T>> {
         var result: Array<T> = [];
 
         let request = async (page: number): Promise<Array<any>> => {
@@ -38,7 +38,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns paginated items list.
      */
-    protected _getList<T = M>(basePath: string, page = 1, perPage = 30, queryParams = {}): Promise<ListResult<T>> {
+    protected _getList<T = M>(basePath: string, page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<T>> {
         queryParams = Object.assign({
             'page':    page,
             'perPage': perPage,
@@ -69,7 +69,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns single item by its id.
      */
-    protected _getOne<T = M>(basePath: string, id: string, queryParams = {}): Promise<T> {
+    protected _getOne<T = M>(basePath: string, id: string, queryParams: BaseCrudQueryParams = {}): Promise<T> {
         return this.client.send(basePath + '/' + encodeURIComponent(id), {
             'method': 'GET',
             'params': queryParams
@@ -85,7 +85,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
      * For consistency with `_getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
      */
-    protected _getFirstListItem<T = M>(basePath: string, filter: string, queryParams = {}): Promise<T> {
+    protected _getFirstListItem<T = M>(basePath: string, filter: string, queryParams: BaseCrudQueryParams = {}): Promise<T> {
         queryParams = Object.assign({
             'filter': filter,
             '$cancelKey': 'one_by_filter_' + basePath + "_" + filter,
@@ -111,7 +111,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Creates a new item.
      */
-    protected _create<T = M>(basePath: string, bodyParams = {}, queryParams = {}): Promise<T> {
+    protected _create<T = M>(basePath: string, bodyParams = {}, queryParams: BaseCrudQueryParams = {}): Promise<T> {
         return this.client.send(basePath, {
             'method': 'POST',
             'params': queryParams,
@@ -122,7 +122,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Updates an existing item by its id.
      */
-    protected _update<T = M>(basePath: string, id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+    protected _update<T = M>(basePath: string, id: string, bodyParams = {}, queryParams: BaseCrudQueryParams = {}): Promise<T> {
         return this.client.send(basePath + '/' + encodeURIComponent(id), {
             'method': 'PATCH',
             'params': queryParams,
@@ -133,10 +133,18 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Deletes an existing item by its id.
      */
-    protected _delete(basePath: string, id: string, queryParams = {}): Promise<boolean> {
+    protected _delete(basePath: string, id: string, queryParams: BaseCrudQueryParams = {}): Promise<boolean> {
         return this.client.send(basePath + '/' + encodeURIComponent(id), {
             'method': 'DELETE',
             'params': queryParams,
         }).then(() => true);
     }
 }
+
+export interface BaseCrudQueryParams extends BaseQueryParams, ExpandableQueryParams {}
+
+export interface ListQueryParams extends
+    BaseCrudQueryParams,
+    PaginatedQueryParams,
+    SortableQueryParams,
+    FilterableQueryParams {}

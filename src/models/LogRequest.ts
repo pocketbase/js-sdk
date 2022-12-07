@@ -17,7 +17,7 @@ export default class LogRequest extends BaseModel {
     load(data: { [key: string]: any }) {
         super.load(data);
 
-        // fallback to the ip field for backward compatability
+        // fallback to the ip field for backward compatibility
         data.remoteIp = data.remoteIp || data.ip;
 
         this.url       = typeof data.url       === 'string' ? data.url       : '';

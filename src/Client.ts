@@ -8,6 +8,7 @@ import CollectionService   from '@/services/CollectionService';
 import LogService          from '@/services/LogService';
 import RealtimeService     from '@/services/RealtimeService';
 import Record              from '@/models/Record';
+import { BaseQueryParams } from './services/utils/BaseService';
 
 /**
  * PocketBase JS Client.
@@ -273,7 +274,7 @@ export default class Client {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
-    getFileUrl(record: Record, filename: string, queryParams = {}): string {
+    getFileUrl(record: Record, filename: string, queryParams: FileQueryParams = {}): string {
         const parts = [];
         parts.push("api")
         parts.push("files")
@@ -332,4 +333,8 @@ export default class Client {
 
         return result.join('&');
     }
+}
+
+export interface FileQueryParams extends BaseQueryParams {
+    thumb?: string;
 }
