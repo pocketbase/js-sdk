@@ -210,7 +210,7 @@ export default class RecordService extends CrudService<Record> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, queryParams: RecordQueryParams = {}): Promise<boolean> {
+    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         return super.delete(id, queryParams).then((success) => {
             if (
                 success &&
