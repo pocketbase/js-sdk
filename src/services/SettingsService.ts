@@ -1,10 +1,11 @@
-import BaseService from '@/services/utils/BaseService';
+import BaseService         from '@/services/utils/BaseService';
+import { BaseQueryParams } from '@/services/utils/QueryParams';
 
 export default class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
      */
-    getAll(queryParams = {}): Promise<{ [key: string]: any }> {
+    getAll(queryParams: BaseQueryParams = {}): Promise<{ [key: string]: any }> {
         return this.client.send('/api/settings', {
             'method': 'GET',
             'params': queryParams,
@@ -14,7 +15,7 @@ export default class SettingsService extends BaseService {
     /**
      * Bulk updates app settings.
      */
-    update(bodyParams = {}, queryParams = {}): Promise<{ [key: string]: any }> {
+    update(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<{ [key: string]: any }> {
         return this.client.send('/api/settings', {
             'method': 'PATCH',
             'params': queryParams,
@@ -25,7 +26,7 @@ export default class SettingsService extends BaseService {
     /**
      * Performs a S3 storage connection test.
      */
-    testS3(queryParams = {}): Promise<boolean> {
+    testS3(queryParams: BaseQueryParams = {}): Promise<boolean> {
         return this.client.send('/api/settings/test/s3', {
             'method': 'POST',
             'params': queryParams,
@@ -40,7 +41,7 @@ export default class SettingsService extends BaseService {
      * - password-reset
      * - email-change
      */
-    testEmail(toEmail: string, emailTemplate: string, queryParams = {}): Promise<boolean> {
+    testEmail(toEmail: string, emailTemplate: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         const bodyParams = {
             'email':    toEmail,
             'template': emailTemplate,

@@ -20,6 +20,14 @@ import {
     RecordSubscription,
 } from '@/services/RecordService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
+import {
+    BaseQueryParams,
+    ListQueryParams,
+    RecordQueryParams,
+    RecordListQueryParams,
+    LogStatsQueryParams,
+    FileQueryParams,
+} from '@/services/utils/QueryParams';
 
 export {
     ClientResponseError,
@@ -41,6 +49,12 @@ export {
     RecordSubscription,
     OnStoreChangeFunc,
     UnsubscribeFunc,
+    BaseQueryParams,
+    ListQueryParams,
+    RecordQueryParams,
+    RecordListQueryParams,
+    LogStatsQueryParams,
+    FileQueryParams,
 };
 
 export default Client;

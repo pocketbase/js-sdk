@@ -1,5 +1,6 @@
-import CrudService from '@/services/utils/CrudService';
-import Collection  from '@/models/Collection';
+import Collection          from '@/models/Collection';
+import CrudService         from '@/services/utils/CrudService';
+import { BaseQueryParams } from '@/services/utils/QueryParams';
 
 export default class CollectionService extends CrudService<Collection> {
     /**
@@ -23,7 +24,11 @@ export default class CollectionService extends CrudService<Collection> {
      * that are not present in the imported configuration, WILL BE DELETED
      * (including their related records data)!
      */
-    async import(collections: Array<Collection>, deleteMissing: boolean = false, queryParams = {}): Promise<true> {
+    async import(
+        collections: Array<Collection>,
+        deleteMissing: boolean = false,
+        queryParams: BaseQueryParams = {}
+    ): Promise<true> {
         return this.client.send(this.baseCrudPath + '/import', {
             'method': 'PUT',
             'params': queryParams,

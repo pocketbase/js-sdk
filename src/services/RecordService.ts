@@ -1,13 +1,19 @@
 import Client              from '@/Client';
-import CrudService         from '@/services/utils/CrudService';
-import { UnsubscribeFunc } from '@/services/RealtimeService';
 import Record              from '@/models/Record';
 import ExternalAuth        from '@/models/ExternalAuth';
+import ListResult          from '@/models/utils/ListResult';
+import CrudService         from '@/services/utils/CrudService';
+import { UnsubscribeFunc } from '@/services/RealtimeService';
+import {
+    BaseQueryParams,
+    RecordQueryParams,
+    RecordListQueryParams,
+} from '@/services/utils/QueryParams';
 
 export interface RecordAuthResponse<T = Record> {
-    token:  string;
     record: T;
-    meta?: {[key: string]: any};
+    token:  string;
+    meta?:  {[key: string]: any};
 }
 
 export interface AuthProviderInfo {
@@ -70,7 +76,7 @@ export default class RecordService extends CrudService<Record> {
      * Subscribe to the realtime changes of a single record in the collection.
      */
     async subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
-        console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subsribe(recordId, callback).");
+        console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subscribe(recordId, callback).");
         return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
     }
 
@@ -99,7 +105,7 @@ export default class RecordService extends CrudService<Record> {
         callback?: (data: RecordSubscription<T>) => void
     ): Promise<UnsubscribeFunc> {
         if (typeof topicOrCallback === 'function') {
-            console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subsribe('*', callback).");
+            console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subscribe('*', callback).");
             return this.client.realtime.subscribe(this.collectionIdOrName, topicOrCallback);
         }
 
@@ -146,11 +152,46 @@ export default class RecordService extends CrudService<Record> {
     // ---------------------------------------------------------------
     /**
      * @inheritdoc
+     */
+    getFullList<T = Record>(batch = 200, queryParams: RecordListQueryParams = {}): Promise<Array<T>> {
+        return super.getFullList<T>(batch, queryParams);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getList<T = Record>(page = 1, perPage = 30, queryParams: RecordListQueryParams = {}): Promise<ListResult<T>> {
+        return super.getList<T>(page, perPage, queryParams);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getFirstListItem<T = Record>(filter: string, queryParams: RecordListQueryParams = {}): Promise<T> {
+        return super.getFirstListItem<T>(filter, queryParams);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getOne<T = Record>(id: string, queryParams: RecordQueryParams = {}): Promise<T> {
+        return super.getOne<T>(id, queryParams);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    create<T = Record>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
+        return super.create<T>(bodyParams, queryParams);
+    }
+
+    /**
+     * @inheritdoc
      *
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Record>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+    update<T = Record>(id: string, bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
         return super.update<Record>(id, bodyParams, queryParams).then((item) => {
             if (
                 typeof this.client.authStore.model?.collectionId !== 'undefined' && // is record auth
@@ -169,7 +210,7 @@ export default class RecordService extends CrudService<Record> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, queryParams = {}): Promise<boolean> {
+    delete(id: string, queryParams: RecordQueryParams = {}): Promise<boolean> {
         return super.delete(id, queryParams).then((success) => {
             if (
                 success &&
@@ -205,7 +246,7 @@ export default class RecordService extends CrudService<Record> {
     /**
      * Returns all available collection auth methods.
      */
-    listAuthMethods(queryParams = {}): Promise<AuthMethodsList> {
+    listAuthMethods(queryParams: BaseQueryParams = {}): Promise<AuthMethodsList> {
         return this.client.send(this.baseCollectionPath + '/auth-methods', {
             'method': 'GET',
             'params': queryParams,
@@ -231,7 +272,7 @@ export default class RecordService extends CrudService<Record> {
         usernameOrEmail: string,
         password: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: RecordQueryParams = {},
     ): Promise<RecordAuthResponse<T>> {
         bodyParams = Object.assign({
             'identity': usernameOrEmail,
@@ -264,7 +305,7 @@ export default class RecordService extends CrudService<Record> {
         redirectUrl: string,
         createData = {},
         bodyParams = {},
-        queryParams = {},
+        queryParams: RecordQueryParams = {},
     ): Promise<RecordAuthResponse<T>> {
         bodyParams = Object.assign({
             'provider':     provider,
@@ -287,7 +328,7 @@ export default class RecordService extends CrudService<Record> {
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = Record>(bodyParams = {}, queryParams = {}): Promise<RecordAuthResponse<T>> {
+    authRefresh<T = Record>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<RecordAuthResponse<T>> {
         return this.client.send(this.baseCollectionPath + '/auth-refresh', {
             'method': 'POST',
             'params': queryParams,
@@ -301,7 +342,7 @@ export default class RecordService extends CrudService<Record> {
     requestPasswordReset(
         email: string,
         bodyParams  = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'email': email,
@@ -322,7 +363,7 @@ export default class RecordService extends CrudService<Record> {
         password: string,
         passwordConfirm: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'token':           passwordResetToken,
@@ -343,7 +384,7 @@ export default class RecordService extends CrudService<Record> {
     requestVerification(
         email: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'email': email,
@@ -362,7 +403,7 @@ export default class RecordService extends CrudService<Record> {
     confirmVerification(
         verificationToken: string,
         bodyParams  = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'token': verificationToken,
@@ -381,7 +422,7 @@ export default class RecordService extends CrudService<Record> {
     requestEmailChange(
         newEmail: string,
         bodyParams = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'newEmail': newEmail,
@@ -401,7 +442,7 @@ export default class RecordService extends CrudService<Record> {
         emailChangeToken: string,
         password: string,
         bodyParams  = {},
-        queryParams = {},
+        queryParams: BaseQueryParams = {},
     ): Promise<boolean> {
         bodyParams = Object.assign({
             'token': emailChangeToken,
@@ -420,7 +461,7 @@ export default class RecordService extends CrudService<Record> {
      */
     listExternalAuths(
         recordId: string,
-        queryParams = {}
+        queryParams: BaseQueryParams = {}
     ): Promise<Array<ExternalAuth>> {
         return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths', {
             'method': 'GET',
@@ -444,7 +485,7 @@ export default class RecordService extends CrudService<Record> {
     unlinkExternalAuth(
         recordId: string,
         provider: string,
-        queryParams = {}
+        queryParams: BaseQueryParams = {}
     ): Promise<boolean> {
         return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths/' + encodeURIComponent(provider), {
             'method': 'DELETE',

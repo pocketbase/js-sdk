@@ -1,6 +1,10 @@
-import ListResult          from '@/models/utils/ListResult';
-import BaseModel           from '@/models/utils/BaseModel';
-import BaseCrudService     from '@/services/utils/BaseCrudService';
+import ListResult      from '@/models/utils/ListResult';
+import BaseModel       from '@/models/utils/BaseModel';
+import BaseCrudService from '@/services/utils/BaseCrudService';
+import {
+    BaseQueryParams,
+    ListQueryParams
+} from '@/services/utils/QueryParams';
 
 export default abstract class CrudService<M extends BaseModel> extends BaseCrudService<M> {
     /**
@@ -13,7 +17,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getFullList<T = M>(batch = 200, queryParams = {}): Promise<Array<T>> {
+    getFullList<T = M>(batch = 200, queryParams: ListQueryParams = {}): Promise<Array<T>> {
         return this._getFullList<T>(this.baseCrudPath, batch, queryParams);
     }
 
@@ -22,7 +26,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page = 1, perPage = 30, queryParams = {}): Promise<ListResult<T>> {
+    getList<T = M>(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<T>> {
         return this._getList<T>(this.baseCrudPath, page, perPage, queryParams);
     }
 
@@ -37,7 +41,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      * For consistency with `getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
      */
-    getFirstListItem<T = M>(filter: string, queryParams = {}): Promise<T> {
+    getFirstListItem<T = M>(filter: string, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._getFirstListItem<T>(this.baseCrudPath, filter, queryParams);
     }
 
@@ -46,7 +50,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getOne<T = M>(id: string, queryParams = {}): Promise<T> {
+    getOne<T = M>(id: string, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._getOne<T>(this.baseCrudPath, id, queryParams);
     }
 
@@ -55,7 +59,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    create<T = M>(bodyParams = {}, queryParams = {}): Promise<T> {
+    create<T = M>(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._create<T>(this.baseCrudPath, bodyParams, queryParams);
     }
 
@@ -64,14 +68,14 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    update<T = M>(id: string, bodyParams = {}, queryParams = {}): Promise<T> {
+    update<T = M>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._update<T>(this.baseCrudPath, id, bodyParams, queryParams);
     }
 
     /**
      * Deletes an existing item by its id.
      */
-    delete(id: string, queryParams = {}): Promise<boolean> {
+    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         return this._delete(this.baseCrudPath, id, queryParams);
     }
 }

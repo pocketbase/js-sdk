@@ -1,3 +1,21 @@
+## (WIP) 0.8.4
+
+- Added types for the action query parameters ([#102](https://github.com/pocketbase/js-sdk/pull/102); thanks @sewera).
+  ```js
+  BaseQueryParams
+  ListQueryParams
+  RecordQueryParams
+  RecordListQueryParams
+  LogStatsQueryParams
+  FileQueryParams
+  ```
+
+
+## 0.8.3
+
+- Renamed the declaration file extension from `.d.ts` to `.d.mts` to prevent type resolution issues ([#92](https://github.com/pocketbase/js-sdk/issues/92)).
+
+
 ## 0.8.2
 
 - Allowed catching the initial realtime connect error as part of the `subscribe()` Promise resolution.
