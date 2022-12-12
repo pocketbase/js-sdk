@@ -520,7 +520,7 @@ declare class RecordService extends CrudService<Record> {
      */
     unsubscribe(topic?: string): Promise<void>;
     // ---------------------------------------------------------------
-    // Post update/delete AuthStore sync
+    // Crud handers
     // ---------------------------------------------------------------
     /**
      * @inheritdoc
@@ -557,7 +557,7 @@ declare class RecordService extends CrudService<Record> {
      */
     delete(id: string, queryParams?: BaseQueryParams): Promise<boolean>;
     // ---------------------------------------------------------------
-    // Auth collection handlers
+    // Auth handlers
     // ---------------------------------------------------------------
     /**
      * Prepare successful collection authorization response.

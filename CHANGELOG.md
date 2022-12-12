@@ -1,6 +1,6 @@
-## (WIP) 0.8.4
+## 0.8.4
 
-- Added types for the action query parameters ([#102](https://github.com/pocketbase/js-sdk/pull/102); thanks @sewera).
+- Added type declarations for the action query parameters ([#102](https://github.com/pocketbase/js-sdk/pull/102); thanks @sewera).
   ```js
   BaseQueryParams
   ListQueryParams

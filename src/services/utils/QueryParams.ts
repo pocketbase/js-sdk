@@ -1,8 +1,8 @@
 export interface BaseQueryParams {
     [key: string]: any;
 
-    $autoCancel?:  boolean;
-    $cancelKey?:   string;
+    $autoCancel?: boolean;
+    $cancelKey?:  string;
 }
 
 export interface ListQueryParams extends BaseQueryParams {

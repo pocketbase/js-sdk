@@ -148,7 +148,7 @@ export default class RecordService extends CrudService<Record> {
     }
 
     // ---------------------------------------------------------------
-    // Post update/delete AuthStore sync
+    // Crud handers
     // ---------------------------------------------------------------
     /**
      * @inheritdoc
@@ -225,7 +225,7 @@ export default class RecordService extends CrudService<Record> {
     }
 
     // ---------------------------------------------------------------
-    // Auth collection handlers
+    // Auth handlers
     // ---------------------------------------------------------------
 
     /**
