@@ -343,8 +343,9 @@ and pass it to the other server-side actions using the `event.locals`.
 // src/hooks.server.js
 import PocketBase from 'pocketbase';
 
+/** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-    event.locals.pb = new PocketBase("http://127.0.0.1:8090");
+    event.locals.pb = new PocketBase("http://127.0.0.1:8080");
 
     // load the store data from the request cookie string
     event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
@@ -372,6 +373,7 @@ And then, in some of your server-side actions, you could directly access the pre
 // src/routes/login/+server.js
 //
 // creates a `POST /login` server-side endpoint
+/** @type {import('./$types').PageServerLoad} */
 export async function POST({ request, locals }) {
     const { email, password } = await request.json();
 
@@ -379,6 +381,22 @@ export async function POST({ request, locals }) {
 
     return new Response('Success...');
 }
+```
+    
+For correct type detection, you can add the `Client` to your global types definition.
+    
+```ts
+// src/app.d.ts
+import Client from "pocketbase";
+
+declare global {
+    declare namespace App {
+        interface Locals {
+            pb: Client
+        }
+    }
+}
+
 ```
 </details>
 
