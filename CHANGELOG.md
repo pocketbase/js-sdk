@@ -1,3 +1,8 @@
+## 0.9.0
+
+- Added `pb.health.check()` that checks the health status of the API service (_available in PocketBase v0.10.0_)
+
+
 ## 0.8.4
 
 - Added type declarations for the action query parameters ([#102](https://github.com/pocketbase/js-sdk/pull/102); thanks @sewera).

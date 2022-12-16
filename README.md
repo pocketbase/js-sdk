@@ -795,6 +795,15 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔓 pb.realtime.unsubscribeByTopicAndListener(topic, callback);
 ```
 
+---
+
+##### HealthService
+
+```js
+// Checks the health status of the api.
+🔓 pb.health.check(queryParams = {});
+```
+
 
 ## Development
 ```sh

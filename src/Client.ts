@@ -7,6 +7,7 @@ import RecordService       from '@/services/RecordService';
 import CollectionService   from '@/services/CollectionService';
 import LogService          from '@/services/LogService';
 import RealtimeService     from '@/services/RealtimeService';
+import HealthService       from '@/services/HealthService';
 import Record              from '@/models/Record';
 import { FileQueryParams } from '@/services/utils/QueryParams';
 
@@ -99,6 +100,11 @@ export default class Client {
      */
     readonly realtime: RealtimeService;
 
+    /**
+     * An instance of the service that handles the **Health APIs**.
+     */
+    readonly health: HealthService;
+
     private cancelControllers: { [key: string]: AbortController } = {};
     private recordServices: { [key: string]: RecordService } = {};
     private enableAutoCancellation: boolean = true;
@@ -118,6 +124,7 @@ export default class Client {
         this.logs        = new LogService(this);
         this.settings    = new SettingsService(this);
         this.realtime    = new RealtimeService(this);
+        this.health      = new HealthService(this);
     }
 
     /**
