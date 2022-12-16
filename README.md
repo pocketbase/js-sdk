@@ -373,7 +373,7 @@ And then, in some of your server-side actions, you could directly access the pre
 // src/routes/login/+server.js
 //
 // creates a `POST /login` server-side endpoint
-/** @type {import('./$types').PageServerLoad} */
+/** @type {import('./$types').RequestHandler} */
 export async function POST({ request, locals }) {
     const { email, password } = await request.json();
 
