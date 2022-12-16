@@ -735,6 +735,16 @@ declare class LogService extends BaseService {
      */
     getRequestsStats(queryParams?: LogStatsQueryParams): Promise<Array<HourlyStats>>;
 }
+interface healthCheckResponse {
+    code: number;
+    message: string;
+}
+declare class HealthService extends BaseService {
+    /**
+     * Checks the health status of the api.
+     */
+    check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
+}
 /**
  * PocketBase JS Client.
  */
@@ -818,6 +828,10 @@ declare class Client {
      * An instance of the service that handles the **Realtime APIs**.
      */
     readonly realtime: RealtimeService;
+    /**
+     * An instance of the service that handles the **Health APIs**.
+     */
+    readonly health: HealthService;
     private cancelControllers;
     private recordServices;
     private enableAutoCancellation;
