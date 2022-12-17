@@ -343,6 +343,7 @@ and pass it to the other server-side actions using the `event.locals`.
 // src/hooks.server.js
 import PocketBase from 'pocketbase';
 
+/** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
     event.locals.pb = new PocketBase("http://127.0.0.1:8090");
 
@@ -350,7 +351,7 @@ export async function handle({ event, resolve }) {
     event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
     try {
-        // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+        // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
         event.locals.pb.authStore.isValid && await event.locals.pb.collection('users').authRefresh();
     } catch (_) {
         // clear the auth store on failed refresh
@@ -370,14 +371,32 @@ And then, in some of your server-side actions, you could directly access the pre
 
 ```js
 // src/routes/login/+server.js
-//
-// creates a `POST /login` server-side endpoint
+/**
+ * Creates a `POST /login` server-side endpoint
+ *
+ * @type {import('./$types').RequestHandler}
+ */
 export async function POST({ request, locals }) {
     const { email, password } = await request.json();
 
     const { token, record } = await locals.pb.collection('users').authWithPassword(email, password);
 
     return new Response('Success...');
+}
+```
+
+For correct type detection, you can also add `PocketBase` in your your global types definition:
+
+```ts
+// src/app.d.ts
+import PocketBase from "pocketbase";
+
+declare global {
+    declare namespace App {
+        interface Locals {
+            pb: PocketBase
+        }
+    }
 }
 ```
 </details>
@@ -406,7 +425,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   });
 
   try {
-      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
       pb.authStore.isValid && await pb.collection('users').authRefresh();
   } catch (_) {
       // clear the auth store on failed refresh
@@ -460,7 +479,7 @@ export default async (ctx, inject) => {
   });
 
   try {
-      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
       pb.authStore.isValid && await pb.collection('users').authRefresh();
   } catch (_) {
       // clear the auth store on failed refresh
@@ -518,7 +537,7 @@ async function initPocketBase(req, res) {
   });
 
   try {
-      // get an up-to-date auth store state by veryfing and refreshing the loaded auth model (if any)
+      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
       pb.authStore.isValid && await pb.collection('users').authRefresh();
   } catch (_) {
       // clear the auth store on failed refresh
