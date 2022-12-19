@@ -31,7 +31,7 @@ export default abstract class BaseModel {
     }
 
     /**
-     * Creates a seep clone of the current model.
+     * Creates a deep clone of the current model.
      */
     clone(): BaseModel {
         return new (this.constructor as any)(JSON.parse(JSON.stringify(this)));
