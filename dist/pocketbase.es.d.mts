@@ -28,7 +28,7 @@ declare abstract class BaseModel {
      */
     get isNew(): boolean;
     /**
-     * Creates a seep clone of the current model.
+     * Creates a deep clone of the current model.
      */
     clone(): BaseModel;
     /**

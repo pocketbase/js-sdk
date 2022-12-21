@@ -34,7 +34,10 @@ export default abstract class BaseModel {
      * Creates a deep clone of the current model.
      */
     clone(): BaseModel {
-        return new (this.constructor as any)(JSON.parse(JSON.stringify(this)));
+        const clone = typeof structuredClone === 'function' ?
+            structuredClone(this) : JSON.parse(JSON.stringify(this));
+
+        return new (this.constructor as any)(clone);
     }
 
     /**
