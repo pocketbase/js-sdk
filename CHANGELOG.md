@@ -1,3 +1,8 @@
+## 0.9.1
+
+- Normalized nested `expand` items to `Record|Array<Record>` instances.
+
+
 ## 0.9.0
 
 - Added `pb.health.check()` that checks the health status of the API service (_available in PocketBase v0.10.0_)

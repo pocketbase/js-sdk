@@ -50,6 +50,11 @@ declare class Record extends BaseModel {
     load(data: {
         [key: string]: any;
     }): void;
+    /**
+     * Loads the provided expand items and recursively normalizes each
+     * item to a `Record|Array<Record>`.
+     */
+    private loadExpand;
 }
 declare class Admin extends BaseModel {
     avatar: number;
