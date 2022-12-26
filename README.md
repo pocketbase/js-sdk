@@ -170,9 +170,9 @@ The default `pb.authStore` extends [`BaseAuthStore`](https://github.com/pocketba
 ```js
 BaseAuthStore {
     // base fields
-    token:   string          // the authenticated token
-    model:   User|Admin|null // the authenticated User or Admin model
-    isValid: boolean         // checks if the store has existing and unexpired token
+    token:   string            // the authenticated token
+    model:   Record|Admin|null // the authenticated User or Admin model
+    isValid: boolean           // checks if the store has existing and unexpired token
 
     // main methods
     clear()            // "logout" the authenticated User or Admin
