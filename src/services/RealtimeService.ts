@@ -14,7 +14,7 @@ export default class RealtimeService extends BaseService {
     private subscriptions: { [key: string]: Array<EventListener> } = {};
     private lastSentTopics: Array<string> = [];
     private connectTimeoutId: any;
-    private maxConnectTimeout: number = 10000;
+    private maxConnectTimeout: number = 15000;
     private reconnectTimeoutId: any;
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = Infinity;
@@ -295,7 +295,7 @@ export default class RealtimeService extends BaseService {
     private initConnect() {
         this.disconnect(true);
 
-        // wait up to 10s for connect
+        // wait up to 15s for connect
         clearTimeout(this.connectTimeoutId);
         this.connectTimeoutId = setTimeout(() => {
             this.connectErrorHandler(new Error("EventSource connect took too long."));

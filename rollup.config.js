@@ -24,6 +24,8 @@ function basePlugins() {
         // minify if we're building for production
         // (aka. npm run build instead of npm run dev)
         isProduction && terser({
+            keep_classnames: true,
+            keep_fnames: true,
             output: {
                 comments: false,
             },

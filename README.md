@@ -52,14 +52,16 @@ const PocketBase = require('pocketbase/cjs')
 > I recommend [lquixada/cross-fetch](https://github.com/lquixada/cross-fetch):
 > ```js
 > // npm install cross-fetch --save
-> require('cross-fetch/polyfill');
+> import 'cross-fetch/polyfill';
 > ```
 ---
 > 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime subscriptions you'll need to load a `EventSource` polyfill.
 > I recommend [EventSource/eventsource](https://github.com/EventSource/eventsource):
 > ```js
 > // npm install eventsource --save
-> global.EventSource = require('eventsource');
+> import eventsource from 'eventsource';
+>
+> global.EventSource = eventsource;
 > ```
 
 
@@ -185,7 +187,7 @@ BaseAuthStore {
 }
 ```
 
-To _"logout"_ an authenticated user or admin, you can just call `pb.authStore.clear()`.
+To _"logout"_ an authenticated Record or Admin, you can just call `pb.authStore.clear()`.
 
 To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
 ```js
@@ -361,7 +363,7 @@ export async function handle({ event, resolve }) {
     const response = await resolve(event);
 
     // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.set('set-cookie', event.locals.pb.authStore.exportToCookie());
+    response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie());
 
     return response;
 }
@@ -385,7 +387,7 @@ export async function POST({ request, locals }) {
 }
 ```
 
-For correct type detection, you can also add `PocketBase` in your your global types definition:
+For proper `locals.pb` type detection, you can also add `PocketBase` in your your global types definition:
 
 ```ts
 // src/app.d.ts
@@ -411,17 +413,26 @@ and provide it as a helper to the `nuxtApp` instance:
 // plugins/pocketbase.js
 import PocketBase from 'pocketbase';
 
-export default defineNuxtPlugin(async (nuxtApp) => {
+export default defineNuxtPlugin(async () => {
   const pb = new PocketBase('http://127.0.0.1:8090');
 
-  // load the store data from the request cookie string
-  pb.authStore.loadFromCookie(nuxtApp.ssrContext?.event?.req?.headers?.cookie || '');
+  const cookie = useCookie("pb_auth", {
+    path:     "/",
+    secure:   true,
+    sameSite: "strict",
+    httpOnly: false, // change to "true" if you want only server-side access
+    maxAge:   604800,
+  })
+
+  // load the store data from the cookie value
+  pb.authStore.save(cookie.value?.token, cookie.value?.model);
 
   // send back the default 'pb_auth' cookie to the client with the latest store state
   pb.authStore.onChange(() => {
-    if (nuxtApp.ssrContext?.event?.res) {
-      nuxtApp.ssrContext.event.res.setHeader('set-cookie', pb.authStore.exportToCookie());
-    }
+    cookie.value = {
+      token: pb.authStore.token,
+      model: pb.authStore.model,
+    };
   });
 
   try {

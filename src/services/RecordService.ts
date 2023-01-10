@@ -283,9 +283,6 @@ export default class RecordService extends CrudService<Record> {
             'method':  'POST',
             'params':  queryParams,
             'body':    bodyParams,
-            'headers': {
-                'Authorization': '',
-            },
         }).then((data) => this.authResponse<T>(data));
     }
 

@@ -1,3 +1,14 @@
+## 0.10.0
+
+- Added more helpful message for the `ECONNREFUSED ::1` localhost error (related to [#21](https://github.com/pocketbase/js-sdk/issues/21)).
+
+- Preserved the "original" function and class names in the minified output for those who rely on `*.prototype.name`.
+
+- Allowed sending the existing valid auth token with the `authWithPassword()` calls.
+
+- Updated the Nuxt3 SSR examples to use the built-in `useCookie()` helper.
+
+
 ## 0.9.1
 
 - Normalized nested `expand` items to `Record|Array<Record>` instances.

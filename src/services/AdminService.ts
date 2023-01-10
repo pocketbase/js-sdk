@@ -112,9 +112,6 @@ export default class AdminService extends CrudService<Admin> {
             'method':  'POST',
             'params':  queryParams,
             'body':    bodyParams,
-            'headers': {
-                'Authorization': '',
-            },
         }).then(this.authResponse.bind(this));
     }
 
