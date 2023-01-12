@@ -391,14 +391,18 @@ For proper `locals.pb` type detection, you can also add `PocketBase` in your you
 
 ```ts
 // src/app.d.ts
-import PocketBase from "pocketbase";
+/// <reference types="@sveltejs/kit" />
 
-declare global {
-    declare namespace App {
-        interface Locals {
-            pb: PocketBase
-        }
-    }
+// See https://kit.svelte.dev/docs/types#app
+// for information about these interfaces
+// and what to do when importing types
+declare namespace App {
+  // interface Error {}
+  interface Locals {
+    pb: import('pocketbase').default;
+  }
+  // interface PageData {}
+  // interface Platform {}
 }
 ```
 </details>
