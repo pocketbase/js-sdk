@@ -30,7 +30,7 @@ describe('RecordService', function() {
     });
 
     describe('AuthStore sync', function() {
-        it('Should update the AuthStore record model on matching update id', async function() {
+        it('Should update the AuthStore record model on matching update id and collection', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -41,11 +41,36 @@ describe('RecordService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Record({id: "test123", email: "old@example.com"}));
+            service.client.authStore.save("test_token", new Record({
+                id: "test123",
+                collectionName: "sub=",
+            }));
 
-            await service.update('test123', {email:"new@example.com"});
+            await service.update('test123', {});
 
             assert.equal(service.client.authStore.model?.email, "new@example.com");
+        });
+
+        it('Should not update the AuthStore record model on matching id but mismatched collection', async function() {
+            fetchMock.on({
+                method: 'PATCH',
+                url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
+                replyCode: 200,
+                replyBody: {
+                    id: "test123",
+                    email: "new@example.com",
+                },
+            });
+
+            service.client.authStore.save("test_token", new Record({
+                id: "test123",
+                email: "old@example.com",
+                collectionName: "diff",
+            }));
+
+            await service.update('test123', {});
+
+            assert.equal(service.client.authStore.model?.email, "old@example.com");
         });
 
         it('Should not update the AuthStore record model on mismatched update id', async function() {
@@ -59,25 +84,49 @@ describe('RecordService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Record({id: "test456", email: "old@example.com"}));
+            service.client.authStore.save("test_token", new Record({
+                id: "test456",
+                email: "old@example.com",
+                collectionName: "sub=",
+            }));
 
-            await service.update('test123', {email:"new@example.com"});
+            await service.update('test123', {});
 
             assert.equal(service.client.authStore.model?.email, "old@example.com");
         });
 
-        it('Should delete the AuthStore record model on matching delete id', async function() {
+        it('Should delete the AuthStore record model on matching delete id and collection', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Record({id: "test123"}));
+            service.client.authStore.save("test_token", new Record({
+                id: "test123",
+                collectionName: "sub=",
+            }));
 
             await service.delete('test123');
 
             assert.isNull(service.client.authStore.model);
+        });
+
+        it('Should not delete the AuthStore record model on matching delete id but mismatched collection', async function() {
+            fetchMock.on({
+                method: 'DELETE',
+                url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
+                replyCode: 204,
+            });
+
+            service.client.authStore.save("test_token", new Record({
+                id: "test123",
+                collectionName: "diff",
+            }));
+
+            await service.delete('test123');
+
+            assert.isNotNull(service.client.authStore.model);
         });
 
         it('Should not delete the AuthStore record model on mismatched delete id', async function() {
@@ -87,7 +136,10 @@ describe('RecordService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Record({id: "test456"}));
+            service.client.authStore.save("test_token", new Record({
+                id: "test456",
+                collectionName: "sub=",
+            }));
 
             await service.delete('test123');
 

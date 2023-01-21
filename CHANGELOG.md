@@ -1,3 +1,8 @@
+## 0.10.1
+
+- Added check for the collection name before auto updating the `pb.authStore` state on auth record update/delete.
+
+
 ## 0.10.0
 
 - Added more helpful message for the `ECONNREFUSED ::1` localhost error (related to [#21](https://github.com/pocketbase/js-sdk/issues/21)).

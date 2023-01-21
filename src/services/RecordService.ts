@@ -194,8 +194,12 @@ export default class RecordService extends CrudService<Record> {
     update<T = Record>(id: string, bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
         return super.update<Record>(id, bodyParams, queryParams).then((item) => {
             if (
-                typeof this.client.authStore.model?.collectionId !== 'undefined' && // is record auth
-                this.client.authStore.model?.id === item?.id
+                // is record auth
+                this.client.authStore.model?.id === item?.id &&
+                (
+                    this.client.authStore.model?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.model?.collectionName === this.collectionIdOrName
+                )
             ) {
                 this.client.authStore.save(this.client.authStore.token, item);
             }
@@ -214,8 +218,12 @@ export default class RecordService extends CrudService<Record> {
         return super.delete(id, queryParams).then((success) => {
             if (
                 success &&
-                typeof this.client.authStore.model?.collectionId !== 'undefined' && // is record auth
-                this.client.authStore.model?.id === id
+                // is record auth
+                this.client.authStore.model?.id === id &&
+                (
+                    this.client.authStore.model?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.model?.collectionName === this.collectionIdOrName
+                )
             ) {
                 this.client.authStore.clear();
             }
