@@ -271,7 +271,7 @@ interface Task {
   name: string;
 }
 
-pb.collection('tasks').getList<Task>("RECORD_ID") // -> results in Promise<ListResult<Task>>
+pb.collection('tasks').getList<Task>(1, 20) // -> results in Promise<ListResult<Task>>
 pb.collection('tasks').getOne<Task>("RECORD_ID")  // -> results in Promise<Task>
 ```
 
