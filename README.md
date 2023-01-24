@@ -87,7 +87,7 @@ const adminData = await pb.admins.authWithPassword('test@example.com', '123456')
 
 // and much more...
 ```
-> More detailed API docs and copy-paste examples could be found in the [API documentation for each service](https://pocketbase.io/docs/api-authentication).
+> More detailed API docs and copy-paste examples could be found in the [API documentation for each service](https://pocketbase.io/docs/api-records/).
 
 
 ## Caveats
