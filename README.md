@@ -56,10 +56,12 @@ const PocketBase = require('pocketbase/cjs')
 > ```
 ---
 > 🔧 Node doesn't have native `EventSource` implementation, so in order to use the realtime subscriptions you'll need to load a `EventSource` polyfill.
-> I recommend [EventSource/eventsource](https://github.com/EventSource/eventsource):
 > ```js
-> // npm install eventsource --save
+> // for server: npm install eventsource --save
 > import eventsource from 'eventsource';
+>
+> // for React Native: npm install react-native-sse --save
+> import eventsource from "react-native-sse";
 >
 > global.EventSource = eventsource;
 > ```
