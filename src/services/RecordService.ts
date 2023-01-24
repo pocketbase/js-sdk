@@ -32,7 +32,7 @@ export interface AuthMethodsList {
 }
 
 export interface RecordSubscription<T = Record> {
-    action: string;
+    action: "create" | "update" | "delete";
     record: T;
 }
 
