@@ -277,13 +277,13 @@ export default class RecordService extends CrudService<Record> {
      * - the authenticated record model
      */
     authWithPassword<T = Record>(
-        usernameOrEmail: string,
+        identity: string,
         password: string,
         bodyParams = {},
         queryParams: RecordQueryParams = {},
     ): Promise<RecordAuthResponse<T>> {
         bodyParams = Object.assign({
-            'identity': usernameOrEmail,
+            'identity': identity,
             'password': password,
         }, bodyParams);
 
