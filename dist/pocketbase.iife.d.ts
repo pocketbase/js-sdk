@@ -580,7 +580,7 @@ declare class RecordService extends CrudService<Record> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = Record>(usernameOrEmail: string, password: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    authWithPassword<T = Record>(identity: string, password: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
     /**
      * Authenticate a single auth collection record with OAuth2.
      *
