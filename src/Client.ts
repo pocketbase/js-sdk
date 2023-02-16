@@ -281,7 +281,11 @@ export default class Client {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
-    getFileUrl(record: Record, filename: string, queryParams: FileQueryParams = {}): string {
+    getFileUrl(
+        record: Pick<Record, "id" | "collectionId" | "collectionName">,
+        filename: string,
+        queryParams: FileQueryParams = {}
+    ): string {
         const parts = [];
         parts.push("api")
         parts.push("files")

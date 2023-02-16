@@ -679,9 +679,9 @@ declare class Collection extends BaseModel {
      */
     get isAuth(): boolean;
     /**
-     * Checks if the current model is "single" collection.
+     * Checks if the current model is "view" collection.
      */
-    get isSingle(): boolean;
+    get isView(): boolean;
 }
 declare class CollectionService extends CrudService<Collection> {
     /**
@@ -890,7 +890,7 @@ declare class Client {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
-    getFileUrl(record: Record, filename: string, queryParams?: FileQueryParams): string;
+    getFileUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
     /**
      * Builds a full client url by safely concatenating the provided path.
      */
