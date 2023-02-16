@@ -54,9 +54,9 @@ export default class Collection extends BaseModel {
     }
 
     /**
-     * Checks if the current model is "single" collection.
+     * Checks if the current model is "view" collection.
      */
-    get isSingle(): boolean {
-        return this.type === 'single';
+    get isView(): boolean {
+        return this.type === 'view';
     }
 }
