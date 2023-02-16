@@ -1,3 +1,8 @@
+## 0.10.2
+
+- Updated `getFileUrl()` to accept custom types as record argument.
+
+
 ## 0.10.1
 
 - Added check for the collection name before auto updating the `pb.authStore` state on auth record update/delete.
