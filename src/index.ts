@@ -27,6 +27,8 @@ import {
     RecordListQueryParams,
     LogStatsQueryParams,
     FileQueryParams,
+    FullListQueryParams,
+    RecordFullListQueryParams,
 } from '@/services/utils/QueryParams';
 
 export {
@@ -55,6 +57,8 @@ export {
     RecordListQueryParams,
     LogStatsQueryParams,
     FileQueryParams,
+    FullListQueryParams,
+    RecordFullListQueryParams,
 };
 
 export default Client;

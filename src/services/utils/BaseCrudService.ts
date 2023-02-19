@@ -17,11 +17,11 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns a promise with all list items batch fetched at once.
      */
-    protected _getFullList<T = M>(basePath: string, batchSize = 100, queryParams: ListQueryParams = {}): Promise<Array<T>> {
+    protected _getFullList<T = M>(basePath: string, batchSize = 200, queryParams: ListQueryParams = {}): Promise<Array<T>> {
         var result: Array<T> = [];
 
         let request = async (page: number): Promise<Array<any>> => {
-            return this._getList(basePath, page, batchSize, queryParams).then((list) => {
+            return this._getList(basePath, page, batchSize || 200, queryParams).then((list) => {
                 const castedList = (list as any as ListResult<T>);
                 const items = castedList.items;
                 const totalItems = castedList.totalItems;

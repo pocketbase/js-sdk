@@ -8,6 +8,7 @@ import {
     BaseQueryParams,
     RecordQueryParams,
     RecordListQueryParams,
+    RecordFullListQueryParams,
 } from '@/services/utils/QueryParams';
 
 export interface RecordAuthResponse<T = Record> {
@@ -153,8 +154,24 @@ export default class RecordService extends CrudService<Record> {
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batch = 200, queryParams: RecordListQueryParams = {}): Promise<Array<T>> {
-        return super.getFullList<T>(batch, queryParams);
+    getFullList<T = Record>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>
+
+    /**
+     * @inheritdoc
+     */
+    getFullList<T = Record>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>
+
+    /**
+     * @inheritdoc
+     */
+    getFullList<T = Record>(batchOrQueryParams?: number|RecordFullListQueryParams, queryParams?: RecordListQueryParams): Promise<Array<T>> {
+        if (typeof batchOrQueryParams == "number") {
+            return super.getFullList<T>(batchOrQueryParams, queryParams);
+        }
+
+        const params = Object.assign({}, batchOrQueryParams, queryParams);
+
+        return super.getFullList<T>(params);
     }
 
     /**

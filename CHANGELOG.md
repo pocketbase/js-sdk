@@ -1,3 +1,12 @@
+## 0.11.0
+
+- Aliased/soft-deprecated `ClientResponseError.data` in favor of `ClientResponseError.response` to avoid the stuttering when accessing the inner error response `data` key (aka. `err.data.data` now is `err.response.data`).
+  The `ClientResponseError.data` will still work but it is recommend for new code to use the `response` key.
+
+- Added `getFullList(queryParams = {})` overload since the default batch size in most cases doesn't need to change (it can be defined as query parameter).
+  The old form `getFullList(batch = 200, queryParams = {})` will still work, but it is recommend for new code to use the shorter form.
+
+
 ## 0.10.2
 
 - Updated `getFileUrl()` to accept custom types as record argument.

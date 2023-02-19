@@ -12,11 +12,19 @@ export interface ListQueryParams extends BaseQueryParams {
     filter?:  string;
 }
 
+export interface FullListQueryParams extends ListQueryParams {
+    batch?: number;
+}
+
 export interface RecordQueryParams extends BaseQueryParams {
     expand?: string
 }
 
 export interface RecordListQueryParams extends ListQueryParams, RecordQueryParams {
+}
+
+export interface RecordFullListQueryParams extends FullListQueryParams, RecordQueryParams {
+    batch?: number
 }
 
 export interface LogStatsQueryParams extends BaseQueryParams {

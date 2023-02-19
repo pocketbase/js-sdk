@@ -3,7 +3,8 @@ import BaseModel       from '@/models/utils/BaseModel';
 import BaseCrudService from '@/services/utils/BaseCrudService';
 import {
     BaseQueryParams,
-    ListQueryParams
+    ListQueryParams,
+    FullListQueryParams
 } from '@/services/utils/QueryParams';
 
 export default abstract class CrudService<M extends BaseModel> extends BaseCrudService<M> {
@@ -13,12 +14,26 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
     abstract get baseCrudPath(): string
 
     /**
-     * Returns a promise with all list items batch fetched at once.
+     * Returns a promise with all list items batch fetched at once
+     * (by default 200 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getFullList<T = M>(batch = 200, queryParams: ListQueryParams = {}): Promise<Array<T>> {
-        return this._getFullList<T>(this.baseCrudPath, batch, queryParams);
+    getFullList<T = M>(queryParams?: FullListQueryParams): Promise<Array<T>>
+
+    /**
+     * Legacy version of getFullList with explicitly specified batch size.
+     */
+    getFullList<T = M>(batch?: number, queryParams?: ListQueryParams): Promise<Array<T>>
+
+    getFullList<T = M>(batchOrqueryParams?: number|FullListQueryParams, queryParams?: ListQueryParams): Promise<Array<T>> {
+        if (typeof batchOrqueryParams == "number") {
+            return this._getFullList<T>(this.baseCrudPath, batchOrqueryParams, queryParams);
+        }
+
+        const params = Object.assign({}, batchOrqueryParams, queryParams);
+
+        return this._getFullList<T>(this.baseCrudPath, params.batch || 200, params);
     }
 
     /**

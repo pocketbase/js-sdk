@@ -164,10 +164,16 @@ interface ListQueryParams extends BaseQueryParams {
     sort?: string;
     filter?: string;
 }
+interface FullListQueryParams extends ListQueryParams {
+    batch?: number;
+}
 interface RecordQueryParams extends BaseQueryParams {
     expand?: string;
 }
 interface RecordListQueryParams extends ListQueryParams, RecordQueryParams {
+}
+interface RecordFullListQueryParams extends FullListQueryParams, RecordQueryParams {
+    batch?: number;
 }
 interface LogStatsQueryParams extends BaseQueryParams {
     filter?: string;
@@ -259,9 +265,14 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
      */
     abstract get baseCrudPath(): string;
     /**
-     * Returns a promise with all list items batch fetched at once.
+     * Returns a promise with all list items batch fetched at once
+     * (by default 200 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     */
+    getFullList<T = M>(queryParams?: FullListQueryParams): Promise<Array<T>>;
+    /**
+     * Legacy version of getFullList with explicitly specified batch size.
      */
     getFullList<T = M>(batch?: number, queryParams?: ListQueryParams): Promise<Array<T>>;
     /**
@@ -527,6 +538,10 @@ declare class RecordService extends CrudService<Record> {
     // ---------------------------------------------------------------
     // Crud handers
     // ---------------------------------------------------------------
+    /**
+     * @inheritdoc
+     */
+    getFullList<T = Record>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>;
     /**
      * @inheritdoc
      */
@@ -886,14 +901,22 @@ declare class Client {
 declare class ClientResponseError extends Error {
     url: string;
     status: number;
-    data: {
+    response: {
         [key: string]: any;
     };
     isAbort: boolean;
     originalError: any;
     constructor(errData?: any);
-    // Make a POJO's copy of the current error class instance.
-    // @see https://github.com/vuex-orm/vuex-orm/issues/255
+    /**
+     * Alias for `this.response` to preserve the backward compatibility.
+     */
+    get data(): {
+        [key: string]: any;
+    };
+    /**
+     * Make a POJO's copy of the current error class instance.
+     * @see https://github.com/vuex-orm/vuex-orm/issues/255
+     */
     toJSON(): this;
 }
 /**
@@ -944,4 +967,4 @@ declare class LocalAuthStore extends BaseAuthStore {
 declare function getTokenPayload(token: string): {
     [key: string]: any;
 };
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };

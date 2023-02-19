@@ -157,7 +157,7 @@ The response error is normalized and always returned as `ClientResponseError` ob
 ClientResponseError {
     url:           string,     // requested url
     status:        number,     // response status code
-    data:          { ... },    // the API JSON error response
+    response:      { ... },    // the API JSON error response
     isAbort:       boolean,    // is abort/cancellation error
     originalError: Error|null, // the original non-normalized error
 }
@@ -516,7 +516,7 @@ And then in your component you could access it like this:
   export default {
     async asyncData({ $pocketbase }) {
       // fetch and return all "example" records...
-      const items = await $pocketbase.records.getFullList('example');
+      const items = await $pocketbase.collection('example').getFullList();
 
       return { items }
     }
@@ -628,8 +628,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Returns a paginated records list.
 🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, queryParams = {});
 
-// Returns a list with all records batch fetched at once.
-🔓 pb.collection(collectionIdOrName).getFullList(batch = 200, queryParams = {});
+// Returns a list with all records batch fetched at once
+// (by default 200 items per request; to change it set the `batch` query param).
+🔓 pb.collection(collectionIdOrName).getFullList(queryParams = {});
 
 // Returns the first found record matching the specified filter.
 🔓 pb.collection(collectionIdOrName).getFirstListItem(filter, queryParams = {});
@@ -726,8 +727,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Returns a paginated admins list.
 🔐 pb.admins.getList(page = 1, perPage = 30, queryParams = {});
 
-// Returns a list with all admins batch fetched at once.
-🔐 pb.admins.getFullList(batch = 200, queryParams = {});
+// Returns a list with all admins batch fetched at once
+// (by default 200 items per request; to change it set the `batch` query param).
+🔐 pb.admins.getFullList(queryParams = {});
 
 // Returns the first found admin matching the specified filter.
 🔐 pb.admins.getFirstListItem(filter, queryParams = {});
@@ -753,8 +755,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Returns a paginated collections list.
 🔐 pb.collections.getList(page = 1, perPage = 30, queryParams = {});
 
-// Returns a list with all collections batch fetched at once.
-🔐 pb.collections.getFullList(batch = 200, queryParams = {});
+// Returns a list with all collections batch fetched at once
+// (by default 200 items per request; to change it set the `batch` query param).
+🔐 pb.collections.getFullList(queryParams = {});
 
 // Returns the first found collection matching the specified filter.
 🔐 pb.collections.getFirstListItem(filter, queryParams = {});

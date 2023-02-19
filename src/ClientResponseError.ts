@@ -3,11 +3,11 @@
  * and normalize any error thrown by `Client.send()`.
  */
 export default class ClientResponseError extends Error {
-    url: string                = '';
-    status: number             = 0;
-    data: {[key: string]: any} = {};
-    isAbort:  boolean          = false;
-    originalError: any         = null;
+    url: string                    = '';
+    status: number                 = 0;
+    response: {[key: string]: any} = {};
+    isAbort:  boolean              = false;
+    originalError: any             = null;
 
     constructor(errData?: any) {
         super("ClientResponseError");
@@ -21,9 +21,10 @@ export default class ClientResponseError extends Error {
         }
 
         if (errData !== null && typeof errData === 'object') {
-            this.url    = typeof errData.url === 'string' ? errData.url : '';
-            this.status = typeof errData.status === 'number' ? errData.status : 0;
-            this.data   = errData.data !== null && typeof errData.data === 'object' ? errData.data : {};
+            this.url      = typeof errData.url === 'string' ? errData.url : '';
+            this.status   = typeof errData.status === 'number' ? errData.status : 0;
+            this.response = errData.data !== null && typeof errData.data === 'object' ? errData.data : {};
+            this.isAbort  = !!errData.isAbort;
         }
 
         if (typeof DOMException !== 'undefined' && errData instanceof DOMException) {
@@ -31,7 +32,7 @@ export default class ClientResponseError extends Error {
         }
 
         this.name = "ClientResponseError " + this.status;
-        this.message = this.data?.message;
+        this.message = this.response?.message;
         if (!this.message) {
             if (this.isAbort) {
                 this.message = 'The request was autocancelled. You can find more info in https://github.com/pocketbase/js-sdk#auto-cancellation.';
@@ -43,9 +44,18 @@ export default class ClientResponseError extends Error {
         }
     }
 
-    // Make a POJO's copy of the current error class instance.
-    // @see https://github.com/vuex-orm/vuex-orm/issues/255
-    toJSON () {
+    /**
+     * Alias for `this.response` to preserve the backward compatibility.
+     */
+    get data() {
+        return this.response;
+    }
+
+    /**
+     * Make a POJO's copy of the current error class instance.
+     * @see https://github.com/vuex-orm/vuex-orm/issues/255
+     */
+    toJSON() {
         return { ...this };
     }
 }
