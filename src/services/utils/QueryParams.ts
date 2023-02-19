@@ -17,14 +17,13 @@ export interface FullListQueryParams extends ListQueryParams {
 }
 
 export interface RecordQueryParams extends BaseQueryParams {
-    expand?: string
+    expand?: string;
 }
 
 export interface RecordListQueryParams extends ListQueryParams, RecordQueryParams {
 }
 
 export interface RecordFullListQueryParams extends FullListQueryParams, RecordQueryParams {
-    batch?: number
 }
 
 export interface LogStatsQueryParams extends BaseQueryParams {

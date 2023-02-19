@@ -173,7 +173,6 @@ interface RecordQueryParams extends BaseQueryParams {
 interface RecordListQueryParams extends ListQueryParams, RecordQueryParams {
 }
 interface RecordFullListQueryParams extends FullListQueryParams, RecordQueryParams {
-    batch?: number;
 }
 interface LogStatsQueryParams extends BaseQueryParams {
     filter?: string;
