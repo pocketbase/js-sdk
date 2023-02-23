@@ -1,3 +1,16 @@
+## 0.11.1
+
+- Exported the services class definitions to allow being used as argument types ([#153](https://github.com/pocketbase/js-sdk/issues/153)).
+  ```js
+  CrudService
+  AdminService
+  CollectionService
+  LogService
+  RealtimeService
+  RecordService
+  SettingsService
+  ```
+
 ## 0.11.0
 
 - Aliased/soft-deprecated `ClientResponseError.data` in favor of `ClientResponseError.response` to avoid the stuttering when accessing the inner error response `data` key (aka. `err.data.data` now is `err.response.data`).

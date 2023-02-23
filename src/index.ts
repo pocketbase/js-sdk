@@ -8,6 +8,13 @@ import LogRequest          from '@/models/LogRequest';
 import BaseModel           from '@/models/utils/BaseModel';
 import ListResult          from '@/models/utils/ListResult';
 import SchemaField         from '@/models/utils/SchemaField';
+import CrudService         from '@/services/utils/CrudService';
+import AdminService        from '@/services/AdminService';
+import CollectionService   from '@/services/CollectionService';
+import LogService          from '@/services/LogService';
+import RealtimeService     from '@/services/RealtimeService';
+import RecordService       from '@/services/RecordService';
+import SettingsService     from '@/services/SettingsService';
 import LocalAuthStore      from '@/stores/LocalAuthStore';
 import { getTokenPayload } from '@/stores/utils/jwt';
 import BaseAuthStore, {
@@ -44,6 +51,16 @@ export {
     BaseModel,
     ListResult,
     SchemaField,
+
+    // services
+    CrudService,
+    AdminService,
+    CollectionService,
+    LogService,
+    RealtimeService,
+    RecordService,
+    SettingsService,
+
     //types
     RecordAuthResponse,
     AuthProviderInfo,
