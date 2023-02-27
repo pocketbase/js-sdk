@@ -152,6 +152,7 @@ describe('Client', function() {
                 assert.equal(responseData, testCase[1]);
             }
         });
+
         it('Should auto add authorization header if missing', async function() {
             const client = new Client('test_base_url', null, 'test_language_A');
 
@@ -192,15 +193,35 @@ describe('Client', function() {
             client.authStore.save('token123', user);
             await client.send('/user', { method: 'GET' });
         });
-        it('Should trigger the before and after hooks', async function() {
-            const client = new Client('test_base_url');
 
-            client.beforeSend = function (url, reqConfig) {
-                reqConfig.headers = Object.assign(reqConfig.headers, {
+        it('Should trigger the before hook', async function() {
+            const client = new Client('test_base_url');
+            const newUrl = "test_base_url/new"
+
+            client.beforeSend = function (url, options) {
+                options.headers = Object.assign(options.headers, {
                     'X-Custom-Header': url,
                 });
-                return reqConfig;
+
+                return { url, options};
             };
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/old',
+                replyCode: 200,
+                replyBody: '123',
+                additionalMatcher: function (url, config) {
+                    return url != newUrl && (config?.headers as any)?.['X-Custom-Header'] == url;
+                },
+            });
+
+            const responseSuccess = await client.send('/old', { method: 'GET' })
+            assert.equal(responseSuccess, '123');
+        });
+
+        it('Should trigger the after hook', async function() {
+            const client = new Client('test_base_url');
 
             client.afterSend = function (response, _) {
                 if (response.url === 'test_base_url/failure') {
@@ -215,9 +236,6 @@ describe('Client', function() {
                 url:       'test_base_url/success',
                 replyCode: 200,
                 replyBody: '123',
-                additionalMatcher: function (url, config) {
-                    return url != "" && (config?.headers as any)?.['X-Custom-Header'] == url;
-                },
             });
 
             fetchMock.on({
@@ -227,6 +245,7 @@ describe('Client', function() {
                 replyBody: '456',
             });
 
+            // will be replaced with /new
             const responseSuccess = await client.send('/success', { method: 'GET' })
             assert.equal(responseSuccess, '789');
 
