@@ -1,3 +1,22 @@
+## 0.12.0
+
+- Changed the return type of `pb.beforeSend` hook to allow modifying the request url ([#1930](https://github.com/pocketbase/pocketbase/discussions/1930)).
+  ```js
+  // old
+  pb.beforeSend = function (url, options) {
+    ...
+    return options;
+  }
+
+  // new
+  pb.beforeSend = function (url, options) {
+    ...
+    return { url, options };
+  }
+  ```
+  The old return format is soft-deprecated and will still work, but you'll get a `console.warn` message to replace it.
+
+
 ## 0.11.1
 
 - Exported the services class definitions to allow being used as argument types ([#153](https://github.com/pocketbase/js-sdk/issues/153)).

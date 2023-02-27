@@ -287,14 +287,14 @@ To accomplish this, the SDK provides 2 function hooks:
     ```js
     const pb = new PocketBase('http://127.0.0.1:8090');
 
-    pb.beforeSend = function (url, reqConfig) {
-        // For list of the possible reqConfig properties check
+    pb.beforeSend = function (url, options) {
+        // For list of the possible request options properties check
         // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
-        reqConfig.headers = Object.assign({}, reqConfig.headers, {
+        options.headers = Object.assign({}, options.headers, {
             'X-Custom-Header': 'example',
         });
 
-        return reqConfig;
+        return { url, options };
     };
     ```
 

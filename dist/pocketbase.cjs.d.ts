@@ -774,27 +774,31 @@ declare class Client {
     baseUrl: string;
     /**
      * Hook that get triggered right before sending the fetch request,
-     * allowing you to inspect/modify the request config.
-     *
-     * Returns the new modified config that will be used to send the request.
+     * allowing you to inspect and modify the url and request options.
      *
      * For list of the possible options check https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
      *
+     * You can return a non-empty result object `{ url, options }` to replace the url and request options entirely.
+     *
      * Example:
      * ```js
-     * client.beforeSend = function (url, reqConfig) {
-     *     reqConfig.headers = Object.assign({}, reqConfig.headers, {
+     * client.beforeSend = function (url, options) {
+     *     options.headers = Object.assign({}, options.headers, {
      *         'X-Custom-Header': 'example',
      *     });
      *
-     *     return reqConfig;
+     *     return { url, options }
      * };
      * ```
      */
-    beforeSend?: (url: string, reqConfig: {
+    beforeSend?: (url: string, options: {
         [key: string]: any;
     }) => {
         [key: string]: any;
+        url?: string;
+        options?: {
+            [key: string]: any;
+        };
     };
     /**
      * Hook that get triggered after successfully sending the fetch request,
@@ -895,7 +899,7 @@ declare class Client {
     /**
      * Sends an api http request.
      */
-    send(path: string, reqConfig: {
+    send(path: string, reqOptions: {
         [key: string]: any;
     }): Promise<any>;
     /**

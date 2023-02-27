@@ -22,24 +22,28 @@ export default class Client {
 
     /**
      * Hook that get triggered right before sending the fetch request,
-     * allowing you to inspect/modify the request config.
-     *
-     * Returns the new modified config that will be used to send the request.
+     * allowing you to inspect and modify the url and request options.
      *
      * For list of the possible options check https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
      *
+     * You can return a non-empty result object `{ url, options }` to replace the url and request options entirely.
+     *
      * Example:
      * ```js
-     * client.beforeSend = function (url, reqConfig) {
-     *     reqConfig.headers = Object.assign({}, reqConfig.headers, {
+     * client.beforeSend = function (url, options) {
+     *     options.headers = Object.assign({}, options.headers, {
      *         'X-Custom-Header': 'example',
      *     });
      *
-     *     return reqConfig;
+     *     return { url, options }
      * };
      * ```
      */
-    beforeSend?: (url: string, reqConfig: { [key: string]: any }) => { [key: string]: any };
+    beforeSend?: (url: string, options: { [key: string]: any }) => {
+        [key: string]: any, // for backward compatibility
+        url?: string,
+        options?: {[key: string]: any}
+    };
 
     /**
      * Hook that get triggered after successfully sending the fetch request,
@@ -178,28 +182,28 @@ export default class Client {
     /**
      * Sends an api http request.
      */
-    async send(path: string, reqConfig: { [key: string]: any }): Promise<any> {
-        let config = Object.assign({ method: 'GET' } as { [key: string]: any }, reqConfig);
+    async send(path: string, reqOptions: { [key: string]: any }): Promise<any> {
+        let options = Object.assign({ method: 'GET' } as { [key: string]: any }, reqOptions);
 
         // serialize the body if needed and set the correct content type
         // note1: for FormData body the Content-Type header should be skipped
         // note2: we are checking the constructor name because FormData is not available natively in node
-        if (config.body && config.body.constructor.name !== 'FormData') {
-            if (typeof config.body !== 'string') {
-                config.body = JSON.stringify(config.body);
+        if (options.body && options.body.constructor.name !== 'FormData') {
+            if (typeof options.body !== 'string') {
+                options.body = JSON.stringify(options.body);
             }
 
             // add the json header (if not already)
-            if (typeof config?.headers?.['Content-Type'] === 'undefined') {
-                config.headers = Object.assign({}, config.headers, {
+            if (typeof options?.headers?.['Content-Type'] === 'undefined') {
+                options.headers = Object.assign({}, options.headers, {
                     'Content-Type': 'application/json',
                 });
             }
         }
 
         // add Accept-Language header (if not already)
-        if (typeof config?.headers?.['Accept-Language'] === 'undefined') {
-            config.headers = Object.assign({}, config.headers, {
+        if (typeof options?.headers?.['Accept-Language'] === 'undefined') {
+            options.headers = Object.assign({}, options.headers, {
                 'Accept-Language': this.lang,
             });
         }
@@ -209,46 +213,54 @@ export default class Client {
             // has stored token
             this.authStore?.token &&
             // auth header is not explicitly set
-            (typeof config?.headers?.Authorization === 'undefined')
+            (typeof options?.headers?.Authorization === 'undefined')
         ) {
-            config.headers = Object.assign({}, config.headers, {
+            options.headers = Object.assign({}, options.headers, {
                 'Authorization': this.authStore.token,
             });
         }
 
         // handle auto cancelation for duplicated pending request
-        if (this.enableAutoCancellation && config.params?.$autoCancel !== false) {
-            const cancelKey = config.params?.$cancelKey || ((config.method || 'GET') + path);
+        if (this.enableAutoCancellation && options.params?.$autoCancel !== false) {
+            const cancelKey = options.params?.$cancelKey || ((options.method || 'GET') + path);
 
             // cancel previous pending requests
             this.cancelRequest(cancelKey);
 
             const controller = new AbortController();
             this.cancelControllers[cancelKey] = controller;
-            config.signal = controller.signal;
+            options.signal = controller.signal;
         }
         // remove the special cancellation params from the other valid query params
-        delete config.params?.$autoCancel;
-        delete config.params?.$cancelKey;
+        delete options.params?.$autoCancel;
+        delete options.params?.$cancelKey;
 
         // build url + path
         let url = this.buildUrl(path);
 
         // serialize the query parameters
-        if (typeof config.params !== 'undefined') {
-            const query = this.serializeQueryParams(config.params)
+        if (typeof options.params !== 'undefined') {
+            const query = this.serializeQueryParams(options.params)
             if (query) {
                 url += (url.includes('?') ? '&' : '?') + query;
             }
-            delete config.params;
+            delete options.params;
         }
 
         if (this.beforeSend) {
-            config = Object.assign({}, this.beforeSend(url, config));
+            const result = Object.assign({}, this.beforeSend(url, options));
+            if (typeof result.url !== "undefined" || typeof result.options !== "undefined") {
+                url = result.url || url;
+                options = result.options || options;
+            } else if (Object.keys(result).length) {
+                // legacy behavior
+                options = result;
+                console?.warn && console.warn("Deprecated format of beforeSend return: please use `return { url, options }`, instead of `return options`.");
+            }
         }
 
         // send the request
-        return fetch(url, config)
+        return fetch(url, options)
             .then(async (response) => {
                 let data : any = {};
 
