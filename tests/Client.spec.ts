@@ -198,21 +198,21 @@ describe('Client', function() {
             const client = new Client('test_base_url');
             const newUrl = "test_base_url/new"
 
-            client.beforeSend = function (url, options) {
+            client.beforeSend = function (_, options) {
                 options.headers = Object.assign(options.headers, {
-                    'X-Custom-Header': url,
+                    'X-Custom-Header': '456',
                 });
 
-                return { url, options};
+                return { url: newUrl, options};
             };
 
             fetchMock.on({
                 method:    'GET',
-                url:       'test_base_url/old',
+                url:       newUrl,
                 replyCode: 200,
                 replyBody: '123',
                 additionalMatcher: function (url, config) {
-                    return url != newUrl && (config?.headers as any)?.['X-Custom-Header'] == url;
+                    return url == newUrl && (config?.headers as any)?.['X-Custom-Header'] == '456';
                 },
             });
 
