@@ -1,3 +1,8 @@
+## 0.12.1
+
+- Fixed request `multipart/form-data` body check to allow the React Native Android and iOS custom `FormData` implementation as valid `fetch` body ([#2002](https://github.com/pocketbase/pocketbase/discussions/2002)).
+
+
 ## 0.12.0
 
 - Changed the return type of `pb.beforeSend` hook to allow modifying the request url ([#1930](https://github.com/pocketbase/pocketbase/discussions/1930)).

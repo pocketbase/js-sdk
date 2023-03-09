@@ -917,6 +917,13 @@ declare class Client {
      */
     buildUrl(path: string): string;
     /**
+     * Loosely checks if the specified body is a FormData instance.
+     */
+    /**
+     * Loosely checks if the specified body is a FormData instance.
+     */
+    private isFormData;
+    /**
      * Serializes the provided query parameters into a query string.
      */
     /**
