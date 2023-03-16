@@ -1,4 +1,4 @@
-## 0.13.0
+## 0.13.0-rc
 
 - Added `Collection.indexes` prop for the new indexes support that comes with PocketBase v0.14.0.
 
