@@ -5,6 +5,7 @@ export default class Collection extends BaseModel {
     name!:       string;
     type!:       string;
     schema!:     Array<SchemaField>;
+    indexes!:    Array<string>;
     system!:     boolean;
     listRule!:   null|string;
     viewRule!:   null|string;
@@ -19,10 +20,11 @@ export default class Collection extends BaseModel {
     load(data: { [key: string]: any }) {
         super.load(data);
 
-        this.system    = !!data.system;
-        this.name      = typeof data.name    === 'string'    ? data.name    : '';
-        this.type      = typeof data.type    === 'string'    ? data.type    : 'base';
-        this.options   = typeof data.options !== 'undefined' ? data.options : {};
+        this.system  = !!data.system;
+        this.name    = typeof data.name === 'string' ? data.name : '';
+        this.type    = typeof data.type === 'string' ? data.type : 'base';
+        this.options = typeof data.options !== 'undefined' && data.options !== null ? data.options : {};
+        this.indexes = Array.isArray(data.indexes) ? data.indexes : [];
 
         // rules
         this.listRule   = typeof data.listRule   === 'string' ? data.listRule   : null;
