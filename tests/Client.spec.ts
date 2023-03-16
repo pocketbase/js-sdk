@@ -220,6 +220,40 @@ describe('Client', function() {
             assert.equal(responseSuccess, '123');
         });
 
+        it("Should run async before hook", async function () {
+            const client = new Client("test_base_url");
+            const newUrl = "test_base_url/new";
+
+            client.beforeSend = async (url, options) => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+
+                url = newUrl;
+                options.headers = Object.assign(options.headers, {
+                    "X-Custom-Header": "123",
+                });
+
+                return { url, options };
+            };
+
+            fetchMock.on({
+                method: "GET",
+                url: newUrl,
+                replyCode: 200,
+                replyBody: "456",
+                additionalMatcher: function (url, config) {
+                    return (
+                        url == newUrl &&
+                        (config?.headers as any)?.["X-Custom-Header"] == "123"
+                    );
+                },
+            });
+
+            const responseSuccess = await client.send("/old", {
+                method: "GET",
+            });
+            assert.equal(responseSuccess, "456");
+        });
+
         it('Should trigger the after hook', async function() {
             const client = new Client('test_base_url');
 
@@ -251,6 +285,27 @@ describe('Client', function() {
 
             const responseFailure = client.send('/failure', { method: 'GET' })
             await assert.isRejected(responseFailure, null);
+        });
+
+        it("Should run async after hook", async function () {
+            const client = new Client("test_base_url");
+
+            client.afterSend = async (_resp, _data) => {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+                return "123";
+            };
+
+            fetchMock.on({
+                method: "GET",
+                url: "test_base_url/success",
+                replyCode: 200,
+                replyBody: "123",
+            });
+
+            const responseSuccess = await client.send("/success", {
+                method: "GET",
+            });
+            assert.equal(responseSuccess, "123");
         });
     });
 
