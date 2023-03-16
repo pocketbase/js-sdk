@@ -39,11 +39,20 @@ export default class Client {
      * };
      * ```
      */
-    beforeSend?: (url: string, options: { [key: string]: any }) => {
-        [key: string]: any, // for backward compatibility
-        url?: string,
-        options?: {[key: string]: any}
-    };
+    beforeSend?: (
+        url: string,
+        options: { [key: string]: any }
+    ) =>
+        | {
+              [key: string]: any; // for backward compatibility
+              url?: string;
+              options?: { [key: string]: any };
+          }
+        | Promise<{
+              [key: string]: any; // for backward compatibility
+              url?: string;
+              options?: { [key: string]: any };
+          }>;
 
     /**
      * Hook that get triggered after successfully sending the fetch request,
