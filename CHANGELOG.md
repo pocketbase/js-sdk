@@ -1,3 +1,10 @@
+## 0.13.0
+
+- Added `Collection.indexes` prop for the new indexes support that comes with PocketBase v0.14.0.
+
+- Updated `pb.beforeSend` and `pb.afterSend` signatures to allow returning and awaiting an optional `Promise` ([#166](https://github.com/pocketbase/js-sdk/pull/166); thanks @Bobby-McBobface).
+
+
 ## 0.12.1
 
 - Fixed request `multipart/form-data` body check to allow the React Native Android and iOS custom `FormData` implementation as valid `fetch` body ([#2002](https://github.com/pocketbase/pocketbase/discussions/2002)).

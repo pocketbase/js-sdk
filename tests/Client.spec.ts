@@ -73,13 +73,13 @@ describe('Client', function() {
         it('Should properly concatenate path to baseUrl', function() {
             // with trailing slash
             const client1 = new Client('test_base_url/');
-            assert.equal(client1.buildUrl("test123"), 'test_base_url/test123');
-            assert.equal(client1.buildUrl("/test123"), 'test_base_url/test123');
+            assert.equal(client1.buildUrl('test123'), 'test_base_url/test123');
+            assert.equal(client1.buildUrl('/test123'), 'test_base_url/test123');
 
             // no trailing slash
             const client2 = new Client('test_base_url');
-            assert.equal(client2.buildUrl("test123"), 'test_base_url/test123');
-            assert.equal(client2.buildUrl("/test123"), 'test_base_url/test123');
+            assert.equal(client2.buildUrl('test123'), 'test_base_url/test123');
+            assert.equal(client2.buildUrl('/test123'), 'test_base_url/test123');
         });
     });
 
@@ -189,21 +189,21 @@ describe('Client', function() {
                 },
                 replyCode: 200,
             });
-            const user = new Record({ 'id': 'test-user', "collectionId": 'test-user' });
+            const user = new Record({ 'id': 'test-user', 'collectionId': 'test-user' });
             client.authStore.save('token123', user);
             await client.send('/user', { method: 'GET' });
         });
 
         it('Should trigger the before hook', async function() {
             const client = new Client('test_base_url');
-            const newUrl = "test_base_url/new"
+            const newUrl = 'test_base_url/new'
 
             client.beforeSend = function (_, options) {
                 options.headers = Object.assign(options.headers, {
                     'X-Custom-Header': '456',
                 });
 
-                return { url: newUrl, options};
+                return { url: newUrl, options };
             };
 
             fetchMock.on({
@@ -216,8 +216,36 @@ describe('Client', function() {
                 },
             });
 
-            const responseSuccess = await client.send('/old', { method: 'GET' })
-            assert.equal(responseSuccess, '123');
+            const response = await client.send('/old', { method: 'GET' });
+            assert.equal(response, '123');
+        });
+
+        it('Should trigger the async before hook', async function() {
+            const client = new Client('test_base_url');
+            const newUrl = 'test_base_url/new'
+
+            client.beforeSend = function (_, options) {
+                options.headers = Object.assign(options.headers, {
+                    'X-Custom-Header': '456',
+                });
+
+                return new Promise((resolve) => {
+                    setTimeout(() => resolve({ url: newUrl, options }), 10);
+                });
+            };
+
+            fetchMock.on({
+                method:    'GET',
+                url:       newUrl,
+                replyCode: 200,
+                replyBody: '123',
+                additionalMatcher: function (url, config) {
+                    return url == newUrl && (config?.headers as any)?.['X-Custom-Header'] == '456';
+                },
+            });
+
+            const response = await client.send('/old', { method: 'GET' });
+            assert.equal(response, '123');
         });
 
         it('Should trigger the after hook', async function() {
@@ -225,7 +253,7 @@ describe('Client', function() {
 
             client.afterSend = function (response, _) {
                 if (response.url === 'test_base_url/failure') {
-                    throw new Error("test_error");
+                    throw new Error('test_error');
                 }
 
                 return '789';
@@ -246,11 +274,34 @@ describe('Client', function() {
             });
 
             // will be replaced with /new
-            const responseSuccess = await client.send('/success', { method: 'GET' })
+            const responseSuccess = await client.send('/success', { method: 'GET' });
             assert.equal(responseSuccess, '789');
 
-            const responseFailure = client.send('/failure', { method: 'GET' })
+            const responseFailure = client.send('/failure', { method: 'GET' });
             await assert.isRejected(responseFailure, null);
+        });
+
+        it('Should trigger the async after hook', async function() {
+            const client = new Client('test_base_url');
+
+            client.afterSend = async function () {
+                await new Promise((_, reject) => {
+                    // use reject to test whether the timeout is awaited
+                    setTimeout(() => reject({data: {message: 'after_err'}}), 10);
+                });
+
+                return '123';
+            };
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/async_after',
+                replyCode: 200,
+                replyBody: '123',
+            });
+
+            const response = client.send('/async_after', { method: 'GET' });
+            await assert.isRejected(response, "after_err");
         });
     });
 
@@ -265,7 +316,7 @@ describe('Client', function() {
                 replyCode: 200,
             })
 
-            const response = client.send("/123", { method: 'GET', params: { '$cancelKey': 'testKey' } });
+            const response = client.send('/123', { method: 'GET', params: { '$cancelKey': 'testKey' } });
 
             client.cancelRequest('testKey');
 
@@ -291,8 +342,8 @@ describe('Client', function() {
                 replyCode: 200,
             })
 
-            const requestA = client.send("/123", { method: 'GET' });
-            const requestB = client.send("/456", { method: 'GET' });
+            const requestA = client.send('/123', { method: 'GET' });
+            const requestB = client.send('/456', { method: 'GET' });
 
             client.cancelAllRequests();
 

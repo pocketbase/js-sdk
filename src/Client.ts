@@ -11,6 +11,12 @@ import HealthService       from '@/services/HealthService';
 import Record              from '@/models/Record';
 import { FileQueryParams } from '@/services/utils/QueryParams';
 
+export interface BeforeSendResult {
+    [key: string]: any, // for backward compatibility
+    url?: string,
+    options?: {[key: string]: any}
+}
+
 /**
  * PocketBase JS Client.
  */
@@ -39,11 +45,7 @@ export default class Client {
      * };
      * ```
      */
-    beforeSend?: (url: string, options: { [key: string]: any }) => {
-        [key: string]: any, // for backward compatibility
-        url?: string,
-        options?: {[key: string]: any}
-    };
+    beforeSend?: (url: string, options: { [key: string]: any }) => BeforeSendResult|Promise<BeforeSendResult>;
 
     /**
      * Hook that get triggered after successfully sending the fetch request,
@@ -247,7 +249,7 @@ export default class Client {
         }
 
         if (this.beforeSend) {
-            const result = Object.assign({}, this.beforeSend(url, options));
+            const result = Object.assign({}, await this.beforeSend(url, options));
             if (typeof result.url !== "undefined" || typeof result.options !== "undefined") {
                 url = result.url || url;
                 options = result.options || options;
@@ -271,7 +273,7 @@ export default class Client {
                 }
 
                 if (this.afterSend) {
-                    data = this.afterSend(response, data);
+                    data = await this.afterSend(response, data);
                 }
 
                 if (response.status >= 400) {

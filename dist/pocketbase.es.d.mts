@@ -669,6 +669,7 @@ declare class Collection extends BaseModel {
     name: string;
     type: string;
     schema: Array<SchemaField>;
+    indexes: Array<string>;
     system: boolean;
     listRule: null | string;
     viewRule: null | string;
@@ -764,6 +765,13 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+interface BeforeSendResult {
+    [key: string]: any; // for backward compatibility
+    url?: string;
+    options?: {
+        [key: string]: any;
+    };
+}
 /**
  * PocketBase JS Client.
  */
@@ -793,13 +801,7 @@ declare class Client {
      */
     beforeSend?: (url: string, options: {
         [key: string]: any;
-    }) => {
-        [key: string]: any; // for backward compatibility
-        url?: string;
-        options?: {
-            [key: string]: any;
-        };
-    };
+    }) => BeforeSendResult | Promise<BeforeSendResult>;
     /**
      * Hook that get triggered after successfully sending the fetch request,
      * allowing you to inspect/modify the response object and its parsed data.
@@ -974,4 +976,4 @@ declare class LocalAuthStore extends BaseAuthStore {
 declare function getTokenPayload(token: string): {
     [key: string]: any;
 };
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };

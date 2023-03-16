@@ -669,6 +669,7 @@ declare class Collection extends BaseModel {
     name: string;
     type: string;
     schema: Array<SchemaField>;
+    indexes: Array<string>;
     system: boolean;
     listRule: null | string;
     viewRule: null | string;
@@ -764,6 +765,13 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+interface BeforeSendResult {
+    [key: string]: any;
+    url?: string;
+    options?: {
+        [key: string]: any;
+    };
+}
 /**
  * PocketBase JS Client.
  */
@@ -793,13 +801,7 @@ declare class Client {
      */
     beforeSend?: (url: string, options: {
         [key: string]: any;
-    }) => {
-        [key: string]: any;
-        url?: string;
-        options?: {
-            [key: string]: any;
-        };
-    };
+    }) => BeforeSendResult | Promise<BeforeSendResult>;
     /**
      * Hook that get triggered after successfully sending the fetch request,
      * allowing you to inspect/modify the response object and its parsed data.
@@ -931,4 +933,4 @@ declare class Client {
      */
     private serializeQueryParams;
 }
-export { Client as default };
+export { BeforeSendResult, Client as default };
