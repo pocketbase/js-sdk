@@ -247,7 +247,7 @@ export default class Client {
         }
 
         if (this.beforeSend) {
-            const result = Object.assign({}, this.beforeSend(url, options));
+            const result = Object.assign({}, await this.beforeSend(url, options));
             if (typeof result.url !== "undefined" || typeof result.options !== "undefined") {
                 url = result.url || url;
                 options = result.options || options;
@@ -271,7 +271,7 @@ export default class Client {
                 }
 
                 if (this.afterSend) {
-                    data = this.afterSend(response, data);
+                    data = await this.afterSend(response, data);
                 }
 
                 if (response.status >= 400) {
