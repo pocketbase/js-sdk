@@ -8,22 +8,22 @@ export default class Record extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: { [key: string]: any }) {
-        super.load(data);
+    $load(data: { [key: string]: any }) {
+        super.$load(data);
 
         // normalize common fields
         this.collectionId   = typeof data.collectionId   === 'string' ? data.collectionId   : '';
         this.collectionName = typeof data.collectionName === 'string' ? data.collectionName : '';
 
         // normalize expand items
-        this.loadExpand(data.expand);
+        this._loadExpand(data.expand);
     }
 
     /**
      * Loads the provided expand items and recursively normalizes each
      * item to a `Record|Array<Record>`.
      */
-    private loadExpand(expand: { [key: string]: any }) {
+    private _loadExpand(expand: { [key: string]: any }) {
         expand = expand || {};
         this.expand = {};
 

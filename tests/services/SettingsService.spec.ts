@@ -81,4 +81,35 @@ describe('SettingsService', function () {
             assert.isTrue(result);
         });
     });
+
+    describe('generateAppleClientSecret()', function () {
+        it('Should send an Apple OAuth2 client secret request', async function () {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/settings/apple/generate-client-secret')+ '?q1=123',
+                body: {
+                    clientId:   "1",
+                    teamId:     "2",
+                    keyId:      "3",
+                    privateKey: "4",
+                    duration:   5,
+                    b1:         6
+                },
+                replyCode: 204,
+                replyBody: { secret: "test" },
+            });
+
+            const result = await service.generateAppleClientSecret(
+                "1",
+                "2",
+                "3",
+                "4",
+                5,
+                { "b1": 6 },
+                { "q1": 123 }
+            );
+
+            assert.deepEqual(result, { 'secret': 'test' });
+        });
+    });
 });

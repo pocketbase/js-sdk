@@ -7,8 +7,8 @@ export default class Admin extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: { [key: string]: any }) {
-        super.load(data);
+    $load(data: { [key: string]: any }) {
+        super.$load(data);
 
         this.avatar = typeof data.avatar === 'number' ? data.avatar : 0;
         this.email  = typeof data.email  === 'string' ? data.email  : '';

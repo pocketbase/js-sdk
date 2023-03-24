@@ -9,8 +9,8 @@ export default class ExternalAuth extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: { [key: string]: any }) {
-        super.load(data);
+    $load(data: { [key: string]: any }) {
+        super.$load(data);
 
         this.recordId     = typeof data.recordId     === 'string' ? data.recordId     : '';
         this.collectionId = typeof data.collectionId === 'string' ? data.collectionId : '';

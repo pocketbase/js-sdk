@@ -17,8 +17,8 @@ export default class Collection extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: { [key: string]: any }) {
-        super.load(data);
+    $load(data: { [key: string]: any }) {
+        super.$load(data);
 
         this.system  = !!data.system;
         this.name    = typeof data.name === 'string' ? data.name : '';
@@ -42,23 +42,44 @@ export default class Collection extends BaseModel {
     }
 
     /**
-     * Checks if the current model is "base" collection.
+     * @deprecated Please use $isBase instead.
      */
     get isBase(): boolean {
+        return this.$isBase;
+    }
+
+    /**
+     * Checks if the current model is "base" collection.
+     */
+    get $isBase(): boolean {
         return this.type === 'base';
+    }
+
+    /**
+     * @deprecated Please use $isAuth instead.
+     */
+    get isAuth(): boolean {
+        return this.$isAuth;
     }
 
     /**
      * Checks if the current model is "auth" collection.
      */
-    get isAuth(): boolean {
+    get $isAuth(): boolean {
         return this.type === 'auth';
+    }
+
+    /**
+     * @deprecated Please use $isView instead.
+     */
+    get isView(): boolean {
+        return this.$isView;
     }
 
     /**
      * Checks if the current model is "view" collection.
      */
-    get isView(): boolean {
+    get $isView(): boolean {
         return this.type === 'view';
     }
 }

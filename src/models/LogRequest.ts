@@ -14,8 +14,8 @@ export default class LogRequest extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: { [key: string]: any }) {
-        super.load(data);
+    $load(data: { [key: string]: any }) {
+        super.$load(data);
 
         // fallback to the ip field for backward compatibility
         data.remoteIp = data.remoteIp || data.ip;

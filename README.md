@@ -24,12 +24,18 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 
 ```html
 <script src="/path/to/dist/pocketbase.umd.js"></script>
+<script type="text/javascript">
+    const pb = new PocketBase("https://example.com")
+    ...
+</script>
 ```
 
 _OR if you are using ES modules:_
 ```html
 <script type="module">
     import PocketBase from '/path/to/dist/pocketbase.es.mjs'
+
+    const pb = new PocketBase("https://example.com")
     ...
 </script>
 ```
@@ -806,6 +812,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Sends a test email (verification, password-reset, email-change).
 🔐 pb.settings.testEmail(toEmail, template, queryParams = {});
+
+// Generates a new Apple OAuth2 client secret.
+🔐 pb.settings.generateAppleClientSecret(clientId, teamId, keyId, privateKey, duration, bodyParams = {}, queryParams = {});
 ```
 
 ---

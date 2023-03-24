@@ -1,8 +1,20 @@
-## 0.13.0-rc
+## 0.13.0
 
-- Added `Collection.indexes` prop for the new indexes support that comes with PocketBase v0.14.0.
+- Aliased all `BaseModel` helpers with `$` equivalent to avoid conflicts with the dynamic record props ([#169](https://github.com/pocketbase/js-sdk/issues/169)).
+  ```js
+  isNew      -> $isNew
+  load(data) -> $load(data)
+  clone()    -> $clone()
+  export()   -> $export()
+  // ...
+  ```
+  _For backward compatibility, the old helpers will still continue to work if the record doesn't have a conflicting field name._
 
 - Updated `pb.beforeSend` and `pb.afterSend` signatures to allow returning and awaiting an optional `Promise` ([#166](https://github.com/pocketbase/js-sdk/pull/166); thanks @Bobby-McBobface).
+
+- Added `Collection.indexes` field for the new collection indexes support in the upcoming PocketBase v0.14.0.
+
+- Added `pb.settings.generateAppleClientSecret()` for sending a request to generate Apple OAuth2 client secret in the upcoming PocketBase v0.14.0.
 
 
 ## 0.12.1

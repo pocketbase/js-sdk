@@ -6,13 +6,20 @@ export default abstract class BaseModel {
     updated!: string;
 
     constructor(data: { [key: string]: any } = {}) {
-        this.load(data || {});
+        this.$load(data || {});
+    }
+
+    /**
+     * Alias of this.$load(data).
+     */
+    load(data: { [key: string]: any }) {
+        return this.$load(data);
     }
 
     /**
      * Loads `data` into the current model.
      */
-    load(data: { [key: string]: any }) {
+    $load(data: { [key: string]: any }) {
         for (const [key, value] of Object.entries(data)) {
             this[key] = value;
         }
@@ -24,16 +31,30 @@ export default abstract class BaseModel {
     }
 
     /**
-     * Returns whether the current loaded data represent a stored db record.
+     * Alias of this.$isNew.
      */
     get isNew(): boolean {
+        return this.$isNew
+    }
+
+    /**
+     * Returns whether the current loaded data represent a stored db record.
+     */
+    get $isNew(): boolean {
         return !this.id;
+    }
+
+    /**
+     * Alias of this.clone().
+     */
+    clone(): BaseModel {
+        return this.$clone();
     }
 
     /**
      * Creates a deep clone of the current model.
      */
-    clone(): BaseModel {
+    $clone(): BaseModel {
         const clone = typeof structuredClone === 'function' ?
             structuredClone(this) : JSON.parse(JSON.stringify(this));
 
@@ -41,9 +62,16 @@ export default abstract class BaseModel {
     }
 
     /**
-     * Exports all model properties as a new plain object.
+     * Alias of this.$export().
      */
     export(): { [key: string]: any } {
+        return this.$export();
+    }
+
+    /**
+     * Exports all model properties as a new plain object.
+     */
+    $export(): { [key: string]: any } {
         return Object.assign({}, this);
     }
 }

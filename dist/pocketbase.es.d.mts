@@ -18,23 +18,43 @@ declare abstract class BaseModel {
         [key: string]: any;
     });
     /**
-     * Loads `data` into the current model.
+     * Alias of this.$load(data).
      */
     load(data: {
         [key: string]: any;
     }): void;
     /**
-     * Returns whether the current loaded data represent a stored db record.
+     * Loads `data` into the current model.
+     */
+    $load(data: {
+        [key: string]: any;
+    }): void;
+    /**
+     * Alias of this.$isNew.
      */
     get isNew(): boolean;
     /**
-     * Creates a deep clone of the current model.
+     * Returns whether the current loaded data represent a stored db record.
+     */
+    get $isNew(): boolean;
+    /**
+     * Alias of this.clone().
      */
     clone(): BaseModel;
     /**
-     * Exports all model properties as a new plain object.
+     * Creates a deep clone of the current model.
+     */
+    $clone(): BaseModel;
+    /**
+     * Alias of this.$export().
      */
     export(): {
+        [key: string]: any;
+    };
+    /**
+     * Exports all model properties as a new plain object.
+     */
+    $export(): {
         [key: string]: any;
     };
 }
@@ -47,14 +67,14 @@ declare class Record extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: {
+    $load(data: {
         [key: string]: any;
     }): void;
     /**
      * Loads the provided expand items and recursively normalizes each
      * item to a `Record|Array<Record>`.
      */
-    private loadExpand;
+    private _loadExpand;
 }
 declare class Admin extends BaseModel {
     avatar: number;
@@ -62,7 +82,7 @@ declare class Admin extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: {
+    $load(data: {
         [key: string]: any;
     }): void;
 }
@@ -180,6 +200,9 @@ interface LogStatsQueryParams extends BaseQueryParams {
 interface FileQueryParams extends BaseQueryParams {
     thumb?: string;
 }
+interface appleClientSecret {
+    secret: string;
+}
 declare class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
@@ -206,6 +229,10 @@ declare class SettingsService extends BaseService {
      * - email-change
      */
     testEmail(toEmail: string, emailTemplate: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    /**
+     * Generates a new Apple OAuth2 client secret.
+     */
+    generateAppleClientSecret(clientId: string, teamId: string, keyId: string, privateKey: string, duration: number, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<appleClientSecret>;
 }
 declare class ListResult<M = BaseModel> {
     page: number;
@@ -386,7 +413,7 @@ declare class ExternalAuth extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: {
+    $load(data: {
         [key: string]: any;
     }): void;
 }
@@ -658,12 +685,6 @@ declare class SchemaField {
     constructor(data?: {
         [key: string]: any;
     });
-    /**
-     * Loads `data` into the field.
-     */
-    load(data: {
-        [key: string]: any;
-    }): void;
 }
 declare class Collection extends BaseModel {
     name: string;
@@ -682,21 +703,33 @@ declare class Collection extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: {
+    $load(data: {
         [key: string]: any;
     }): void;
     /**
-     * Checks if the current model is "base" collection.
+     * @deprecated Please use $isBase instead.
      */
     get isBase(): boolean;
     /**
-     * Checks if the current model is "auth" collection.
+     * Checks if the current model is "base" collection.
+     */
+    get $isBase(): boolean;
+    /**
+     * @deprecated Please use $isAuth instead.
      */
     get isAuth(): boolean;
     /**
-     * Checks if the current model is "view" collection.
+     * Checks if the current model is "auth" collection.
+     */
+    get $isAuth(): boolean;
+    /**
+     * @deprecated Please use $isView instead.
      */
     get isView(): boolean;
+    /**
+     * Checks if the current model is "view" collection.
+     */
+    get $isView(): boolean;
 }
 declare class CollectionService extends CrudService<Collection> {
     /**
@@ -733,7 +766,7 @@ declare class LogRequest extends BaseModel {
     /**
      * @inheritdoc
      */
-    load(data: {
+    $load(data: {
         [key: string]: any;
     }): void;
 }

@@ -1,6 +1,10 @@
 import BaseService         from '@/services/utils/BaseService';
 import { BaseQueryParams } from '@/services/utils/QueryParams';
 
+interface appleClientSecret {
+    secret: string;
+}
+
 export default class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
@@ -52,5 +56,32 @@ export default class SettingsService extends BaseService {
             'params': queryParams,
             'body':   bodyParams,
         }).then(() => true);
+    }
+
+    /**
+     * Generates a new Apple OAuth2 client secret.
+     */
+    generateAppleClientSecret(
+        clientId: string,
+        teamId: string,
+        keyId: string,
+        privateKey: string,
+        duration: number,
+        bodyParams = {},
+        queryParams: BaseQueryParams = {}
+    ): Promise<appleClientSecret> {
+        bodyParams = Object.assign({
+            clientId,
+            teamId,
+            keyId,
+            privateKey,
+            duration,
+        }, bodyParams);
+
+        return this.client.send('/api/settings/apple/generate-client-secret', {
+            'method': 'POST',
+            'params': queryParams,
+            'body':   bodyParams,
+        });
     }
 }
