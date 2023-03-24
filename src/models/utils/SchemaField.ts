@@ -4,7 +4,6 @@ export default class SchemaField {
     type!:     string;
     system!:   boolean;
     required!: boolean;
-    unique!:   boolean;
     options!:  { [key: string]: any };
 
     constructor(data: { [key: string]: any } = {}) {
@@ -13,7 +12,6 @@ export default class SchemaField {
         this.type     = typeof data.type !== 'undefined' ? data.type : 'text';
         this.system   = !!data.system;
         this.required = !!data.required;
-        this.unique   = !!data.unique;
         this.options  = typeof data.options === 'object' && data.options !== null ? data.options : {};
     }
 }
