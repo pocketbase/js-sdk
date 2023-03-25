@@ -798,6 +798,17 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+interface SendOptions extends RequestInit {
+    headers?: {
+        [key: string]: string;
+    };
+    body?: any;
+    params?: {
+        [key: string]: any;
+        $autoCancel?: boolean;
+        $cancelKey?: string;
+    };
+}
 interface BeforeSendResult {
     [key: string]: any;
     url?: string;
@@ -934,9 +945,7 @@ declare class Client {
     /**
      * Sends an api http request.
      */
-    send(path: string, reqOptions: {
-        [key: string]: any;
-    }): Promise<any>;
+    send<T = any>(path: string, reqOptions?: SendOptions): Promise<T>;
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
@@ -966,4 +975,4 @@ declare class Client {
      */
     private serializeQueryParams;
 }
-export { BeforeSendResult, Client as default };
+export { SendOptions, BeforeSendResult, Client as default };
