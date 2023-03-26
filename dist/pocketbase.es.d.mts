@@ -678,7 +678,6 @@ declare class SchemaField {
     type: string;
     system: boolean;
     required: boolean;
-    unique: boolean;
     options: {
         [key: string]: any;
     };
@@ -798,6 +797,13 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+interface SendOptions extends RequestInit {
+    headers?: {
+        [key: string]: string;
+    };
+    body?: any;
+    params?: BaseQueryParams;
+}
 interface BeforeSendResult {
     [key: string]: any; // for backward compatibility
     url?: string;
@@ -832,9 +838,7 @@ declare class Client {
      * };
      * ```
      */
-    beforeSend?: (url: string, options: {
-        [key: string]: any;
-    }) => BeforeSendResult | Promise<BeforeSendResult>;
+    beforeSend?: (url: string, options: SendOptions) => BeforeSendResult | Promise<BeforeSendResult>;
     /**
      * Hook that get triggered after successfully sending the fetch request,
      * allowing you to inspect/modify the response object and its parsed data.
@@ -916,9 +920,7 @@ declare class Client {
     /**
      * Sends an api http request.
      */
-    send(path: string, reqOptions: {
-        [key: string]: any;
-    }): Promise<any>;
+    send<T = any>(path: string, reqOptions: SendOptions): Promise<T>;
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
@@ -1009,4 +1011,4 @@ declare class LocalAuthStore extends BaseAuthStore {
 declare function getTokenPayload(token: string): {
     [key: string]: any;
 };
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
