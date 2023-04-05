@@ -8,6 +8,7 @@ import CollectionService   from '@/services/CollectionService';
 import LogService          from '@/services/LogService';
 import RealtimeService     from '@/services/RealtimeService';
 import HealthService       from '@/services/HealthService';
+import FileService         from '@/services/FileService';
 import Record              from '@/models/Record';
 import { BaseQueryParams, FileQueryParams } from '@/services/utils/QueryParams';
 
@@ -103,6 +104,11 @@ export default class Client {
     readonly collections: CollectionService;
 
     /**
+     * An instance of the service that handles the **File APIs**.
+     */
+    readonly files: FileService;
+
+    /**
      * An instance of the service that handles the **Log APIs**.
      */
     readonly logs: LogService;
@@ -133,6 +139,7 @@ export default class Client {
         // services
         this.admins      = new AdminService(this);
         this.collections = new CollectionService(this);
+        this.files       = new FileService(this);
         this.logs        = new LogService(this);
         this.settings    = new SettingsService(this);
         this.realtime    = new RealtimeService(this);
@@ -298,28 +305,14 @@ export default class Client {
     }
 
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(
         record: Pick<Record, "id" | "collectionId" | "collectionName">,
         filename: string,
         queryParams: FileQueryParams = {}
     ): string {
-        const parts = [];
-        parts.push("api")
-        parts.push("files")
-        parts.push(encodeURIComponent(record.collectionId || record.collectionName))
-        parts.push(encodeURIComponent(record.id))
-        parts.push(encodeURIComponent(filename))
-
-        let result = this.buildUrl(parts.join('/'));
-
-        if (Object.keys(queryParams).length) {
-            const params = new URLSearchParams(queryParams);
-            result += (result.includes("?") ? "&" : "?") + params;
-        }
-
-        return result
+        return this.files.getUrl(record, filename, queryParams);
     }
 
     /**

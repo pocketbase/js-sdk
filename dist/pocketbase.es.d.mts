@@ -797,6 +797,16 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+declare class FileService extends BaseService {
+    /**
+     * Builds and returns an absolute record file url for the provided filename.
+     */
+    getUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
+    /**
+     * Requests a new private file access token for the current auth model (admin or record).
+     */
+    getToken(queryParams?: BaseQueryParams): Promise<string>;
+}
 interface SendOptions extends RequestInit {
     headers?: {
         [key: string]: string;
@@ -883,6 +893,10 @@ declare class Client {
      */
     readonly collections: CollectionService;
     /**
+     * An instance of the service that handles the **File APIs**.
+     */
+    readonly files: FileService;
+    /**
      * An instance of the service that handles the **Log APIs**.
      */
     readonly logs: LogService;
@@ -922,7 +936,7 @@ declare class Client {
      */
     send<T = any>(path: string, reqOptions: SendOptions): Promise<T>;
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
     /**
@@ -1011,4 +1025,13 @@ declare class LocalAuthStore extends BaseAuthStore {
 declare function getTokenPayload(token: string): {
     [key: string]: any;
 };
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+/**
+ * Checks whether a JWT token is expired or not.
+ * Tokens without `exp` payload key are considered valid.
+ * Tokens with empty payload (eg. invalid token strings) are considered expired.
+ *
+ * @param token The token to check.
+ * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
+ */
+declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };

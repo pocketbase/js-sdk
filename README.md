@@ -618,7 +618,6 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 | `pb.autoCancellation(enable)`                     | Globally enable or disable auto cancellation for pending duplicated requests. |
 | `pb.cancelAllRequests()`                          | Cancels all pending requests.                                                 |
 | `pb.cancelRequest(cancelKey)`                     | Cancels single request by its cancellation token key.                         |
-| `pb.getFileUrl(record, filename, reqConfig = {})` | Builds and returns an absolute record file url for the provided filename.     |
 | `pb.buildUrl(path, reqConfig = {})`               | Builds a full client url by safely concatenating the provided path.           |
 
 
@@ -711,6 +710,18 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Unlinks a single external auth provider relation from the specified record.
 🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, queryParams = {});
+```
+
+---
+
+##### FileService
+
+```js
+// Builds and returns an absolute record file url for the provided filename.
+🔓 pb.files.getUrl(record, filename, queryParams = {});
+
+// Requests a new private file access token for the current auth model (admin or record).
+🔐 pb.files.getToken(queryParams = {});
 ```
 
 ---

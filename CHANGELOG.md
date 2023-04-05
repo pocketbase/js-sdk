@@ -1,3 +1,16 @@
+## 0.14.0-rc
+
+- Adde new `pb.files` service:
+  ```js
+  // Builds and returns an absolute record file url for the provided filename.
+  🔓 pb.files.getUrl(record, filename, queryParams = {});
+
+  // Requests a new private file access token for the current auth model (admin or record).
+  🔐 pb.files.getToken(queryParams = {});
+  ```
+  _`pb.getFileUrl()` is soft deprecated and acts as alias calling `pb.files.getUrl()` under the hood._
+
+
 ## 0.13.1
 
 - Added option to specify a generic `send()` return type and defined `SendOptions` type ([#171](https://github.com/pocketbase/js-sdk/pull/171); thanks @iamelevich).

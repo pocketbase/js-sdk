@@ -797,6 +797,16 @@ declare class HealthService extends BaseService {
      */
     check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
 }
+declare class FileService extends BaseService {
+    /**
+     * Builds and returns an absolute record file url for the provided filename.
+     */
+    getUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
+    /**
+     * Requests a new private file access token for the current auth model (admin or record).
+     */
+    getToken(queryParams?: BaseQueryParams): Promise<string>;
+}
 interface SendOptions extends RequestInit {
     headers?: {
         [key: string]: string;
@@ -883,6 +893,10 @@ declare class Client {
      */
     readonly collections: CollectionService;
     /**
+     * An instance of the service that handles the **File APIs**.
+     */
+    readonly files: FileService;
+    /**
      * An instance of the service that handles the **Log APIs**.
      */
     readonly logs: LogService;
@@ -940,10 +954,10 @@ declare class Client {
      */
     send<T = any>(path: string, reqOptions: SendOptions): Promise<T>;
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * Legacy alias of `pb.files.getUrl()`.
      */
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
     /**
