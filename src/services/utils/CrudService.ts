@@ -74,7 +74,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    create<T = M>(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
+    create<T = M>(bodyParams: T | {} = {}, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._create<T>(this.baseCrudPath, bodyParams, queryParams);
     }
 
@@ -83,7 +83,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    update<T = M>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
+    update<T = M>(id: string, bodyParams: Partial<T> | {} = {}, queryParams: BaseQueryParams = {}): Promise<T> {
         return this._update<T>(this.baseCrudPath, id, bodyParams, queryParams);
     }
 
