@@ -28,7 +28,7 @@
     you have to configure `https://yourdomain.com/api/oauth2-redirect`
     as redirect URL.
 
-    _The old "manual" code exchange flow is still suppoted as `authWithOAuth2Code()` and as soft-deprecated function overload of `authWithOAuth2Code()`._
+    _The old "manual" code exchange flow is still suppoted as `authWithOAuth2Code(provider, code, codeVerifier, redirectUrl)` AND as soft-deprecated function overload of `authWithOAuth2(provider, code, codeVerifier, redirectUrl)`._
 
 
 ## 0.13.1
