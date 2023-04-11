@@ -1,4 +1,5 @@
 import Client              from '@/Client';
+import ClientResponseError from '@/ClientResponseError';
 import Record              from '@/models/Record';
 import ExternalAuth        from '@/models/ExternalAuth';
 import ListResult          from '@/models/utils/ListResult';
@@ -33,8 +34,28 @@ export interface AuthMethodsList {
 }
 
 export interface RecordSubscription<T = Record> {
-    action: string;
+    action: string; // eg. create, update, delete
     record: T;
+}
+
+export type OAuth2UrlCallback = (data: OAuth2UrlCallbackData) => void;
+
+export interface OAuth2UrlCallbackData {
+    url: string;
+}
+
+export interface OAuth2AuthConfig {
+    // the name of the OAuth2 provider (eg. "google")
+    provider: string;
+
+    // custom scopes to overwrite the default ones
+    scopes?: Array<string>;
+
+    // optional record create data
+    createData?: {[key: string]: any};
+
+    // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
+    urlCallback?: OAuth2UrlCallback,
 }
 
 export default class RecordService extends CrudService<Record> {
@@ -312,7 +333,9 @@ export default class RecordService extends CrudService<Record> {
     }
 
     /**
-     * Authenticate a single auth collection record with OAuth2.
+     * Authenticate a single auth collection record with OAuth2 code.
+     *
+     * If you don't have an OAuth2 code you may also want to check `authWithOAuth2` method.
      *
      * On success, this method also automatically updates
      * the client's AuthStore data and returns:
@@ -320,7 +343,7 @@ export default class RecordService extends CrudService<Record> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2<T = Record>(
+    authWithOAuth2Code<T = Record>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -342,6 +365,123 @@ export default class RecordService extends CrudService<Record> {
             'params':  queryParams,
             'body':    bodyParams,
         }).then((data) => this.authResponse<T>(data));
+    }
+
+    /**
+     * @deprecated This form of authWithOAuth2 is deprecated.
+     *
+     * Please use `authWithOAuth2Code()` OR its simplified realtime version
+     * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
+     */
+    async authWithOAuth2<T = Record>(
+        provider: string,
+        code: string,
+        codeVerifier: string,
+        redirectUrl: string,
+        createData?: {[key: string]: any},
+        bodyParams?: {[key: string]: any},
+        queryParams?: RecordQueryParams,
+    ): Promise<RecordAuthResponse<T>>
+
+    /**
+     * Authenticate a single auth collection record with OAuth2
+     * **without custom redirects, deeplinks or even page reload**.
+     *
+     * This method initializes a one-off realtime subscription and will
+     * open a popup window with the OAuth2 vendor page to authenticate.
+     * Once the external OAuth2 sign-in/sign-up flow is completed, the popup
+     * window will be automatically closed and the OAuth2 data sent back
+     * to the user through the previously established realtime connection.
+     *
+     * You can specify an optional `urlCallback` prop to customize
+     * the default url `window.open` behavior.
+     *
+     * On success, this method also automatically updates
+     * the client's AuthStore data and returns:
+     * - the authentication token
+     * - the authenticated record model
+     * - the OAuth2 account data (eg. name, email, avatar, etc.)
+     *
+     * Example:
+     *
+     * ```js
+     * const authData = await pb.collection('users').authWithOAuth2({
+     *     provider: "google",
+     * })
+     * ```
+     *
+     * _Site-note_: when creating the OAuth2 app in the provider dashboard
+     * you have to configure `https://yourdomain.com/api/oauth2-redirect`
+     * as redirect URL.
+     */
+    async authWithOAuth2<T = Record>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>
+
+    async authWithOAuth2<T = Record>(...args: any): Promise<RecordAuthResponse<T>> {
+        // fallback to legacy format
+        if (args.length > 1 || typeof args?.[0] === 'string') {
+            console.warn("PocketBase: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.");
+            return this.authWithOAuth2Code<T>(
+                args?.[0] || '',
+                args?.[1] || '',
+                args?.[2] || '',
+                args?.[3] || '',
+                args?.[4] || {},
+                args?.[5] || {},
+                args?.[6] || {},
+            );
+        }
+
+        const config = args?.[0] || {};
+
+        const authMethods = await this.listAuthMethods();
+
+        const provider = authMethods.authProviders.find((p) => p.name === config.provider);
+        if (!provider) {
+            throw new ClientResponseError(new Error(`Missing or invalid provider "${config.provider}".`));
+        }
+
+        const redirectUrl = this.client.buildUrl('/api/oauth2-redirect');
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                // initialize a one-off @oauth2 realtime subscription
+                const unsubscribe = await this.client.realtime.subscribe('@oauth2', async (e) => {
+                    const oldState = this.client.realtime.clientId;
+
+                    try {
+                        unsubscribe();
+
+                        if (!e.state || oldState !== e.state) {
+                            throw new Error("State parameters don't match.");
+                        }
+
+                        const authData = await this.authWithOAuth2Code<T>(
+                            provider.name,
+                            e.code,
+                            provider.codeVerifier,
+                            redirectUrl,
+                            config.createData
+                        )
+
+                        resolve(authData);
+                    } catch (err) {
+                        reject(new ClientResponseError(err));
+                    }
+                });
+
+                const url = new URL(provider.authUrl + redirectUrl);
+                url.searchParams.set("state", this.client.realtime.clientId);
+                if (config.scopes?.length) {
+                    url.searchParams.set("scope", config.scopes.join(" "));
+                }
+
+                const callbackData = { url: url.toString() };
+
+                config.urlCallback ? config.urlCallback(callbackData) : this._defaultUrlCallback(callbackData);
+            } catch (err) {
+                reject(new ClientResponseError(err));
+            }
+        });
     }
 
     /**
@@ -513,5 +653,32 @@ export default class RecordService extends CrudService<Record> {
             'method': 'DELETE',
             'params': queryParams,
         }).then(() => true);
+    }
+
+    // ---------------------------------------------------------------
+
+    private _defaultUrlCallback(data: OAuth2UrlCallbackData) {
+        if (typeof window === "undefined" || !window?.open) {
+            throw new ClientResponseError(new Error(`Not in a browser context - please pass a custom urlCallback function.`));
+        }
+
+        let width  = 1024;
+        let height = 768;
+
+        let windowWidth  = window.innerWidth;
+        let windowHeight = window.innerHeight;
+
+        // normalize window size
+        width  = width > windowWidth ? windowWidth : width;
+        height = height > windowHeight ? windowHeight : height;
+
+        let left = (windowWidth / 2) - (width / 2);
+        let top  = (windowHeight / 2) - (height / 2);
+
+        window.open(
+            data.url,
+            "oauth2-popup",
+            'width='+width+',height='+height+',top='+top+',left='+left+',resizable,menubar=no'
+        );
     }
 }

@@ -212,8 +212,34 @@ describe('RecordService', function() {
         });
     });
 
+    describe('authWithOAuth2Code()', function() {
+        it('Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
+                body: {
+                    'provider':     'test',
+                    'code':         'c123',
+                    'codeVerifier': 'v123',
+                    'redirectUrl':  'http://example.com',
+                    'createData':   {'test': 1},
+                    'b1':           123,
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_auth',
+                    'record': { 'id': 'id_auth' },
+                },
+            });
+
+            const result = await service.authWithOAuth2Code('test', 'c123', 'v123', 'http://example.com', {'test': 1}, { 'b1': 123 }, { 'q1': 456 });
+
+            authResponseCheck(result, 'token_auth', new Record({ 'id': 'id_auth' }));
+        });
+    });
+
     describe('authWithOAuth2()', function() {
-        it('Should authWithOAuth2 a record by an OAuth2 client', async function() {
+        it('Should authenticate with OAuth2 a record using the legacy function overload', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
@@ -236,6 +262,8 @@ describe('RecordService', function() {
 
             authResponseCheck(result, 'token_auth', new Record({ 'id': 'id_auth' }));
         });
+
+        // @todo consider adding a test for the realtime version when refactoring the realtime service
     });
 
     describe('authRefresh()', function() {

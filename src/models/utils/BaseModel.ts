@@ -72,6 +72,7 @@ export default abstract class BaseModel {
      * Exports all model properties as a new plain object.
      */
     $export(): { [key: string]: any } {
-        return Object.assign({}, this);
+        return typeof structuredClone === 'function' ?
+            structuredClone(this) : Object.assign({}, this);
     }
 }

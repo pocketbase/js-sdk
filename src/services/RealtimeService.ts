@@ -9,7 +9,8 @@ interface promiseCallbacks {
 export type UnsubscribeFunc = () => Promise<void>;
 
 export default class RealtimeService extends BaseService {
-    private clientId: string = "";
+    clientId: string = "";
+
     private eventSource: EventSource | null = null;
     private subscriptions: { [key: string]: Array<EventListener> } = {};
     private lastSentTopics: Array<string> = [];
@@ -22,6 +23,7 @@ export default class RealtimeService extends BaseService {
         200, 300, 500, 1000, 1200, 1500, 2000,
     ];
     private pendingConnects: Array<promiseCallbacks> = [];
+
 
     /**
      * Returns whether the realtime connection has been established.

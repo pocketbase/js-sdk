@@ -419,7 +419,7 @@ declare class ExternalAuth extends BaseModel {
 }
 type UnsubscribeFunc = () => Promise<void>;
 declare class RealtimeService extends BaseService {
-    private clientId;
+    clientId: string;
     private eventSource;
     private subscriptions;
     private lastSentTopics;
@@ -506,8 +506,24 @@ interface AuthMethodsList {
     authProviders: Array<AuthProviderInfo>;
 }
 interface RecordSubscription<T = Record> {
-    action: string;
+    action: string; // eg. create, update, delete
     record: T;
+}
+type OAuth2UrlCallback = (data: OAuth2UrlCallbackData) => void;
+interface OAuth2UrlCallbackData {
+    url: string;
+}
+interface OAuth2AuthConfig {
+    // the name of the OAuth2 provider (eg. "google")
+    provider: string;
+    // custom scopes to overwrite the default ones
+    scopes?: Array<string>;
+    // optional record create data
+    createData?: {
+        [key: string]: any;
+    };
+    // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
+    urlCallback?: OAuth2UrlCallback;
 }
 declare class RecordService extends CrudService<Record> {
     readonly collectionIdOrName: string;
@@ -623,7 +639,9 @@ declare class RecordService extends CrudService<Record> {
      */
     authWithPassword<T = Record>(usernameOrEmail: string, password: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
     /**
-     * Authenticate a single auth collection record with OAuth2.
+     * Authenticate a single auth collection record with OAuth2 code.
+     *
+     * If you don't have an OAuth2 code you may also want to check `authWithOAuth2` method.
      *
      * On success, this method also automatically updates
      * the client's AuthStore data and returns:
@@ -631,7 +649,50 @@ declare class RecordService extends CrudService<Record> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2<T = Record>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {}, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    authWithOAuth2Code<T = Record>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {}, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    /**
+     * @deprecated This form of authWithOAuth2 is deprecated.
+     *
+     * Please use `authWithOAuth2Code()` OR its simplified realtime version
+     * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
+     */
+    authWithOAuth2<T = Record>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+        [key: string]: any;
+    }, bodyParams?: {
+        [key: string]: any;
+    }, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    /**
+     * Authenticate a single auth collection record with OAuth2
+     * **without custom redirects, deeplinks or even page reload**.
+     *
+     * This method initializes a one-off realtime subscription and will
+     * open a popup window with the OAuth2 vendor page to authenticate.
+     * Once the external OAuth2 sign-in/sign-up flow is completed, the popup
+     * window will be automatically closed and the OAuth2 data sent back
+     * to the user through the previously established realtime connection.
+     *
+     * You can specify an optional `urlCallback` prop to customize
+     * the default url `window.open` behavior.
+     *
+     * On success, this method also automatically updates
+     * the client's AuthStore data and returns:
+     * - the authentication token
+     * - the authenticated record model
+     * - the OAuth2 account data (eg. name, email, avatar, etc.)
+     *
+     * Example:
+     *
+     * ```js
+     * const authData = await pb.collection('users').authWithOAuth2({
+     *     provider: "google",
+     * })
+     * ```
+     *
+     * _Site-note_: when creating the OAuth2 app in the provider dashboard
+     * you have to configure `https://yourdomain.com/api/oauth2-redirect`
+     * as redirect URL.
+     */
+    authWithOAuth2<T = Record>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
     /**
      * Refreshes the current authenticated record instance and
      * returns a new token and record data.
@@ -671,6 +732,8 @@ declare class RecordService extends CrudService<Record> {
      * Unlink a single external auth provider from the specified auth record.
      */
     unlinkExternalAuth(recordId: string, provider: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    // ---------------------------------------------------------------
+    private _defaultUrlCallback;
 }
 declare class SchemaField {
     id: string;
