@@ -681,8 +681,11 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Authenticates a record with their username/email and password.
 🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, bodyParams = {}, queryParams = {});
 
-// Authenticates a record with OAuth2 client provider.
-🔓 pb.collection(collectionIdOrName).authWithOAuth2(provider, code, codeVerifier, redirectUrl, createData = {}, bodyParams = {}, queryParams = {});
+// Authenticates a record with OAuth2 code.
+🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, bodyParams = {}, queryParams = {});
+
+// Authenticates a record with OAuth2 provider without custom redirects, deeplinks or even page reload.
+🔓 pb.collection(collectionIdOrName).authWithOAuth2(authConfig);
 
 // Refreshes the current authenticated record model and auth token.
 🔐 pb.collection(collectionIdOrName).authRefresh(bodyParams = {}, queryParams = {});

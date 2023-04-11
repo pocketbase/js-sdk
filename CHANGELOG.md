@@ -8,8 +8,7 @@
     // Requests a new private file access token for the current auth model (admin or record).
     🔐 pb.files.getToken(queryParams = {});
     ```
-    _`pb.getFileUrl()` is soft deprecated and acts as alias calling `pb.files.getUrl()` under the hood._
-
+    _`pb.getFileUrl()` is soft-deprecated and acts as alias calling `pb.files.getUrl()` under the hood._
 
 - Added simplified `authWithOAuth2()` version without having to implement custom redirect, deeplink or even page reload:
     ```js
@@ -28,7 +27,8 @@
     you have to configure `https://yourdomain.com/api/oauth2-redirect`
     as redirect URL.
 
-    _The old "manual" code exchange flow is still suppoted as `authWithOAuth2Code(provider, code, codeVerifier, redirectUrl)` AND as soft-deprecated function overload of `authWithOAuth2(provider, code, codeVerifier, redirectUrl)`._
+    _The "manual" code exchange flow is still supported as `authWithOAuth2Code(provider, code, codeVerifier, redirectUrl)`._
+    _For backward compatibility it is also available as soft-deprecated function overload of `authWithOAuth2(provider, code, codeVerifier, redirectUrl)`._
 
 
 ## 0.13.1
