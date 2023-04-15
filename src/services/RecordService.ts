@@ -1,9 +1,10 @@
-import Client              from '@/Client';
 import Record              from '@/models/Record';
 import ExternalAuth        from '@/models/ExternalAuth';
 import ListResult          from '@/models/utils/ListResult';
 import CrudService         from '@/services/utils/CrudService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
+
+import Client, { SendOptions } from '@/Client';
 import {
     BaseQueryParams,
     RecordQueryParams,
@@ -102,7 +103,7 @@ export default class RecordService extends CrudService<Record> {
     async subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
 
     async subscribe<T = Record>(
-        topicOrCallback: string|((data: RecordSubscription<T>) => void),
+        topicOrCallback: string | ((data: RecordSubscription<T>) => void),
         callback?: (data: RecordSubscription<T>) => void
     ): Promise<UnsubscribeFunc> {
         if (typeof topicOrCallback === 'function') {
@@ -154,45 +155,73 @@ export default class RecordService extends CrudService<Record> {
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>
+    getFullList<T = Record>(
+        queryParams?: RecordFullListQueryParams,
+        extraSendOptions?: SendOptions
+    ): Promise<Array<T>>;
 
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>
+    getFullList<T = Record>(
+        batch?: number,
+        queryParams?: RecordListQueryParams,
+        extraSendOptions?: SendOptions
+    ): Promise<Array<T>>;
 
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batchOrQueryParams?: number|RecordFullListQueryParams, queryParams?: RecordListQueryParams): Promise<Array<T>> {
+    getFullList<T = Record>(
+        batchOrQueryParams?: number | RecordFullListQueryParams,
+        queryParams?: RecordListQueryParams,
+        extraSendOptions?: SendOptions
+    ): Promise<Array<T>> {
         if (typeof batchOrQueryParams == "number") {
-            return super.getFullList<T>(batchOrQueryParams, queryParams);
+            return super.getFullList<T>(
+                batchOrQueryParams,
+                queryParams,
+                extraSendOptions
+            );
         }
 
         const params = Object.assign({}, batchOrQueryParams, queryParams);
 
-        return super.getFullList<T>(params);
+        return super.getFullList<T>(params, extraSendOptions);
     }
 
     /**
      * @inheritdoc
      */
-    getList<T = Record>(page = 1, perPage = 30, queryParams: RecordListQueryParams = {}): Promise<ListResult<T>> {
-        return super.getList<T>(page, perPage, queryParams);
+    getList<T = Record>(
+        page = 1,
+        perPage = 30,
+        queryParams: RecordListQueryParams = {},
+        extraSendOptions?: SendOptions
+    ): Promise<ListResult<T>> {
+        return super.getList<T>(page, perPage, queryParams, extraSendOptions);
     }
 
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = Record>(filter: string, queryParams: RecordListQueryParams = {}): Promise<T> {
-        return super.getFirstListItem<T>(filter, queryParams);
+    getFirstListItem<T = Record>(
+        filter: string,
+        queryParams: RecordListQueryParams = {},
+        extraSendOptions?: SendOptions
+    ): Promise<T> {
+        return super.getFirstListItem<T>(filter, queryParams, extraSendOptions);
     }
 
     /**
      * @inheritdoc
      */
-    getOne<T = Record>(id: string, queryParams: RecordQueryParams = {}): Promise<T> {
-        return super.getOne<T>(id, queryParams);
+    getOne<T = Record>(
+        id: string,
+        queryParams: RecordQueryParams = {},
+        extraSendOptions?: SendOptions
+    ): Promise<T> {
+        return super.getOne<T>(id, queryParams, extraSendOptions);
     }
 
     /**
@@ -337,11 +366,13 @@ export default class RecordService extends CrudService<Record> {
             'createData':  createData,
         }, bodyParams);
 
-        return this.client.send(this.baseCollectionPath + '/auth-with-oauth2', {
-            'method':  'POST',
-            'params':  queryParams,
-            'body':    bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+        return this.client
+            .send(this.baseCollectionPath + "/auth-with-oauth2", {
+                method: "POST",
+                params: queryParams,
+                body: bodyParams,
+            })
+            .then((data) => this.authResponse<T>(data));
     }
 
     /**
