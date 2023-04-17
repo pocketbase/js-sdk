@@ -38,11 +38,7 @@ export interface RecordSubscription<T = Record> {
     record: T;
 }
 
-export type OAuth2UrlCallback = (data: OAuth2UrlCallbackData) => void;
-
-export interface OAuth2UrlCallbackData {
-    url: string;
-}
+export type OAuth2UrlCallback = (url: string) => void|Promise<void>;
 
 export interface OAuth2AuthConfig {
     // the name of the OAuth2 provider (eg. "google")
@@ -405,7 +401,7 @@ export default class RecordService extends CrudService<Record> {
      * Example:
      *
      * ```js
-     * const authData = await pb.collection('users').authWithOAuth2({
+     * const authData = await pb.collection("users").authWithOAuth2({
      *     provider: "google",
      * })
      * ```
@@ -475,9 +471,7 @@ export default class RecordService extends CrudService<Record> {
                     url.searchParams.set("scope", config.scopes.join(" "));
                 }
 
-                const callbackData = { url: url.toString() };
-
-                config.urlCallback ? config.urlCallback(callbackData) : this._defaultUrlCallback(callbackData);
+                await (config.urlCallback ? config.urlCallback(url.toString()) : this._defaultUrlCallback(url.toString()));
             } catch (err) {
                 reject(new ClientResponseError(err));
             }
@@ -657,7 +651,7 @@ export default class RecordService extends CrudService<Record> {
 
     // ---------------------------------------------------------------
 
-    private _defaultUrlCallback(data: OAuth2UrlCallbackData) {
+    private _defaultUrlCallback(url: string) {
         if (typeof window === "undefined" || !window?.open) {
             throw new ClientResponseError(new Error(`Not in a browser context - please pass a custom urlCallback function.`));
         }
@@ -676,7 +670,7 @@ export default class RecordService extends CrudService<Record> {
         let top  = (windowHeight / 2) - (height / 2);
 
         window.open(
-            data.url,
+            url,
             "oauth2-popup",
             'width='+width+',height='+height+',top='+top+',left='+left+',resizable,menubar=no'
         );

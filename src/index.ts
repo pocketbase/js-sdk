@@ -32,7 +32,6 @@ import {
     AuthMethodsList,
     RecordSubscription,
     OAuth2UrlCallback,
-    OAuth2UrlCallbackData,
     OAuth2AuthConfig,
 } from '@/services/RecordService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
@@ -79,7 +78,6 @@ export {
     AuthMethodsList,
     RecordSubscription,
     OAuth2UrlCallback,
-    OAuth2UrlCallbackData,
     OAuth2AuthConfig,
     OnStoreChangeFunc,
     UnsubscribeFunc,

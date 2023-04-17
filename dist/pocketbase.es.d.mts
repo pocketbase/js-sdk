@@ -509,10 +509,7 @@ interface RecordSubscription<T = Record> {
     action: string; // eg. create, update, delete
     record: T;
 }
-type OAuth2UrlCallback = (data: OAuth2UrlCallbackData) => void;
-interface OAuth2UrlCallbackData {
-    url: string;
-}
+type OAuth2UrlCallback = (url: string) => void | Promise<void>;
 interface OAuth2AuthConfig {
     // the name of the OAuth2 provider (eg. "google")
     provider: string;
@@ -683,7 +680,7 @@ declare class RecordService extends CrudService<Record> {
      * Example:
      *
      * ```js
-     * const authData = await pb.collection('users').authWithOAuth2({
+     * const authData = await pb.collection("users").authWithOAuth2({
      *     provider: "google",
      * })
      * ```
@@ -1097,4 +1094,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2UrlCallbackData, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
