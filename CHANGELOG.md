@@ -1,3 +1,8 @@
+## 0.15.0
+
+- Added `fields` to the optional query parameters for limiting the returned api fields (available with PocketBase v0.16.0).
+
+
 ## 0.14.0
 
 - Added simplified `authWithOAuth2()` version without having to implement custom redirect, deeplink or even page reload:

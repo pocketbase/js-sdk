@@ -1,6 +1,7 @@
 export interface BaseQueryParams {
     [key: string]: any;
 
+    fields?:      string;
     $autoCancel?: boolean;
     $cancelKey?:  string;
 }

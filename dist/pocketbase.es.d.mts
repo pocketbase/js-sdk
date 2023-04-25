@@ -175,6 +175,7 @@ declare abstract class BaseService {
 }
 interface BaseQueryParams {
     [key: string]: any;
+    fields?: string;
     $autoCancel?: boolean;
     $cancelKey?: string;
 }
