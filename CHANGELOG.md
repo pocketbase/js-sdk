@@ -3,6 +3,22 @@
 - Added `fields` to the optional query parameters for limiting the returned api fields (available with PocketBase v0.16.0).
 
 
+## 0.14.3
+
+- Added `OAuth2AuthConfig.query` prop to send optional query parameters with the `authWithOAuth2(config)` call.
+
+
+## 0.14.2
+
+- Use `location.origin + location.pathname` instead of full `location.href` when constructing the browser absolute url to ignore any extra hash or query parameter passed to the base url.
+  _This is a small addition to the earlier change from v0.14.1._
+
+
+## 0.14.1
+
+- Use an absolute url when the SDK is initialized with a relative base path in a browser env to ensure that the generated OAuth2 redirect and file urls are absolute.
+
+
 ## 0.14.0
 
 - Added simplified `authWithOAuth2()` version without having to implement custom redirect, deeplink or even page reload:

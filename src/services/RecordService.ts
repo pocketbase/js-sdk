@@ -51,7 +51,13 @@ export interface OAuth2AuthConfig {
     createData?: {[key: string]: any};
 
     // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
-    urlCallback?: OAuth2UrlCallback,
+    urlCallback?: OAuth2UrlCallback;
+
+    // optional query params to send with the PocketBase auth request (eg. fields, expand, etc.)
+    query?: RecordQueryParams;
+
+    // optional body params to send with the PocketBase auth request
+    body?: {[key: string]: any};
 }
 
 export default class RecordService extends CrudService<Record> {
@@ -456,7 +462,9 @@ export default class RecordService extends CrudService<Record> {
                             e.code,
                             provider.codeVerifier,
                             redirectUrl,
-                            config.createData
+                            config.createData,
+                            config.body,
+                            config.query,
                         )
 
                         resolve(authData);
