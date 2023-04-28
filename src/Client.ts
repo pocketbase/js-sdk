@@ -319,10 +319,30 @@ export default class Client {
      * Builds a full client url by safely concatenating the provided path.
      */
     buildUrl(path: string): string {
-        let url = this.baseUrl + (this.baseUrl.endsWith('/') ? '' : '/');
-        if (path) {
-            url += (path.startsWith('/') ? path.substring(1) : path);
+        let url = this.baseUrl;
+
+        // construct an absolute base url if in a browser environment
+        if (
+            typeof window !== 'undefined' &&
+            !!window.location &&
+            !url.startsWith('https://') &&
+            !url.startsWith('http://')
+        ) {
+            if (this.baseUrl.startsWith('/')) {
+                url = window.location.origin?.endsWith('/') ? window.location.origin.substring(0, window.location.origin.length-1) : (window.location.origin || '');
+            } else {
+                url = window.location.href?.endsWith('/') ? window.location.href : ((window.location.href || '') + '/');
+            }
+
+            url += this.baseUrl;
         }
+
+        // concatenate the path
+        if (path) {
+            url += url.endsWith('/') ? '' : '/'; // append trailing slash if missing
+            url += path.startsWith('/') ? path.substring(1) : path;
+        }
+
         return url;
     }
 

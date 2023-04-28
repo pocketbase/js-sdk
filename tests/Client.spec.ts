@@ -22,6 +22,9 @@ describe('Client', function() {
 
     afterEach(function () {
         fetchMock.clearMocks();
+
+        // restore all window mocks
+        global.window = undefined as any;
     });
 
     describe('constructor()', function() {
@@ -80,6 +83,50 @@ describe('Client', function() {
             const client2 = new Client('test_base_url');
             assert.equal(client2.buildUrl('test123'), 'test_base_url/test123');
             assert.equal(client2.buildUrl('/test123'), 'test_base_url/test123');
+        });
+
+        it('Should construct an absolute url if window.location is defined', function() {
+            global.window = {
+                location: {
+                    origin: 'https://example.com/',
+                    href:   'https://example.com/sub',
+                }
+            } as any;
+
+            // with empty base url
+            {
+                const client = new Client('');
+                assert.equal(client.buildUrl('test123'), 'https://example.com/sub/test123');
+                assert.equal(client.buildUrl('/test123'), 'https://example.com/sub/test123');
+            }
+
+            // relative base url with starting slash
+            {
+                const client = new Client('/a/b/');
+                assert.equal(client.buildUrl('test123'), 'https://example.com/a/b/test123');
+                assert.equal(client.buildUrl('/test123'), 'https://example.com/a/b/test123');
+            }
+
+            // relative base url without starting slash
+            {
+                const client = new Client('a/b/');
+                assert.equal(client.buildUrl('test123'), 'https://example.com/sub/a/b/test123');
+                assert.equal(client.buildUrl('/test123'), 'https://example.com/sub/a/b/test123');
+            }
+
+            // with explicit HTTP absolute base url
+            {
+                const client = new Client('http://example2.com');
+                assert.equal(client.buildUrl('test123'), 'http://example2.com/test123');
+                assert.equal(client.buildUrl('/test123'), 'http://example2.com/test123');
+            }
+
+            // with explicit HTTPS absolute base url and trailing slash
+            {
+                const client = new Client('https://example2.com/');
+                assert.equal(client.buildUrl('test123'), 'https://example2.com/test123');
+                assert.equal(client.buildUrl('/test123'), 'https://example2.com/test123');
+            }
         });
     });
 
@@ -199,7 +246,7 @@ describe('Client', function() {
             const newUrl = 'test_base_url/new'
 
             client.beforeSend = function (_, options) {
-                options.headers = Object.assign(options.headers, {
+                options.headers = Object.assign({}, options.headers, {
                     'X-Custom-Header': '456',
                 });
 
@@ -225,7 +272,7 @@ describe('Client', function() {
             const newUrl = 'test_base_url/new'
 
             client.beforeSend = function (_, options) {
-                options.headers = Object.assign(options.headers, {
+                options.headers = Object.assign({}, options.headers, {
                     'X-Custom-Header': '456',
                 });
 

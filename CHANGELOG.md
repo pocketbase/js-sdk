@@ -1,3 +1,8 @@
+## 0.14.1
+
+- Use an absolute url when the SDK is initialized with a relative base path in a browser env to ensure that the generated OAuth2 redirect and file urls are absolute.
+
+
 ## 0.14.0
 
 - Added simplified `authWithOAuth2()` version without having to implement custom redirect, deeplink or even page reload:
