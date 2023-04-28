@@ -88,8 +88,8 @@ describe('Client', function() {
         it('Should construct an absolute url if window.location is defined', function() {
             global.window = {
                 location: {
-                    origin: 'https://example.com/',
-                    href:   'https://example.com/sub',
+                    origin:   'https://example.com/',
+                    pathname: '/sub',
                 }
             } as any;
 
@@ -105,6 +105,13 @@ describe('Client', function() {
                 const client = new Client('/a/b/');
                 assert.equal(client.buildUrl('test123'), 'https://example.com/a/b/test123');
                 assert.equal(client.buildUrl('/test123'), 'https://example.com/a/b/test123');
+            }
+
+            // relative base url with parent path traversal
+            {
+                const client = new Client('../a/b/');
+                assert.equal(client.buildUrl('test123'), 'https://example.com/sub/../a/b/test123');
+                assert.equal(client.buildUrl('/test123'), 'https://example.com/sub/../a/b/test123');
             }
 
             // relative base url without starting slash

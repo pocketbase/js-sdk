@@ -1,3 +1,9 @@
+## 0.14.2
+
+- Use `location.origin + location.pathname` instead of full `location.href` when constructing the browser absolute url to ignore any extra hash or query parameter passed to the base url.
+  _This is a small addition to the earlier change from v0.14.1._
+
+
 ## 0.14.1
 
 - Use an absolute url when the SDK is initialized with a relative base path in a browser env to ensure that the generated OAuth2 redirect and file urls are absolute.

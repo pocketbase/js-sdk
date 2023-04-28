@@ -328,10 +328,13 @@ export default class Client {
             !url.startsWith('https://') &&
             !url.startsWith('http://')
         ) {
-            if (this.baseUrl.startsWith('/')) {
-                url = window.location.origin?.endsWith('/') ? window.location.origin.substring(0, window.location.origin.length-1) : (window.location.origin || '');
-            } else {
-                url = window.location.href?.endsWith('/') ? window.location.href : ((window.location.href || '') + '/');
+            url = window.location.origin?.endsWith('/') ?
+                window.location.origin.substring(0, window.location.origin.length - 1) :
+                (window.location.origin || '');
+
+            if (!this.baseUrl.startsWith('/')) {
+                url += window.location.pathname || '/';
+                url += url.endsWith('/') ? '' : '/';
             }
 
             url += this.baseUrl;
