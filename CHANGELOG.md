@@ -1,3 +1,8 @@
+## 0.14.3
+
+- Added `OAuth2AuthConfig.query` prop to send optional query parameters with the `authWithOAuth2(config)` call.
+
+
 ## 0.14.2
 
 - Use `location.origin + location.pathname` instead of full `location.href` when constructing the browser absolute url to ignore any extra hash or query parameter passed to the base url.
