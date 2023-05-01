@@ -1,3 +1,9 @@
+## 0.14.4-rc
+
+- Removed the legacy aliased `BaseModel.isNew` getter since it could conflict with similarly named record fields ([pocketbase#2385](https://github.com/pocketbase/pocketbase/discussions/2385)).
+  This helper is primarly used in the Admin UI, but if you are also using in your code, it is advised to replace it with the `$` prefixed version, aka. `BaseModel.$isNew`.
+
+
 ## 0.14.3
 
 - Added `OAuth2AuthConfig.query` prop to send optional query parameters with the `authWithOAuth2(config)` call.

@@ -30,10 +30,6 @@ declare abstract class BaseModel {
         [key: string]: any;
     }): void;
     /**
-     * Alias of this.$isNew.
-     */
-    get isNew(): boolean;
-    /**
      * Returns whether the current loaded data represent a stored db record.
      */
     get $isNew(): boolean;

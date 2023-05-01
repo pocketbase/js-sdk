@@ -31,13 +31,6 @@ export default abstract class BaseModel {
     }
 
     /**
-     * Alias of this.$isNew.
-     */
-    get isNew(): boolean {
-        return this.$isNew
-    }
-
-    /**
      * Returns whether the current loaded data represent a stored db record.
      */
     get $isNew(): boolean {
