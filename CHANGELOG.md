@@ -1,7 +1,7 @@
-## 0.14.4-rc
+## 0.14.4
 
-- Removed the legacy aliased `BaseModel.isNew` getter since it could conflict with similarly named record fields ([pocketbase#2385](https://github.com/pocketbase/pocketbase/discussions/2385)).
-  This helper is primarly used in the Admin UI, but if you are also using in your code, it is advised to replace it with the `$` prefixed version, aka. `BaseModel.$isNew`.
+- Removed the legacy aliased `BaseModel.isNew` getter since it conflicts with similarly named record fields ([pocketbase#2385](https://github.com/pocketbase/pocketbase/discussions/2385)).
+  _This helper is primarly used in the Admin UI, but if you are also using in your code, it is advised to replace it with the `$` prefixed version, aka. `BaseModel.$isNew`._
 
 
 ## 0.14.3
