@@ -28,12 +28,17 @@ export default class SettingsService extends BaseService {
     }
 
     /**
-     * Performs a S3 storage connection test.
+     * Performs a S3 filesystem connection test.
      */
-    testS3(queryParams: BaseQueryParams = {}): Promise<boolean> {
+    testS3(filesystem: string = "storage", queryParams: BaseQueryParams = {}): Promise<boolean> {
+        const bodyParams = {
+            'filesystem': filesystem,
+        };
+
         return this.client.send('/api/settings/test/s3', {
             'method': 'POST',
             'params': queryParams,
+            'body':   bodyParams,
         }).then(() => true);
     }
 

@@ -1,7 +1,7 @@
 import Client, {
     SendOptions,
     BeforeSendResult,
-}                          from '@/Client';
+} from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
 import ExternalAuth        from '@/models/ExternalAuth';
 import Admin               from '@/models/Admin';
@@ -35,6 +35,8 @@ import {
     OAuth2AuthConfig,
 } from '@/services/RecordService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
+import { BackupFileInfo } from '@/services/BackupService';
+import { HealthCheckResponse } from '@/services/HealthService';
 import {
     BaseQueryParams,
     ListQueryParams,
@@ -71,6 +73,8 @@ export {
     SettingsService,
 
     //types
+    HealthCheckResponse,
+    BackupFileInfo,
     SendOptions,
     BeforeSendResult,
     RecordAuthResponse,

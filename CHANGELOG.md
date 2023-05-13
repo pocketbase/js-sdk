@@ -3,6 +3,12 @@
 - Added `fields` to the optional query parameters for limiting the returned api fields (available with PocketBase v0.16.0).
 
 
+## 0.14.4
+
+- Removed the legacy aliased `BaseModel.isNew` getter since it conflicts with similarly named record fields ([pocketbase#2385](https://github.com/pocketbase/pocketbase/discussions/2385)).
+  _This helper is mainly used in the Admin UI, but if you are also using it in your code you can replace it with the `$` prefixed version, aka. `BaseModel.$isNew`._
+
+
 ## 0.14.3
 
 - Added `OAuth2AuthConfig.query` prop to send optional query parameters with the `authWithOAuth2(config)` call.

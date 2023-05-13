@@ -9,6 +9,7 @@ import LogService          from '@/services/LogService';
 import RealtimeService     from '@/services/RealtimeService';
 import HealthService       from '@/services/HealthService';
 import FileService         from '@/services/FileService';
+import BackupService       from '@/services/BackupService';
 import Record              from '@/models/Record';
 import { BaseQueryParams, FileQueryParams } from '@/services/utils/QueryParams';
 
@@ -123,6 +124,11 @@ export default class Client {
      */
     readonly health: HealthService;
 
+    /**
+     * An instance of the service that handles the **Backup APIs**.
+     */
+    readonly backups: BackupService;
+
     private cancelControllers: { [key: string]: AbortController } = {};
     private recordServices: { [key: string]: RecordService } = {};
     private enableAutoCancellation: boolean = true;
@@ -144,6 +150,7 @@ export default class Client {
         this.settings    = new SettingsService(this);
         this.realtime    = new RealtimeService(this);
         this.health      = new HealthService(this);
+        this.backups     = new BackupService(this);
     }
 
     /**

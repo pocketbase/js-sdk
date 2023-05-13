@@ -30,10 +30,6 @@ declare abstract class BaseModel {
         [key: string]: any;
     }): void;
     /**
-     * Alias of this.$isNew.
-     */
-    get isNew(): boolean;
-    /**
      * Returns whether the current loaded data represent a stored db record.
      */
     get $isNew(): boolean;
@@ -218,9 +214,9 @@ declare class SettingsService extends BaseService {
         [key: string]: any;
     }>;
     /**
-     * Performs a S3 storage connection test.
+     * Performs a S3 filesystem connection test.
      */
-    testS3(queryParams?: BaseQueryParams): Promise<boolean>;
+    testS3(filesystem?: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
      * Sends a test email.
      *
@@ -854,15 +850,18 @@ declare class LogService extends BaseService {
      */
     getRequestsStats(queryParams?: LogStatsQueryParams): Promise<Array<HourlyStats>>;
 }
-interface healthCheckResponse {
+interface HealthCheckResponse {
     code: number;
     message: string;
+    data: {
+        [key: string]: any;
+    };
 }
 declare class HealthService extends BaseService {
     /**
      * Checks the health status of the api.
      */
-    check(queryParams?: BaseQueryParams): Promise<healthCheckResponse>;
+    check(queryParams?: BaseQueryParams): Promise<HealthCheckResponse>;
 }
 declare class FileService extends BaseService {
     /**
@@ -873,6 +872,33 @@ declare class FileService extends BaseService {
      * Requests a new private file access token for the current auth model (admin or record).
      */
     getToken(queryParams?: BaseQueryParams): Promise<string>;
+}
+interface BackupFileInfo {
+    key: string;
+    size: number;
+    modified: string;
+}
+declare class BackupService extends BaseService {
+    /**
+     * Returns list with available backup files.
+     */
+    getFullList(queryParams?: BaseQueryParams): Promise<Array<BackupFileInfo>>;
+    /**
+     * Initializes a new backup.
+     */
+    create(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    /**
+     * Deletes a single backup file.
+     */
+    delete(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    /**
+     * Initializes an app data restore procedure from an existing backup.
+     */
+    restore(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    /**
+     * Builds a download url for a single existing backup.
+     */
+    getDownloadUrl(token: string, name: string): string;
 }
 interface SendOptions extends RequestInit {
     headers?: {
@@ -975,6 +1001,10 @@ declare class Client {
      * An instance of the service that handles the **Health APIs**.
      */
     readonly health: HealthService;
+    /**
+     * An instance of the service that handles the **Backup APIs**.
+     */
+    readonly backups: BackupService;
     private cancelControllers;
     private recordServices;
     private enableAutoCancellation;
@@ -1101,4 +1131,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, HealthCheckResponse, BackupFileInfo, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
