@@ -56,11 +56,12 @@ describe('SettingsService', function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/settings/test/s3')+ '?q1=123',
+                body: { 'filesystem': "storage" },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.testS3({ 'q1': 123 });
+            const result = await service.testS3("storage", { 'q1': 123 });
 
             assert.isTrue(result);
         });

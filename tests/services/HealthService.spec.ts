@@ -20,18 +20,18 @@ describe('HealthService', function () {
         fetchMock.clearMocks();
     });
 
-    describe('getAll()', function () {
+    describe('check()', function () {
         it('Should fetch all app settings', async function () {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl('/api/health') + '?q1=123',
                 replyCode: 200,
-                replyBody: { code: 200, message: 'test' },
+                replyBody: { code: 200, message: 'test', data: {} },
             });
 
             const result = await service.check({ 'q1': 123 });
 
-            assert.deepEqual(result, { code: 200, message: 'test' });
+            assert.deepEqual(result, { code: 200, message: 'test', data: {} });
         });
     });
 });

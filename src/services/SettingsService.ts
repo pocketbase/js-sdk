@@ -29,6 +29,8 @@ export default class SettingsService extends BaseService {
 
     /**
      * Performs a S3 filesystem connection test.
+     *
+     * The currently supported `filesystem` are "storage" and "backups".
      */
     testS3(filesystem: string = "storage", queryParams: BaseQueryParams = {}): Promise<boolean> {
         const bodyParams = {

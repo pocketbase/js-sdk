@@ -215,6 +215,8 @@ declare class SettingsService extends BaseService {
     }>;
     /**
      * Performs a S3 filesystem connection test.
+     *
+     * The currently supported `filesystem` are "storage" and "backups".
      */
     testS3(filesystem?: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
@@ -880,7 +882,7 @@ interface BackupFileInfo {
 }
 declare class BackupService extends BaseService {
     /**
-     * Returns list with available backup files.
+     * Returns list with all available backup files.
      */
     getFullList(queryParams?: BaseQueryParams): Promise<Array<BackupFileInfo>>;
     /**

@@ -9,7 +9,7 @@ export interface BackupFileInfo {
 
 export default class BackupService extends BaseService {
     /**
-     * Returns list with available backup files.
+     * Returns list with all available backup files.
      */
     getFullList(queryParams: BaseQueryParams = {}): Promise<Array<BackupFileInfo>> {
         return this.client.send('/api/backups', {
