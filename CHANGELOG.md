@@ -1,6 +1,10 @@
 ## 0.15.0
 
-- Added `fields` to the optional query parameters for limiting the returned api fields (available with PocketBase v0.16.0).
+- Added `fields` to the optional query parameters for limiting the returned API fields (_available with PocketBase v0.16.0_).
+
+- Added `pb.backups` service for the new PocketBase backup and restore APIs (_available with PocketBase v0.16.0_).
+
+- Updated `pb.settings.testS3(filesystem)` to allow specifying a filesystem to test - `storage` or `backups` (_available with PocketBase v0.16.0_).
 
 
 ## 0.14.4
