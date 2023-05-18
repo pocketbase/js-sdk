@@ -822,7 +822,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔐 pb.settings.update(bodyParams = {}, queryParams = {});
 
 // Performs a S3 storage connection test.
-🔐 pb.settings.testS3(queryParams = {});
+🔐 pb.settings.testS3(filesystem = "storage", queryParams = {});
 
 // Sends a test email (verification, password-reset, email-change).
 🔐 pb.settings.testEmail(toEmail, template, queryParams = {});
@@ -851,6 +851,28 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Unsubscribe from all subscriptions matching the specified topic and listener function.
 🔓 pb.realtime.unsubscribeByTopicAndListener(topic, callback);
+```
+
+---
+
+##### BackupService
+
+```js
+// Returns list with all available backup files.
+🔐 pb.backups.getFullList(queryParams = {});
+
+// Initializes a new backup.
+🔐 pb.backups.create(name, queryParams = {});
+
+// Deletes a single backup by its name.
+🔐 pb.backups.delete(name, queryParams = {});
+
+// Initializes an app data restore from an existing backup.
+🔐 pb.backups.restore(name, queryParams = {});
+
+// Builds a download url for a single existing backup using an
+// admin file token and the backup name.
+🔐 pb.backups.getDownloadUrl(token, name);
 ```
 
 ---

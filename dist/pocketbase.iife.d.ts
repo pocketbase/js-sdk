@@ -894,11 +894,14 @@ declare class BackupService extends BaseService {
      */
     delete(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
-     * Initializes an app data restore procedure from an existing backup.
+     * Initializes an app data restore from an existing backup.
      */
     restore(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
-     * Builds a download url for a single existing backup.
+     * Builds a download url for a single existing backup using an
+     * admin file token and the backup name.
+     *
+     * The file token can be generated via `pb.files.getToken()`.
      */
     getDownloadUrl(token: string, name: string): string;
 }

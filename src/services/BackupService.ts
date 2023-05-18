@@ -44,7 +44,7 @@ export default class BackupService extends BaseService {
     }
 
     /**
-     * Initializes an app data restore procedure from an existing backup.
+     * Initializes an app data restore from an existing backup.
      */
     restore(name: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         return this.client.send(`/api/backups/${encodeURIComponent(name)}/restore`, {
@@ -54,7 +54,10 @@ export default class BackupService extends BaseService {
     }
 
     /**
-     * Builds a download url for a single existing backup.
+     * Builds a download url for a single existing backup using an
+     * admin file token and the backup name.
+     *
+     * The file token can be generated via `pb.files.getToken()`.
      */
     getDownloadUrl(token: string, name: string): string {
         return this.client.buildUrl(`/api/backups/${encodeURIComponent(name)}?token=${encodeURIComponent(token)}`);
