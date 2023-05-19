@@ -862,17 +862,17 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔐 pb.backups.getFullList(queryParams = {});
 
 // Initializes a new backup.
-🔐 pb.backups.create(name, queryParams = {});
+🔐 pb.backups.create(basename = "", queryParams = {});
 
 // Deletes a single backup by its name.
-🔐 pb.backups.delete(name, queryParams = {});
+🔐 pb.backups.delete(key, queryParams = {});
 
 // Initializes an app data restore from an existing backup.
-🔐 pb.backups.restore(name, queryParams = {});
+🔐 pb.backups.restore(key, queryParams = {});
 
 // Builds a download url for a single existing backup using an
-// admin file token and the backup name.
-🔐 pb.backups.getDownloadUrl(token, name);
+// admin file token and the backup file key.
+🔐 pb.backups.getDownloadUrl(token, key);
 ```
 
 ---

@@ -21,9 +21,9 @@ export default class BackupService extends BaseService {
     /**
      * Initializes a new backup.
      */
-    create(name: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
+    create(basename: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
         const bodyParams = {
-            'name': name,
+            'name': basename,
         };
 
         return this.client.send('/api/backups', {
@@ -36,8 +36,8 @@ export default class BackupService extends BaseService {
     /**
      * Deletes a single backup file.
      */
-    delete(name: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(`/api/backups/${encodeURIComponent(name)}`, {
+    delete(key: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
+        return this.client.send(`/api/backups/${encodeURIComponent(key)}`, {
             'method': 'DELETE',
             'params': queryParams,
         }).then(() => true);
@@ -46,8 +46,8 @@ export default class BackupService extends BaseService {
     /**
      * Initializes an app data restore from an existing backup.
      */
-    restore(name: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(`/api/backups/${encodeURIComponent(name)}/restore`, {
+    restore(key: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
+        return this.client.send(`/api/backups/${encodeURIComponent(key)}/restore`, {
             'method': 'POST',
             'params': queryParams,
         }).then(() => true);
@@ -55,11 +55,11 @@ export default class BackupService extends BaseService {
 
     /**
      * Builds a download url for a single existing backup using an
-     * admin file token and the backup name.
+     * admin file token and the backup file key.
      *
      * The file token can be generated via `pb.files.getToken()`.
      */
-    getDownloadUrl(token: string, name: string): string {
-        return this.client.buildUrl(`/api/backups/${encodeURIComponent(name)}?token=${encodeURIComponent(token)}`);
+    getDownloadUrl(token: string, key: string): string {
+        return this.client.buildUrl(`/api/backups/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`);
     }
 }

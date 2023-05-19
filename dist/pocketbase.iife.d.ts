@@ -888,22 +888,22 @@ declare class BackupService extends BaseService {
     /**
      * Initializes a new backup.
      */
-    create(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    create(basename: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
      * Deletes a single backup file.
      */
-    delete(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    delete(key: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
      * Initializes an app data restore from an existing backup.
      */
-    restore(name: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    restore(key: string, queryParams?: BaseQueryParams): Promise<boolean>;
     /**
      * Builds a download url for a single existing backup using an
-     * admin file token and the backup name.
+     * admin file token and the backup file key.
      *
      * The file token can be generated via `pb.files.getToken()`.
      */
-    getDownloadUrl(token: string, name: string): string;
+    getDownloadUrl(token: string, key: string): string;
 }
 interface SendOptions extends RequestInit {
     headers?: {
