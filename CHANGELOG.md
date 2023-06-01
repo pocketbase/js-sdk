@@ -1,6 +1,6 @@
 ## 0.15.1
 
-- Cancel any pending submit requests on realtime disconnect ([#204](https://github.com/pocketbase/js-sdk/issues/204)).
+- Cancel any pending subscriptions submit requests on realtime disconnect ([#204](https://github.com/pocketbase/js-sdk/issues/204)).
 
 
 ## 0.15.0
