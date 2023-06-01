@@ -227,7 +227,7 @@ export default class RealtimeService extends BaseService {
                 'subscriptions': this.lastSentTopics,
             },
             'params': {
-                '$cancelKey': "realtime_" + this.clientId,
+                '$cancelKey': this.getSubscriptionsCancelKey(),
             },
         }).catch((err) => {
             if (err?.isAbort) {
@@ -235,6 +235,10 @@ export default class RealtimeService extends BaseService {
             }
             throw err;
         });
+    }
+
+    private getSubscriptionsCancelKey(): string {
+        return "realtime_" + this.clientId;
     }
 
     private getNonEmptySubscriptionTopics(): Array<string> {
@@ -387,6 +391,7 @@ export default class RealtimeService extends BaseService {
         clearTimeout(this.connectTimeoutId);
         clearTimeout(this.reconnectTimeoutId);
         this.removeAllSubscriptionListeners();
+        this.client.cancelRequest(this.getSubscriptionsCancelKey());
         this.eventSource?.close();
         this.eventSource = null;
         this.clientId = "";

@@ -1,3 +1,8 @@
+## 0.15.1
+
+- Cancel any pending submit requests on realtime disconnect ([#204](https://github.com/pocketbase/js-sdk/issues/204)).
+
+
 ## 0.15.0
 
 - Added `fields` to the optional query parameters for limiting the returned API fields (_available with PocketBase v0.16.0_).
