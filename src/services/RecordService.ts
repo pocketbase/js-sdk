@@ -473,13 +473,16 @@ export default class RecordService extends CrudService<Record> {
                     }
                 });
 
-                const url = new URL(provider.authUrl + redirectUrl);
-                url.searchParams.set("state", this.client.realtime.clientId);
+                const replacements: {[key: string]: any} = {
+                    "state": this.client.realtime.clientId,
+                }
                 if (config.scopes?.length) {
-                    url.searchParams.set("scope", config.scopes.join(" "));
+                    replacements["scope"] = config.scopes.join(" ");
                 }
 
-                await (config.urlCallback ? config.urlCallback(url.toString()) : this._defaultUrlCallback(url.toString()));
+                const url = this._replaceQueryParams(provider.authUrl + redirectUrl, replacements);
+
+                await (config.urlCallback ? config.urlCallback(url) : this._defaultUrlCallback(url));
             } catch (err) {
                 reject(new ClientResponseError(err));
             }
@@ -658,6 +661,63 @@ export default class RecordService extends CrudService<Record> {
     }
 
     // ---------------------------------------------------------------
+
+    // very rudimentary url query params replacement because at the moment
+    // URL (and URLSearchParams) doesn't seem to be fully supported in React Native
+    //
+    // note: for details behind some of the decode/encode parsing check https://unixpapa.com/js/querystring.html
+    private _replaceQueryParams(url: string, replacements: {[key: string]: any} = {}): string {
+        let urlPath = url
+        let query = "";
+
+        const queryIndex = url.indexOf("?");
+        if (queryIndex >= 0) {
+            urlPath = url.substring(0, url.indexOf("?"));
+            query = url.substring(url.indexOf("?") + 1);
+        }
+
+        const parsedParams: {[key: string]: string} = {};
+
+        // parse the query parameters
+        const rawParams = query.split("&");
+        for (const param of rawParams) {
+            if (param == "") {
+                continue
+            }
+
+            const pair = param.split("=");
+            parsedParams[decodeURIComponent(pair[0].replace(/\+/g,' '))] = decodeURIComponent((pair[1] || "").replace(/\+/g,' '));
+        }
+
+        // apply the replacements
+        for (let key in replacements) {
+            if (!replacements.hasOwnProperty(key)) {
+                continue;
+            }
+
+            if (replacements[key] == null) {
+                delete parsedParams[key];
+            } else {
+                parsedParams[key] = replacements[key];
+            }
+        }
+
+        // construct back the full query string
+        query = "";
+        for (let key in parsedParams) {
+            if (!parsedParams.hasOwnProperty(key)) {
+                continue;
+            }
+
+            if (query != "") {
+                query += "&";
+            }
+
+            query += encodeURIComponent(key.replace(/%20/g,'+')) + "=" + encodeURIComponent(parsedParams[key].replace(/%20/g,'+'));
+        }
+
+        return query != "" ? (urlPath + "?" + query) : urlPath;
+    }
 
     private _defaultUrlCallback(url: string) {
         if (typeof window === "undefined" || !window?.open) {

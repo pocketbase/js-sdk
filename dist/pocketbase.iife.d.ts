@@ -736,6 +736,11 @@ declare class RecordService extends CrudService<Record> {
      */
     unlinkExternalAuth(recordId: string, provider: string, queryParams?: BaseQueryParams): Promise<boolean>;
     // ---------------------------------------------------------------
+    // very rudimentary url query params replacement because at the moment
+    // URL (and URLSearchParams) doesn't seem to be fully supported in React Native
+    //
+    // note: for details behind some of the decode/encode parsing check https://unixpapa.com/js/querystring.html
+    private _replaceQueryParams;
     private _defaultUrlCallback;
 }
 declare class SchemaField {

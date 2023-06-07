@@ -1,3 +1,10 @@
+## 0.15.2
+
+- Replaced `new URL(...)` with manual url parsing as it is not fully supported in React Native ([pocketbase#2484](https://github.com/pocketbase/pocketbase/discussions/2484#discussioncomment-6114540)).
+
+- Fixed nested `ClientResponseErrors.originalError` wrapping and added `ClientResponseErrors` constructor tests.
+
+
 ## 0.15.1
 
 - Cancel any pending subscriptions submit requests on realtime disconnect ([#204](https://github.com/pocketbase/js-sdk/issues/204)).

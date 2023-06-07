@@ -16,15 +16,23 @@ export default class ClientResponseError extends Error {
         // https://github.com/Microsoft/TypeScript-wiki/blob/main/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, ClientResponseError.prototype);
 
-        if (!(errData instanceof ClientResponseError)) {
-            this.originalError = errData;
+        if (errData !== null && typeof errData === 'object') {
+            this.url           = typeof errData.url === 'string' ? errData.url : '';
+            this.status        = typeof errData.status === 'number' ? errData.status : 0;
+            this.isAbort       = !!errData.isAbort;
+            this.originalError = errData.originalError;
+
+            if (errData.response !== null && typeof errData.response === 'object')  {
+                this.response =  errData.response;
+            } else if (errData.data !== null && typeof errData.data === 'object')  {
+                this.response =  errData.data;
+            } else {
+                this.response =  {};
+            }
         }
 
-        if (errData !== null && typeof errData === 'object') {
-            this.url      = typeof errData.url === 'string' ? errData.url : '';
-            this.status   = typeof errData.status === 'number' ? errData.status : 0;
-            this.response = errData.data !== null && typeof errData.data === 'object' ? errData.data : {};
-            this.isAbort  = !!errData.isAbort;
+        if (!this.originalError && !(errData instanceof ClientResponseError)) {
+            this.originalError = errData;
         }
 
         if (typeof DOMException !== 'undefined' && errData instanceof DOMException) {
