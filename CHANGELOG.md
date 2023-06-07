@@ -2,7 +2,7 @@
 
 - Replaced `new URL(...)` with manual url parsing as it is not fully supported in React Native ([pocketbase#2484](https://github.com/pocketbase/pocketbase/discussions/2484#discussioncomment-6114540)).
 
-- Fixed nested `ClientResponseErrors.originalError` wrapping and added `ClientResponseErrors` constructor tests.
+- Fixed nested `ClientResponseError.originalError` wrapping and added `ClientResponseError` constructor tests.
 
 
 ## 0.15.1
