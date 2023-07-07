@@ -122,12 +122,12 @@ export default class RecordService extends CrudService<Record> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    async subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+    subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): UnsubscribeFunc
 
-    async subscribe<T = Record>(
+    subscribe<T = Record>(
         topicOrCallback: string|((data: RecordSubscription<T>) => void),
         callback?: (data: RecordSubscription<T>) => void
-    ): Promise<UnsubscribeFunc> {
+    ): UnsubscribeFunc {
         if (typeof topicOrCallback === 'function') {
             console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subscribe('*', callback).");
             return this.client.realtime.subscribe(this.collectionIdOrName, topicOrCallback);

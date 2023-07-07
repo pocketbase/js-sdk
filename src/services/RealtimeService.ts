@@ -40,7 +40,7 @@ export default class RealtimeService extends BaseService {
      * If the SSE connection is not started yet,
      * this method will also initialize it.
      */
-    async subscribe(topic: string, callback: (data: any) => void): Promise<UnsubscribeFunc> {
+    subscribe(topic: string, callback: (data: any) => void): UnsubscribeFunc {
         if (!topic) {
             throw new Error('topic must be set.')
         }
@@ -64,10 +64,10 @@ export default class RealtimeService extends BaseService {
 
         if (!this.isConnected) {
             // initialize sse connection
-            await this.connect();
+            this.connect();
         } else if (this.subscriptions[topic].length === 1) {
             // send the updated subscriptions (if it is the first for the topic)
-            await this.submitSubscriptions();
+            this.submitSubscriptions();
         } else {
             // only register the listener
             this.eventSource?.addEventListener(topic, listener);
