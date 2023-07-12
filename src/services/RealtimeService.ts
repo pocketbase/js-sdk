@@ -374,6 +374,7 @@ export default class RealtimeService extends BaseService {
             for (let p of this.pendingConnects) {
                 p.reject(new ClientResponseError(err));
             }
+            this.pendingConnects = [];
             this.disconnect();
             return;
         }
@@ -399,10 +400,13 @@ export default class RealtimeService extends BaseService {
         if (!fromReconnect) {
             this.reconnectAttempts = 0;
 
-            // reject any remaining connect promises
-            const err = new ClientResponseError(new Error("Realtime disconnected."));
+            // resolve any remaining connect promises
+            //
+            // this is done to avoid unnecessary throwing errors in case
+            // unsubscribe is called before the pending connect promises complete
+            // (see https://github.com/pocketbase/pocketbase/discussions/2897#discussioncomment-6423818)
             for (let p of this.pendingConnects) {
-                p.reject(err);
+                p.resolve();
             }
             this.pendingConnects = [];
         }

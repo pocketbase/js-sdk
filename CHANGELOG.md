@@ -1,3 +1,9 @@
+## 0.15.3
+
+- Automatically resolve pending realtime connect `Promise`s in case `unsubscribe` is called before
+  `subscribe` is being able to complete ([pocketbase#2897](https://github.com/pocketbase/pocketbase/discussions/2897#discussioncomment-6423818)).
+
+
 ## 0.15.2
 
 - Replaced `new URL(...)` with manual url parsing as it is not fully supported in React Native ([pocketbase#2484](https://github.com/pocketbase/pocketbase/discussions/2484#discussioncomment-6114540)).
