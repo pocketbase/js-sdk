@@ -24,7 +24,71 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // Prepare mock data
         // -----------------------------------------------------------
 
-        // getFullList and getList
+        // getFullList (extra empty request check)
+        fetchMock.on({
+            method: 'GET',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=1&perPage=1&skipTotal=1&q1=emptyRequest',
+            replyCode: 200,
+            replyBody: {
+                'page': 1,
+                'perPage': 1,
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [{ 'id': 'item1' }],
+            },
+        });
+        fetchMock.on({
+            method: 'GET',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=2&perPage=1&skipTotal=1&q1=emptyRequest',
+            replyCode: 200,
+            replyBody: {
+                'page': 2,
+                'perPage': 1,
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [{ 'id': 'item2' }],
+            },
+        });
+        fetchMock.on({
+            method: 'GET',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=3&perPage=1&skipTotal=1&q1=emptyRequest',
+            replyCode: 200,
+            replyBody: {
+                'page': 3,
+                'perPage': 1,
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [],
+            },
+        });
+
+        // getFullList (less than batchSize, aka. no extra request)
+        fetchMock.on({
+            method: 'GET',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=1&perPage=2&skipTotal=1&q1=noEmptyRequest',
+            replyCode: 200,
+            replyBody: {
+                'page': 1,
+                'perPage': 2,
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
+            },
+        });
+        fetchMock.on({
+            method: 'GET',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=2&perPage=2&skipTotal=1&q1=noEmptyRequest',
+            replyCode: 200,
+            replyBody: {
+                'page': 2,
+                'perPage': 2,
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [{ 'id': 'item3' }],
+            },
+        });
+
+        // getList
         fetchMock.on({
             method: 'GET',
             url: service.client.buildUrl(service.baseCrudPath) + '?page=1&perPage=1&q1=abc',
@@ -61,14 +125,14 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         // getFirstListItem
         fetchMock.on({
             method: 'GET',
-            url: service.client.buildUrl(service.baseCrudPath) + '?page=1&perPage=1&filter=test%3D123&q1=abc',
+            url: service.client.buildUrl(service.baseCrudPath) + '?page=1&perPage=1&filter=test%3D123&skipTotal=1&q1=abc',
             replyCode: 200,
             replyBody: {
                 'page': 1,
                 'perPage': 1,
-                'totalItems': 3,
-                'totalPages': 3,
-                'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
+                'totalItems': -1,
+                'totalPages': -1,
+                'items': [{ 'id': 'item1' }],
             },
         });
 
@@ -107,8 +171,20 @@ export function crudServiceTestsSuite<M extends BaseModel>(
         });
 
         describe('getFullList()', function() {
-            it('Should correctly return batched request data', async function() {
-                const result = await service.getFullList(1, { 'q1': 'abc' });
+            it('items.length == batchSize (aka. empty request stop check)', async function() {
+                const result = await service.getFullList({ 'batch': 1, 'q1': 'emptyRequest' });
+                const expected = [
+                    service.decode({ 'id': 'item1' }),
+                    service.decode({ 'id': 'item2' }),
+                ];
+
+                assert.deepEqual(result, expected);
+                for (let i in result) {
+                    assert.instanceOf(result[i], expected[i].constructor);
+                }
+            });
+            it('items.length < batchSize (aka. no empty request stop check)', async function() {
+                const result = await service.getFullList({ 'batch': 2, 'q1': 'noEmptyRequest' });
                 const expected = [
                     service.decode({ 'id': 'item1' }),
                     service.decode({ 'id': 'item2' }),

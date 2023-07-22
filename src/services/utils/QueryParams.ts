@@ -7,10 +7,11 @@ export interface BaseQueryParams {
 }
 
 export interface ListQueryParams extends BaseQueryParams {
-    page?:    number;
-    perPage?: number;
-    sort?:    string;
-    filter?:  string;
+    page?:      number;
+    perPage?:   number;
+    sort?:      string;
+    filter?:    string;
+    skipTotal?: boolean;
 }
 
 export interface FullListQueryParams extends ListQueryParams {
@@ -33,4 +34,5 @@ export interface LogStatsQueryParams extends BaseQueryParams {
 
 export interface FileQueryParams extends BaseQueryParams {
     thumb?: string;
+    download?: boolean;
 }

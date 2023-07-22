@@ -21,7 +21,13 @@ export default class FileService extends BaseService {
         let result = this.client.buildUrl(parts.join('/'));
 
         if (Object.keys(queryParams).length) {
+            // normalize the download query param for consistency with the Dart sdk
+            if (queryParams.download === false) {
+                delete(queryParams.download);
+            }
+
             const params = new URLSearchParams(queryParams);
+
             result += (result.includes("?") ? "&" : "?") + params;
         }
 

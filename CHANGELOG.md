@@ -1,3 +1,11 @@
+## 0.16.0-WIP
+
+- Added `skipTotal=1` query parameter by default for the `getFirstListItem()` and `getFullList()` requests.
+  Note that this have performance boost only with PocketBase v0.17+.
+
+- Added optional `download=1` query parameter to force file urls with `Content-Disposition: attachment` (_supported with PocketBase v0.17+_).
+
+
 ## 0.15.3
 
 - Automatically resolve pending realtime connect `Promise`s in case `unsubscribe` is called before

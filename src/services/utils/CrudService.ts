@@ -15,7 +15,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
 
     /**
      * Returns a promise with all list items batch fetched at once
-     * (by default 200 items per request; to change it set the `batch` query param).
+     * (by default 500 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
@@ -33,7 +33,13 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
 
         const params = Object.assign({}, batchOrqueryParams, queryParams);
 
-        return this._getFullList<T>(this.baseCrudPath, params.batch || 200, params);
+        let batch = 500;
+        if (params.batch) {
+            batch = params.batch;
+            delete params.batch;
+        }
+
+        return this._getFullList<T>(this.baseCrudPath, batch, params);
     }
 
     /**
@@ -48,8 +54,8 @@ export default abstract class CrudService<M extends BaseModel> extends BaseCrudS
     /**
      * Returns the first found item by the specified filter.
      *
-     * Internally it calls `getList(1, 1, { filter })` and returns the
-     * first found item.
+     * Internally it calls `getList(1, 1, { filter, skipTotal })` and
+     * returns the first found item.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      *

@@ -17,18 +17,21 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns a promise with all list items batch fetched at once.
      */
-    protected _getFullList<T = M>(basePath: string, batchSize = 200, queryParams: ListQueryParams = {}): Promise<Array<T>> {
-        var result: Array<T> = [];
+    protected _getFullList<T = M>(basePath: string, batchSize = 500, queryParams: ListQueryParams = {}): Promise<Array<T>> {
+        queryParams = Object.assign({
+            'skipTotal': 1,
+        }, queryParams);
+
+        let result: Array<T> = [];
 
         let request = async (page: number): Promise<Array<any>> => {
-            return this._getList(basePath, page, batchSize || 200, queryParams).then((list) => {
+            return this._getList(basePath, page, batchSize || 500, queryParams).then((list) => {
                 const castedList = (list as any as ListResult<T>);
-                const items = castedList.items;
-                const totalItems = castedList.totalItems;
+                const items      = castedList.items;
 
                 result = result.concat(items);
 
-                if (items.length && totalItems > result.length) {
+                if (items.length == list.perPage) {
                     return request(page + 1);
                 }
 
@@ -83,8 +86,8 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     /**
      * Returns the first found item by a list filter.
      *
-     * Internally it calls `_getList(basePath, 1, 1, { filter })` and returns its
-     * first item.
+     * Internally it calls `_getList(basePath, 1, 1, { filter, skipTotal })`
+     * and returns its first item.
      *
      * For consistency with `_getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
@@ -92,6 +95,7 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     protected _getFirstListItem<T = M>(basePath: string, filter: string, queryParams: BaseQueryParams = {}): Promise<T> {
         queryParams = Object.assign({
             'filter': filter,
+            'skipTotal': 1,
             '$cancelKey': 'one_by_filter_' + basePath + "_" + filter,
         }, queryParams);
 

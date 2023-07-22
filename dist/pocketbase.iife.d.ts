@@ -180,6 +180,7 @@ interface ListQueryParams extends BaseQueryParams {
     perPage?: number;
     sort?: string;
     filter?: string;
+    skipTotal?: boolean;
 }
 interface FullListQueryParams extends ListQueryParams {
     batch?: number;
@@ -196,6 +197,7 @@ interface LogStatsQueryParams extends BaseQueryParams {
 }
 interface FileQueryParams extends BaseQueryParams {
     thumb?: string;
+    download?: boolean;
 }
 interface appleClientSecret {
     secret: string;
@@ -264,8 +266,8 @@ declare abstract class BaseCrudService<M extends BaseModel> extends BaseService 
     /**
      * Returns the first found item by a list filter.
      *
-     * Internally it calls `_getList(basePath, 1, 1, { filter })` and returns its
-     * first item.
+     * Internally it calls `_getList(basePath, 1, 1, { filter, skipTotal })`
+     * and returns its first item.
      *
      * For consistency with `_getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
@@ -291,7 +293,7 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
     abstract get baseCrudPath(): string;
     /**
      * Returns a promise with all list items batch fetched at once
-     * (by default 200 items per request; to change it set the `batch` query param).
+     * (by default 500 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
@@ -309,8 +311,8 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
     /**
      * Returns the first found item by the specified filter.
      *
-     * Internally it calls `getList(1, 1, { filter })` and returns the
-     * first found item.
+     * Internally it calls `getList(1, 1, { filter, skipTotal })` and
+     * returns the first found item.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      *
