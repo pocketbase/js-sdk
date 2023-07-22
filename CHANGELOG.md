@@ -1,4 +1,4 @@
-## 0.16.0-WIP
+## 0.16.0-RC1
 
 - Added `skipTotal=1` query parameter by default for the `getFirstListItem()` and `getFullList()` requests.
   Note that this have performance boost only with PocketBase v0.17+.
