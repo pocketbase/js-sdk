@@ -9,7 +9,7 @@ export default class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
      */
-    getAll(queryParams: BaseQueryParams = {}): Promise<{ [key: string]: any }> {
+    getAll(queryParams: BaseQueryParams = {}): Promise<{[key: string]:any}> {
         return this.client.send('/api/settings', {
             'method': 'GET',
             'params': queryParams,
@@ -19,7 +19,7 @@ export default class SettingsService extends BaseService {
     /**
      * Bulk updates app settings.
      */
-    update(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<{ [key: string]: any }> {
+    update(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<{[key: string]:any}> {
         return this.client.send('/api/settings', {
             'method': 'PATCH',
             'params': queryParams,

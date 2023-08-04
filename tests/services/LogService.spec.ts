@@ -1,7 +1,5 @@
 import { assert }    from 'chai';
 import Client        from '@/Client';
-import LogRequest    from '@/models/LogRequest';
-import ListResult    from '@/models/utils/ListResult';
 import LogService    from '@/services/LogService';
 import { FetchMock } from 'tests/mocks';
 
@@ -24,26 +22,24 @@ describe('LogService', function () {
 
     describe('getRequestsList()', function() {
         it('Should correctly return paginated list result', async function() {
+            const replyBody = {
+                'page': 2,
+                'perPage': 1,
+                'totalItems': 3,
+                'totalPages': 3,
+                'items': [{ 'id': 'test123' }],
+            };
+
             fetchMock.on({
                 method: 'GET',
                 url: 'test_base_url/api/logs/requests?page=2&perPage=1&q1=abc',
                 replyCode: 200,
-                replyBody: {
-                    'page': 2,
-                    'perPage': 1,
-                    'totalItems': 3,
-                    'totalPages': 3,
-                    'items': [{ 'id': 'test123' }],
-                },
+                replyBody: replyBody,
             });
 
             const list = await service.getRequestsList(2, 1, { 'q1': 'abc' });
-            const expected = [new LogRequest({ 'id': 'test123' })];
 
-            assert.deepEqual(list, new ListResult(2, 1, 3, 3, expected));
-            for (const i in list.items) {
-                assert.instanceOf(list.items[i], expected[i].constructor);
-            }
+            assert.deepEqual(list, replyBody);
         });
     });
 
@@ -57,10 +53,8 @@ describe('LogService', function () {
             });
 
             const result = await service.getRequest('test?123', { 'q1': 'abc' });
-            const expected = new LogRequest({ 'id': 'test123' });
 
-            assert.instanceOf(result, expected.constructor);
-            assert.deepEqual(result, expected);
+            assert.deepEqual(result, { 'id': 'test123' } as any);
         });
     });
 

@@ -3,7 +3,7 @@ import { crudServiceTestsSuite } from '../suites';
 import { FetchMock }             from 'tests/mocks';
 import Client                    from '@/Client';
 import AdminService              from '@/services/AdminService';
-import Admin                     from '@/models/Admin';
+import { AdminModel }            from '@/services/utils/ResponseModels';
 
 describe('AdminService', function() {
     const client = new Client('test_base_url');
@@ -30,10 +30,9 @@ describe('AdminService', function() {
         fetchMock.clearMocks();
     });
 
-    function authResponseCheck(result: { [key: string]: any }, expectedToken: string, expectedAdmin: Admin) {
+    function authResponseCheck(result: { [key: string]: any }, expectedToken: string, expectedAdmin: AdminModel) {
         assert.isNotEmpty(result);
         assert.equal(result.token, expectedToken);
-        assert.instanceOf(result.admin, Admin);
         assert.deepEqual(result.admin, expectedAdmin);
         assert.equal(service.client.authStore.token, expectedToken);
         assert.deepEqual(service.client.authStore.model, expectedAdmin);
@@ -54,7 +53,7 @@ describe('AdminService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Admin({id: "test123", email: "old@example.com"}));
+            service.client.authStore.save("test_token", {id: "test123", email: "old@example.com"} as any);
 
             await service.update('test123', {email:"new@example.com"});
 
@@ -72,7 +71,7 @@ describe('AdminService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Admin({id: "test456", email: "old@example.com"}));
+            service.client.authStore.save("test_token", {id: "test456", email: "old@example.com"} as any);
 
             await service.update('test123', {email:"new@example.com"});
 
@@ -86,7 +85,7 @@ describe('AdminService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Admin({id: "test123"}));
+            service.client.authStore.save("test_token", {id: "test123"} as any);
 
             await service.delete('test123');
 
@@ -100,7 +99,7 @@ describe('AdminService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Admin({id: "test456"}));
+            service.client.authStore.save("test_token", {id: "test456"} as any);
 
             await service.delete('test123');
 

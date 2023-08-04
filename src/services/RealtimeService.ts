@@ -1,4 +1,4 @@
-import BaseService from '@/services/utils/BaseService';
+import BaseService         from '@/services/utils/BaseService';
 import ClientResponseError from '@/ClientResponseError';
 
 interface promiseCallbacks {
@@ -23,7 +23,6 @@ export default class RealtimeService extends BaseService {
         200, 300, 500, 1000, 1200, 1500, 2000,
     ];
     private pendingConnects: Array<promiseCallbacks> = [];
-
 
     /**
      * Returns whether the realtime connection has been established.

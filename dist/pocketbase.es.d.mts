@@ -9,87 +9,84 @@ interface SerializeOptions {
     priority?: string;
     sameSite?: boolean | string;
 }
-declare abstract class BaseModel {
+interface ResultList<T> {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
+    items: Array<T>;
+}
+interface BaseModel {
     [key: string]: any;
     id: string;
     created: string;
     updated: string;
-    constructor(data?: {
-        [key: string]: any;
-    });
-    /**
-     * Alias of this.$load(data).
-     */
-    load(data: {
-        [key: string]: any;
-    }): void;
-    /**
-     * Loads `data` into the current model.
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
-    /**
-     * Returns whether the current loaded data represent a stored db record.
-     */
-    get $isNew(): boolean;
-    /**
-     * Alias of this.clone().
-     */
-    clone(): BaseModel;
-    /**
-     * Creates a deep clone of the current model.
-     */
-    $clone(): BaseModel;
-    /**
-     * Alias of this.$export().
-     */
-    export(): {
-        [key: string]: any;
-    };
-    /**
-     * Exports all model properties as a new plain object.
-     */
-    $export(): {
-        [key: string]: any;
-    };
 }
-declare class Record extends BaseModel {
-    collectionId: string;
-    collectionName: string;
-    expand: {
-        [key: string]: Record | Array<Record>;
-    };
-    /**
-     * @inheritdoc
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
-    /**
-     * Loads the provided expand items and recursively normalizes each
-     * item to a `Record|Array<Record>`.
-     */
-    private _loadExpand;
-}
-declare class Admin extends BaseModel {
+interface AdminModel extends BaseModel {
     avatar: number;
     email: string;
-    /**
-     * @inheritdoc
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
 }
-type OnStoreChangeFunc = (token: string, model: Record | Admin | null) => void;
+interface SchemaField {
+    id: string;
+    name: string;
+    type: string;
+    system: boolean;
+    required: boolean;
+    options: {
+        [key: string]: any;
+    };
+}
+interface CollectionModel extends BaseModel {
+    name: string;
+    type: string;
+    schema: Array<SchemaField>;
+    indexes: Array<string>;
+    system: boolean;
+    listRule?: string;
+    viewRule?: string;
+    createRule?: string;
+    updateRule?: string;
+    deleteRule?: string;
+    options: {
+        [key: string]: any;
+    };
+}
+interface ExternalAuthModel extends BaseModel {
+    recordId: string;
+    collectionId: string;
+    provider: string;
+    providerId: string;
+}
+interface LogRequestModel extends BaseModel {
+    url: string;
+    method: string;
+    status: number;
+    auth: string;
+    remoteIp: string;
+    userIp: string;
+    referer: string;
+    userAgent: string;
+    meta: {
+        [key: string]: any;
+    };
+}
+interface RecordModel extends BaseModel {
+    [key: string]: any;
+    collectionId: string;
+    collectionName: string;
+    expand?: {
+        [key: string]: any;
+    };
+}
+type AuthModel = RecordModel | AdminModel | null;
+type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
 /**
  * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
  */
 declare abstract class BaseAuthStore {
     protected baseToken: string;
-    protected baseModel: Record | Admin | null;
+    protected baseModel: AuthModel;
     private _onChangeCallbacks;
     /**
      * Retrieves the stored token (if any).
@@ -98,7 +95,7 @@ declare abstract class BaseAuthStore {
     /**
      * Retrieves the stored model data (if any).
      */
-    get model(): Record | Admin | null;
+    get model(): AuthModel;
     /**
      * Loosely checks if the store has valid token (aka. existing and unexpired exp claim).
      */
@@ -106,7 +103,7 @@ declare abstract class BaseAuthStore {
     /**
      * Saves the provided new token and model data in the auth store.
      */
-    save(token: string, model: Record | Admin | null): void;
+    save(token: string, model?: AuthModel): void;
     /**
      * Removes the stored token and model data form the auth store.
      */
@@ -235,62 +232,17 @@ declare class SettingsService extends BaseService {
      */
     generateAppleClientSecret(clientId: string, teamId: string, keyId: string, privateKey: string, duration: number, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<appleClientSecret>;
 }
-declare class ListResult<M = BaseModel> {
-    page: number;
-    perPage: number;
-    totalItems: number;
-    totalPages: number;
-    items: Array<M>;
-    constructor(page: number, perPage: number, totalItems: number, totalPages: number, items: Array<M>);
-}
-// @todo since there is no longer need of SubCrudService consider merging with CrudService in v0.9+
-declare abstract class BaseCrudService<M extends BaseModel> extends BaseService {
-    /**
-     * Response data decoder.
-     */
-    abstract decode(data: {
-        [key: string]: any;
-    }): M;
-    /**
-     * Returns a promise with all list items batch fetched at once.
-     */
-    protected _getFullList<T = M>(basePath: string, batchSize?: number, queryParams?: ListQueryParams): Promise<Array<T>>;
-    /**
-     * Returns paginated items list.
-     */
-    protected _getList<T = M>(basePath: string, page?: number, perPage?: number, queryParams?: ListQueryParams): Promise<ListResult<T>>;
-    /**
-     * Returns single item by its id.
-     */
-    protected _getOne<T = M>(basePath: string, id: string, queryParams?: BaseQueryParams): Promise<T>;
-    /**
-     * Returns the first found item by a list filter.
-     *
-     * Internally it calls `_getList(basePath, 1, 1, { filter, skipTotal })`
-     * and returns its first item.
-     *
-     * For consistency with `_getOne`, this method will throw a 404
-     * ClientResponseError if no item was found.
-     */
-    protected _getFirstListItem<T = M>(basePath: string, filter: string, queryParams?: BaseQueryParams): Promise<T>;
-    /**
-     * Creates a new item.
-     */
-    protected _create<T = M>(basePath: string, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<T>;
-    /**
-     * Updates an existing item by its id.
-     */
-    protected _update<T = M>(basePath: string, id: string, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<T>;
-    /**
-     * Deletes an existing item by its id.
-     */
-    protected _delete(basePath: string, id: string, queryParams?: BaseQueryParams): Promise<boolean>;
-}
-declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<M> {
+declare abstract class CrudService<M> extends BaseService {
     /**
      * Base path for the crud actions (without trailing slash, eg. '/admins').
      */
     abstract get baseCrudPath(): string;
+    /**
+     * Response data decoder.
+     */
+    decode<T = M>(data: {
+        [key: string]: any;
+    }): T;
     /**
      * Returns a promise with all list items batch fetched at once
      * (by default 500 items per request; to change it set the `batch` query param).
@@ -307,7 +259,7 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page?: number, perPage?: number, queryParams?: ListQueryParams): Promise<ListResult<T>>;
+    getList<T = M>(page?: number, perPage?: number, queryParams?: ListQueryParams): Promise<ResultList<T>>;
     /**
      * Returns the first found item by the specified filter.
      *
@@ -342,19 +294,21 @@ declare abstract class CrudService<M extends BaseModel> extends BaseCrudService<
      * Deletes an existing item by its id.
      */
     delete(id: string, queryParams?: BaseQueryParams): Promise<boolean>;
+    /**
+     * Returns a promise with all list items batch fetched at once.
+     */
+    protected _getFullList<T = M>(batchSize?: number, queryParams?: ListQueryParams): Promise<Array<T>>;
 }
+declare module CrudServiceWrapper {
+    export { CrudService };
+}
+import BaseCrudService = CrudServiceWrapper.CrudService;
 interface AdminAuthResponse {
     [key: string]: any;
     token: string;
-    admin: Admin;
+    admin: AdminModel;
 }
-declare class AdminService extends CrudService<Admin> {
-    /**
-     * @inheritdoc
-     */
-    decode(data: {
-        [key: string]: any;
-    }): Admin;
+declare class AdminService extends BaseCrudService<AdminModel> {
     /**
      * @inheritdoc
      */
@@ -368,7 +322,7 @@ declare class AdminService extends CrudService<Admin> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Admin>(id: string, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<T>;
+    update<T = AdminModel>(id: string, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<T>;
     /**
      * @inheritdoc
      *
@@ -406,18 +360,10 @@ declare class AdminService extends CrudService<Admin> {
      */
     confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, bodyParams?: {}, queryParams?: BaseQueryParams): Promise<boolean>;
 }
-declare class ExternalAuth extends BaseModel {
-    recordId: string;
-    collectionId: string;
-    provider: string;
-    providerId: string;
-    /**
-     * @inheritdoc
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
+declare module CrudServiceWrapper {
+    export { CrudService };
 }
+import BaseCrudService$0 = CrudServiceWrapper.CrudService;
 type UnsubscribeFunc = () => Promise<void>;
 declare class RealtimeService extends BaseService {
     clientId: string;
@@ -487,7 +433,7 @@ declare class RealtimeService extends BaseService {
     private connectErrorHandler;
     private disconnect;
 }
-interface RecordAuthResponse<T = Record> {
+interface RecordAuthResponse<T = RecordModel> {
     record: T;
     token: string;
     meta?: {
@@ -507,7 +453,7 @@ interface AuthMethodsList {
     emailPassword: boolean;
     authProviders: Array<AuthProviderInfo>;
 }
-interface RecordSubscription<T = Record> {
+interface RecordSubscription<T = RecordModel> {
     action: string; // eg. create, update, delete
     record: T;
 }
@@ -530,15 +476,9 @@ interface OAuth2AuthConfig {
         [key: string]: any;
     };
 }
-declare class RecordService extends CrudService<Record> {
+declare class RecordService extends BaseCrudService$0<RecordModel> {
     readonly collectionIdOrName: string;
     constructor(client: Client, collectionIdOrName: string);
-    /**
-     * @inheritdoc
-     */
-    decode<T = Record>(data: {
-        [key: string]: any;
-    }): T;
     /**
      * @inheritdoc
      */
@@ -555,11 +495,11 @@ declare class RecordService extends CrudService<Record> {
      *
      * Subscribe to the realtime changes of a single record in the collection.
      */
-    subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribeOne<T = RecordModel>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
      */
-    subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribe<T = RecordModel>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
      *
@@ -573,7 +513,7 @@ declare class RecordService extends CrudService<Record> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribe<T = RecordModel>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscriptions of the specified topic
      * ("*" or record id).
@@ -588,34 +528,34 @@ declare class RecordService extends CrudService<Record> {
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>;
+    getFullList<T = RecordModel>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>;
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>;
+    getFullList<T = RecordModel>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>;
     /**
      * @inheritdoc
      */
-    getList<T = Record>(page?: number, perPage?: number, queryParams?: RecordListQueryParams): Promise<ListResult<T>>;
+    getList<T = RecordModel>(page?: number, perPage?: number, queryParams?: RecordListQueryParams): Promise<ResultList<T>>;
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = Record>(filter: string, queryParams?: RecordListQueryParams): Promise<T>;
+    getFirstListItem<T = RecordModel>(filter: string, queryParams?: RecordListQueryParams): Promise<T>;
     /**
      * @inheritdoc
      */
-    getOne<T = Record>(id: string, queryParams?: RecordQueryParams): Promise<T>;
+    getOne<T = RecordModel>(id: string, queryParams?: RecordQueryParams): Promise<T>;
     /**
      * @inheritdoc
      */
-    create<T = Record>(bodyParams?: {}, queryParams?: RecordQueryParams): Promise<T>;
+    create<T = RecordModel>(bodyParams?: {}, queryParams?: RecordQueryParams): Promise<T>;
     /**
      * @inheritdoc
      *
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Record>(id: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<T>;
+    update<T = RecordModel>(id: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<T>;
     /**
      * @inheritdoc
      *
@@ -629,7 +569,7 @@ declare class RecordService extends CrudService<Record> {
     /**
      * Prepare successful collection authorization response.
      */
-    protected authResponse<T = Record>(responseData: any): RecordAuthResponse<T>;
+    protected authResponse<T = RecordModel>(responseData: any): RecordAuthResponse<T>;
     /**
      * Returns all available collection auth methods.
      */
@@ -642,7 +582,7 @@ declare class RecordService extends CrudService<Record> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = Record>(usernameOrEmail: string, password: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
     /**
      * Authenticate a single auth collection record with OAuth2 code.
      *
@@ -654,14 +594,14 @@ declare class RecordService extends CrudService<Record> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2Code<T = Record>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {}, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    authWithOAuth2Code<T = RecordModel>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {}, bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
     /**
      * @deprecated This form of authWithOAuth2 is deprecated.
      *
      * Please use `authWithOAuth2Code()` OR its simplified realtime version
      * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
      */
-    authWithOAuth2<T = Record>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2<T = RecordModel>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
         [key: string]: any;
     }, bodyParams?: {
         [key: string]: any;
@@ -697,14 +637,14 @@ declare class RecordService extends CrudService<Record> {
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
      */
-    authWithOAuth2<T = Record>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
+    authWithOAuth2<T = RecordModel>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
     /**
      * Refreshes the current authenticated record instance and
      * returns a new token and record data.
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = Record>(bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
+    authRefresh<T = RecordModel>(bodyParams?: {}, queryParams?: RecordQueryParams): Promise<RecordAuthResponse<T>>;
     /**
      * Sends auth record password reset request.
      */
@@ -732,7 +672,7 @@ declare class RecordService extends CrudService<Record> {
     /**
      * Lists all linked external auth providers for the specified auth record.
      */
-    listExternalAuths(recordId: string, queryParams?: BaseQueryParams): Promise<Array<ExternalAuth>>;
+    listExternalAuths(recordId: string, queryParams?: BaseQueryParams): Promise<Array<ExternalAuthModel>>;
     /**
      * Unlink a single external auth provider from the specified auth record.
      */
@@ -745,71 +685,11 @@ declare class RecordService extends CrudService<Record> {
     private _replaceQueryParams;
     private _defaultUrlCallback;
 }
-declare class SchemaField {
-    id: string;
-    name: string;
-    type: string;
-    system: boolean;
-    required: boolean;
-    options: {
-        [key: string]: any;
-    };
-    constructor(data?: {
-        [key: string]: any;
-    });
+declare module CrudServiceWrapper {
+    export { CrudService };
 }
-declare class Collection extends BaseModel {
-    name: string;
-    type: string;
-    schema: Array<SchemaField>;
-    indexes: Array<string>;
-    system: boolean;
-    listRule: null | string;
-    viewRule: null | string;
-    createRule: null | string;
-    updateRule: null | string;
-    deleteRule: null | string;
-    options: {
-        [key: string]: any;
-    };
-    /**
-     * @inheritdoc
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
-    /**
-     * @deprecated Please use $isBase instead.
-     */
-    get isBase(): boolean;
-    /**
-     * Checks if the current model is "base" collection.
-     */
-    get $isBase(): boolean;
-    /**
-     * @deprecated Please use $isAuth instead.
-     */
-    get isAuth(): boolean;
-    /**
-     * Checks if the current model is "auth" collection.
-     */
-    get $isAuth(): boolean;
-    /**
-     * @deprecated Please use $isView instead.
-     */
-    get isView(): boolean;
-    /**
-     * Checks if the current model is "view" collection.
-     */
-    get $isView(): boolean;
-}
-declare class CollectionService extends CrudService<Collection> {
-    /**
-     * @inheritdoc
-     */
-    decode(data: {
-        [key: string]: any;
-    }): Collection;
+import BaseCrudService$1 = CrudServiceWrapper.CrudService;
+declare class CollectionService extends BaseCrudService$1<CollectionModel> {
     /**
      * @inheritdoc
      */
@@ -821,26 +701,7 @@ declare class CollectionService extends CrudService<Collection> {
      * that are not present in the imported configuration, WILL BE DELETED
      * (including their related records data)!
      */
-    import(collections: Array<Collection>, deleteMissing?: boolean, queryParams?: BaseQueryParams): Promise<true>;
-}
-declare class LogRequest extends BaseModel {
-    url: string;
-    method: string;
-    status: number;
-    auth: string;
-    remoteIp: string;
-    userIp: string;
-    referer: string;
-    userAgent: string;
-    meta: {
-        [key: string]: any;
-    };
-    /**
-     * @inheritdoc
-     */
-    $load(data: {
-        [key: string]: any;
-    }): void;
+    import(collections: Array<CollectionModel>, deleteMissing?: boolean, queryParams?: BaseQueryParams): Promise<true>;
 }
 interface HourlyStats {
     total: number;
@@ -850,11 +711,11 @@ declare class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page?: number, perPage?: number, queryParams?: ListQueryParams): Promise<ListResult<LogRequest>>;
+    getRequestsList(page?: number, perPage?: number, queryParams?: ListQueryParams): Promise<ResultList<LogRequestModel>>;
     /**
      * Returns a single logged request by its id.
      */
-    getRequest(id: string, queryParams?: BaseQueryParams): Promise<LogRequest>;
+    getRequest(id: string, queryParams?: BaseQueryParams): Promise<LogRequestModel>;
     /**
      * Returns request logs statistics.
      */
@@ -877,7 +738,9 @@ declare class FileService extends BaseService {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
-    getUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
+    getUrl(record: Pick<{
+        [key: string]: any;
+    }, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
     /**
      * Requests a new private file access token for the current auth model (admin or record).
      */
@@ -1048,7 +911,9 @@ declare class Client {
     /**
      * Legacy alias of `pb.files.getUrl()`.
      */
-    getFileUrl(record: Pick<Record, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
+    getFileUrl(record: Pick<{
+        [key: string]: any;
+    }, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileQueryParams): string;
     /**
      * Builds a full client url by safely concatenating the provided path.
      */
@@ -1087,6 +952,10 @@ declare class ClientResponseError extends Error {
      */
     toJSON(): this;
 }
+declare module CrudServiceWrapper {
+    export { CrudService };
+}
+import BaseCrudService$2 = CrudServiceWrapper.CrudService;
 /**
  * The default token store for browsers with auto fallback
  * to runtime/memory if local storage is undefined (eg. in node env).
@@ -1102,11 +971,11 @@ declare class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    get model(): Record | Admin | null;
+    get model(): AuthModel;
     /**
      * @inheritdoc
      */
-    save(token: string, model: Record | Admin | null): void;
+    save(token: string, model?: AuthModel): void;
     /**
      * @inheritdoc
      */
@@ -1144,4 +1013,75 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ExternalAuth, Admin, Collection, Record, LogRequest, BaseModel, ListResult, SchemaField, CrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, HealthCheckResponse, BackupFileInfo, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };
+declare namespace models {
+    interface ResultList<T> {
+        page: number;
+        perPage: number;
+        totalItems: number;
+        totalPages: number;
+        items: Array<T>;
+    }
+    interface BaseModel {
+        [key: string]: any;
+        id: string;
+        created: string;
+        updated: string;
+    }
+    interface AdminModel extends BaseModel {
+        avatar: number;
+        email: string;
+    }
+    interface SchemaField {
+        id: string;
+        name: string;
+        type: string;
+        system: boolean;
+        required: boolean;
+        options: {
+            [key: string]: any;
+        };
+    }
+    interface CollectionModel extends BaseModel {
+        name: string;
+        type: string;
+        schema: Array<SchemaField>;
+        indexes: Array<string>;
+        system: boolean;
+        listRule?: string;
+        viewRule?: string;
+        createRule?: string;
+        updateRule?: string;
+        deleteRule?: string;
+        options: {
+            [key: string]: any;
+        };
+    }
+    interface ExternalAuthModel extends BaseModel {
+        recordId: string;
+        collectionId: string;
+        provider: string;
+        providerId: string;
+    }
+    interface LogRequestModel extends BaseModel {
+        url: string;
+        method: string;
+        status: number;
+        auth: string;
+        remoteIp: string;
+        userIp: string;
+        referer: string;
+        userAgent: string;
+        meta: {
+            [key: string]: any;
+        };
+    }
+    interface RecordModel extends BaseModel {
+        [key: string]: any;
+        collectionId: string;
+        collectionName: string;
+        expand?: {
+            [key: string]: any;
+        };
+    }
+}
+export { Client as default, ClientResponseError, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, BaseCrudService$2 as BaseCrudService, AdminService, CollectionService, LogService, RealtimeService, RecordService, SettingsService, models, HealthCheckResponse, BackupFileInfo, SendOptions, BeforeSendResult, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OnStoreChangeFunc, UnsubscribeFunc, BaseQueryParams, ListQueryParams, RecordQueryParams, RecordListQueryParams, LogStatsQueryParams, FileQueryParams, FullListQueryParams, RecordFullListQueryParams };

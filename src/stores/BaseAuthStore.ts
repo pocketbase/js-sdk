@@ -1,9 +1,10 @@
 import { cookieParse, cookieSerialize, SerializeOptions } from '@/stores/utils/cookie';
 import { isTokenExpired, getTokenPayload } from '@/stores/utils/jwt';
-import Record  from '@/models/Record';
-import Admin from '@/models/Admin';
+import { RecordModel, AdminModel }  from '@/services/utils/ResponseModels';
 
-export type OnStoreChangeFunc = (token: string, model: Record|Admin|null) => void;
+export type AuthModel = RecordModel|AdminModel|null;
+
+export type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
 
 const defaultCookieKey = 'pb_auth';
 
@@ -13,7 +14,7 @@ const defaultCookieKey = 'pb_auth';
  */
 export default abstract class BaseAuthStore {
     protected baseToken: string = '';
-    protected baseModel: Record|Admin|null = null;
+    protected baseModel: AuthModel = null;
 
     private _onChangeCallbacks: Array<OnStoreChangeFunc> = [];
 
@@ -27,7 +28,7 @@ export default abstract class BaseAuthStore {
     /**
      * Retrieves the stored model data (if any).
      */
-    get model(): Record|Admin|null {
+    get model(): AuthModel {
         return this.baseModel;
     }
 
@@ -41,16 +42,9 @@ export default abstract class BaseAuthStore {
     /**
      * Saves the provided new token and model data in the auth store.
      */
-    save(token: string, model: Record|Admin|null): void {
+    save(token: string, model?: AuthModel): void {
         this.baseToken = token || '';
-
-        // normalize the model instance
-        if (model !== null && typeof model === 'object') {
-            this.baseModel = typeof (model as any).collectionId !== 'undefined' ?
-                new Record(model) : new Admin(model);
-        } else {
-            this.baseModel = null;
-        }
+        this.baseModel = model || null;
 
         this.triggerChange();
     }
@@ -138,7 +132,7 @@ export default abstract class BaseAuthStore {
 
         const rawData = {
             token: this.token,
-            model: this.model?.export() || null,
+            model: this.model ? JSON.parse(JSON.stringify(this.model)) : null,
         };
 
         let result = cookieSerialize(key, JSON.stringify(rawData), options);
@@ -149,10 +143,11 @@ export default abstract class BaseAuthStore {
         // strip down the model data to the bare minimum
         if (rawData.model && resultLength > 4096) {
             rawData.model = {id: rawData?.model?.id, email: rawData?.model?.email};
-            if (this.model instanceof Record) {
-                rawData.model.username     = this.model.username;
-                rawData.model.verified     = this.model.verified;
-                rawData.model.collectionId = this.model.collectionId;
+            const extraProps = ["collectionId", "username", "verified"];
+            for (const prop in this.model) {
+                if (extraProps.includes(prop)) {
+                    rawData.model[prop] = this.model[prop];
+                }
             }
             result = cookieSerialize(key, JSON.stringify(rawData), options);
         }

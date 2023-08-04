@@ -1,22 +1,15 @@
-import Admin               from '@/models/Admin';
 import BaseCrudService     from '@/services/utils/BaseCrudService';
 import { BaseQueryParams } from '@/services/utils/QueryParams';
+import { AdminModel }      from '@/services/utils/ResponseModels';
 
 export interface AdminAuthResponse {
     [key: string]: any;
 
     token: string;
-    admin: Admin;
+    admin: AdminModel;
 }
 
-export default class AdminService extends BaseCrudService<Admin> {
-    /**
-     * @inheritdoc
-     */
-    decode(data: { [key: string]: any }): Admin {
-        return new Admin(data);
-    }
-
+export default class AdminService extends BaseCrudService<AdminModel> {
     /**
      * @inheritdoc
      */
@@ -34,13 +27,13 @@ export default class AdminService extends BaseCrudService<Admin> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Admin>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return super.update<Admin>(id, bodyParams, queryParams).then((item) => {
+    update<T = AdminModel>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
+        return super.update(id, bodyParams, queryParams).then((item) => {
             // update the store state if the updated item id matches with the stored model
             if (
                 this.client.authStore.model &&
                 typeof this.client.authStore.model?.collectionId === 'undefined' && // is not record auth
-                this.client.authStore.model?.id === item?.id
+                this.client.authStore.model?.id === item.id
             ) {
                 this.client.authStore.save(this.client.authStore.token, item);
             }
@@ -66,6 +59,7 @@ export default class AdminService extends BaseCrudService<Admin> {
             ) {
                 this.client.authStore.clear();
             }
+
             return success;
         });
     }

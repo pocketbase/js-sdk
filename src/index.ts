@@ -3,14 +3,6 @@ import Client, {
     BeforeSendResult,
 } from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
-import ExternalAuth        from '@/models/ExternalAuth';
-import Admin               from '@/models/Admin';
-import Collection          from '@/models/Collection';
-import Record              from '@/models/Record';
-import LogRequest          from '@/models/LogRequest';
-import BaseModel           from '@/models/utils/BaseModel';
-import ListResult          from '@/models/utils/ListResult';
-import SchemaField         from '@/models/utils/SchemaField';
 import BaseCrudService     from '@/services/utils/BaseCrudService';
 import AdminService        from '@/services/AdminService';
 import CollectionService   from '@/services/CollectionService';
@@ -48,20 +40,14 @@ import {
     RecordFullListQueryParams,
 } from '@/services/utils/QueryParams';
 
+import * as models from '@/services/utils/ResponseModels';
+
 export {
     ClientResponseError,
     BaseAuthStore,
     LocalAuthStore,
     getTokenPayload,
     isTokenExpired,
-    ExternalAuth,
-    Admin,
-    Collection,
-    Record,
-    LogRequest,
-    BaseModel,
-    ListResult,
-    SchemaField,
 
     // services
     BaseCrudService,
@@ -71,6 +57,7 @@ export {
     RealtimeService,
     RecordService,
     SettingsService,
+    models,
 
     //types
     HealthCheckResponse,

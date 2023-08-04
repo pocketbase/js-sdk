@@ -3,7 +3,7 @@ import { crudServiceTestsSuite } from '../suites';
 import { FetchMock }             from 'tests/mocks';
 import Client                    from '@/Client';
 import RecordService             from '@/services/RecordService';
-import Record                    from '@/models/Record';
+import { RecordModel }           from '@/services/utils/ResponseModels';
 
 describe('RecordService', function() {
     const client  = new Client('test_base_url/');
@@ -41,10 +41,10 @@ describe('RecordService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test123",
                 collectionName: "sub=",
-            }));
+            } as any);
 
             await service.update('test123', {});
 
@@ -62,11 +62,11 @@ describe('RecordService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test123",
                 email: "old@example.com",
                 collectionName: "diff",
-            }));
+            } as any);
 
             await service.update('test123', {});
 
@@ -84,11 +84,11 @@ describe('RecordService', function() {
                 },
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test456",
                 email: "old@example.com",
                 collectionName: "sub=",
-            }));
+            } as any);
 
             await service.update('test123', {});
 
@@ -102,10 +102,10 @@ describe('RecordService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test123",
                 collectionName: "sub=",
-            }));
+            } as any);
 
             await service.delete('test123');
 
@@ -119,10 +119,10 @@ describe('RecordService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test123",
                 collectionName: "diff",
-            }));
+            } as any);
 
             await service.delete('test123');
 
@@ -136,10 +136,10 @@ describe('RecordService', function() {
                 replyCode: 204,
             });
 
-            service.client.authStore.save("test_token", new Record({
+            service.client.authStore.save("test_token", {
                 id: "test456",
                 collectionName: "sub=",
-            }));
+            } as any);
 
             await service.delete('test123');
 
@@ -152,10 +152,9 @@ describe('RecordService', function() {
     // auth tests
     // ---------------------------------------------------------------
 
-    function authResponseCheck(result: { [key: string]: any }, expectedToken: string, expectedRecord: Record) {
+    function authResponseCheck(result: { [key: string]: any }, expectedToken: string, expectedRecord: RecordModel) {
         assert.isNotEmpty(result);
         assert.equal(result.token, expectedToken);
-        assert.instanceOf(result.record, Record);
         assert.deepEqual(result.record, expectedRecord);
         assert.equal(service.client.authStore.token, expectedToken);
         assert.deepEqual(service.client.authStore.model, expectedRecord);
@@ -208,7 +207,7 @@ describe('RecordService', function() {
 
             const result = await service.authWithPassword('test@example.com', '123456', { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_auth', new Record({ 'id': 'id_auth' }));
+            authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
         });
     });
 
@@ -234,7 +233,7 @@ describe('RecordService', function() {
 
             const result = await service.authWithOAuth2Code('test', 'c123', 'v123', 'http://example.com', {'test': 1}, { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_auth', new Record({ 'id': 'id_auth' }));
+            authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
         });
     });
 
@@ -260,7 +259,7 @@ describe('RecordService', function() {
 
             const result = await service.authWithOAuth2('test', 'c123', 'v123', 'http://example.com', {'test': 1}, { 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_auth', new Record({ 'id': 'id_auth' }));
+            authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
         });
 
         // @todo consider adding a test for the realtime version when refactoring the realtime service
@@ -281,7 +280,7 @@ describe('RecordService', function() {
 
             const result = await service.authRefresh({ 'b1': 123 }, { 'q1': 456 });
 
-            authResponseCheck(result, 'token_refresh', new Record({ 'id': 'id_refresh' }));
+            authResponseCheck(result, 'token_refresh', { 'id': 'id_refresh' } as any);
         });
     });
 

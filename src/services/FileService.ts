@@ -1,5 +1,4 @@
 import BaseService from '@/services/utils/BaseService';
-import Record      from '@/models/Record';
 import { BaseQueryParams, FileQueryParams } from '@/services/utils/QueryParams';
 
 export default class FileService extends BaseService {
@@ -7,7 +6,7 @@ export default class FileService extends BaseService {
      * Builds and returns an absolute record file url for the provided filename.
      */
     getUrl(
-        record: Pick<Record, "id" | "collectionId" | "collectionName">,
+        record: Pick<{[key:string]:any}, "id" | "collectionId" | "collectionName">,
         filename: string,
         queryParams: FileQueryParams = {}
     ): string {

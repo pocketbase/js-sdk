@@ -10,7 +10,6 @@ import RealtimeService     from '@/services/RealtimeService';
 import HealthService       from '@/services/HealthService';
 import FileService         from '@/services/FileService';
 import BackupService       from '@/services/BackupService';
-import Record              from '@/models/Record';
 import { BaseQueryParams, FileQueryParams } from '@/services/utils/QueryParams';
 
 export interface SendOptions extends RequestInit {
@@ -315,7 +314,7 @@ export default class Client {
      * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(
-        record: Pick<Record, "id" | "collectionId" | "collectionName">,
+        record: Pick<{[key:string]:any}, "id" | "collectionId" | "collectionName">,
         filename: string,
         queryParams: FileQueryParams = {}
     ): string {

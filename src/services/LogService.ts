@@ -1,6 +1,8 @@
-import LogRequest  from '@/models/LogRequest';
-import ListResult  from '@/models/utils/ListResult';
 import BaseService from '@/services/utils/BaseService';
+import {
+    ResultList,
+    LogRequestModel,
+}  from '@/services/utils/ResponseModels';
 import {
     BaseQueryParams,
     ListQueryParams,
@@ -16,7 +18,7 @@ export default class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<LogRequest>> {
+    getRequestsList(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ResultList<LogRequestModel>> {
         queryParams = Object.assign({
             'page':    page,
             'perPage': perPage,
@@ -25,33 +27,17 @@ export default class LogService extends BaseService {
         return this.client.send('/api/logs/requests', {
             'method': 'GET',
             'params': queryParams,
-        }).then((responseData: any) => {
-            const items: Array<LogRequest> = [];
-            if (responseData?.items) {
-                responseData.items = responseData?.items || [];
-                for (const item of responseData.items) {
-                    items.push(new LogRequest(item));
-                }
-            }
-
-            return new ListResult<LogRequest>(
-                responseData?.page || 1,
-                responseData?.perPage || 0,
-                responseData?.totalItems || 0,
-                responseData?.totalPages || 0,
-                items,
-            );
         });
     }
 
     /**
      * Returns a single logged request by its id.
      */
-    getRequest(id: string, queryParams: BaseQueryParams = {}): Promise<LogRequest> {
+    getRequest(id: string, queryParams: BaseQueryParams = {}): Promise<LogRequestModel> {
         return this.client.send('/api/logs/requests/' + encodeURIComponent(id), {
             'method': 'GET',
             'params': queryParams
-        }).then((responseData: any) => new LogRequest(responseData));
+        });
     }
 
     /**
@@ -61,6 +47,6 @@ export default class LogService extends BaseService {
         return this.client.send('/api/logs/requests/stats', {
             'method': 'GET',
             'params': queryParams
-        }).then((responseData: any) => responseData);
+        });
     }
 }

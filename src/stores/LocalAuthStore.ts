@@ -1,6 +1,4 @@
-import BaseAuthStore from '@/stores/BaseAuthStore';
-import Record        from '@/models/Record';
-import Admin         from '@/models/Admin';
+import BaseAuthStore, { AuthModel } from '@/stores/BaseAuthStore';
 
 /**
  * The default token store for browsers with auto fallback
@@ -28,7 +26,7 @@ export default class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    get model(): Record|Admin|null {
+    get model(): AuthModel {
         const data = this._storageGet(this.storageKey) || {};
 
         if (
@@ -40,18 +38,13 @@ export default class LocalAuthStore extends BaseAuthStore {
             return null;
         }
 
-        // admins don't have `collectionId` prop
-        if (typeof data.model?.collectionId === 'undefined') {
-            return new Admin(data.model);
-        }
-
-        return new Record(data.model);
+        return data.model
     }
 
     /**
      * @inheritdoc
      */
-    save(token: string, model: Record|Admin|null) {
+    save(token: string, model?: AuthModel) {
         this._storageSet(this.storageKey, {
             'token': token,
             'model': model,

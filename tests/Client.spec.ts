@@ -2,10 +2,8 @@ import chai, { assert } from 'chai';
 import chaiAsPromised   from 'chai-as-promised';
 import Client           from '@/Client';
 import LocalAuthStore   from '@/stores/LocalAuthStore';
-import { FetchMock }    from './mocks';
-import Admin            from '@/models/Admin';
-import Record           from '@/models/Record';
 import RecordService    from '@/services/RecordService';
+import { FetchMock }    from './mocks';
 
 chai.use(chaiAsPromised);
 
@@ -141,14 +139,14 @@ describe('Client', function() {
         const client = new Client('test_base_url');
 
         it('Should return a formatted url', async function () {
-            const record = new Record({'id': '456', 'collectionId': '123'});
+            const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = client.getFileUrl(record, 'demo.png')
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo.png');
         });
 
         it('Should return a formatted url + query params', async function () {
-            const record = new Record({'id': '456', 'collectionId': '123'});
+            const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = client.getFileUrl(record, 'demo=', {'test': 'abc'})
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo%3D?test=abc');
@@ -230,7 +228,7 @@ describe('Client', function() {
                 },
                 replyCode: 200,
             });
-            const admin = new Admin({ 'id': 'test-admin' });
+            const admin = { 'id': 'test-admin' } as any;
             client.authStore.save('token123', admin);
             await client.send('/admin', { method: 'GET' });
 
@@ -243,7 +241,7 @@ describe('Client', function() {
                 },
                 replyCode: 200,
             });
-            const user = new Record({ 'id': 'test-user', 'collectionId': 'test-user' });
+            const user = { 'id': 'test-user', 'collectionId': 'test-user' } as any;
             client.authStore.save('token123', user);
             await client.send('/user', { method: 'GET' });
         });

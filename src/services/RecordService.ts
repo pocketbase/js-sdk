@@ -1,9 +1,7 @@
 import Client              from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
-import Record              from '@/models/Record';
-import ExternalAuth        from '@/models/ExternalAuth';
-import ListResult          from '@/models/utils/ListResult';
 import BaseCrudService     from '@/services/utils/BaseCrudService';
+import { ResultList, RecordModel, ExternalAuthModel }     from '@/services/utils/ResponseModels';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
 import {
     BaseQueryParams,
@@ -12,7 +10,7 @@ import {
     RecordFullListQueryParams,
 } from '@/services/utils/QueryParams';
 
-export interface RecordAuthResponse<T = Record> {
+export interface RecordAuthResponse<T = RecordModel> {
     record: T;
     token:  string;
     meta?:  {[key: string]: any};
@@ -33,7 +31,7 @@ export interface AuthMethodsList {
     authProviders:    Array<AuthProviderInfo>;
 }
 
-export interface RecordSubscription<T = Record> {
+export interface RecordSubscription<T = RecordModel> {
     action: string; // eg. create, update, delete
     record: T;
 }
@@ -60,20 +58,13 @@ export interface OAuth2AuthConfig {
     body?: {[key: string]: any};
 }
 
-export default class RecordService extends BaseCrudService<Record> {
+export default class RecordService extends BaseCrudService<RecordModel> {
     readonly collectionIdOrName: string;
 
     constructor(client: Client, collectionIdOrName: string) {
         super(client);
 
         this.collectionIdOrName = collectionIdOrName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    decode<T = Record>(data: { [key: string]: any }): T {
-        return new Record(data) as any as T;
     }
 
     /**
@@ -99,7 +90,7 @@ export default class RecordService extends BaseCrudService<Record> {
      *
      * Subscribe to the realtime changes of a single record in the collection.
      */
-    async subscribeOne<T = Record>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
+    async subscribeOne<T = RecordModel>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
         console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subscribe(recordId, callback).");
         return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
     }
@@ -107,7 +98,7 @@ export default class RecordService extends BaseCrudService<Record> {
     /**
      * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
      */
-    async subscribe<T = Record>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+    async subscribe<T = RecordModel>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
 
     /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
@@ -122,9 +113,9 @@ export default class RecordService extends BaseCrudService<Record> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    async subscribe<T = Record>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
+    async subscribe<T = RecordModel>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
 
-    async subscribe<T = Record>(
+    async subscribe<T = RecordModel>(
         topicOrCallback: string|((data: RecordSubscription<T>) => void),
         callback?: (data: RecordSubscription<T>) => void
     ): Promise<UnsubscribeFunc> {
@@ -177,17 +168,17 @@ export default class RecordService extends BaseCrudService<Record> {
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>
+    getFullList<T = RecordModel>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>
+    getFullList<T = RecordModel>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = Record>(batchOrQueryParams?: number|RecordFullListQueryParams, queryParams?: RecordListQueryParams): Promise<Array<T>> {
+    getFullList<T = RecordModel>(batchOrQueryParams?: number|RecordFullListQueryParams, queryParams?: RecordListQueryParams): Promise<Array<T>> {
         if (typeof batchOrQueryParams == "number") {
             return super.getFullList<T>(batchOrQueryParams, queryParams);
         }
@@ -200,28 +191,28 @@ export default class RecordService extends BaseCrudService<Record> {
     /**
      * @inheritdoc
      */
-    getList<T = Record>(page = 1, perPage = 30, queryParams: RecordListQueryParams = {}): Promise<ListResult<T>> {
+    getList<T = RecordModel>(page = 1, perPage = 30, queryParams: RecordListQueryParams = {}): Promise<ResultList<T>> {
         return super.getList<T>(page, perPage, queryParams);
     }
 
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = Record>(filter: string, queryParams: RecordListQueryParams = {}): Promise<T> {
+    getFirstListItem<T = RecordModel>(filter: string, queryParams: RecordListQueryParams = {}): Promise<T> {
         return super.getFirstListItem<T>(filter, queryParams);
     }
 
     /**
      * @inheritdoc
      */
-    getOne<T = Record>(id: string, queryParams: RecordQueryParams = {}): Promise<T> {
+    getOne<T = RecordModel>(id: string, queryParams: RecordQueryParams = {}): Promise<T> {
         return super.getOne<T>(id, queryParams);
     }
 
     /**
      * @inheritdoc
      */
-    create<T = Record>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
+    create<T = RecordModel>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
         return super.create<T>(bodyParams, queryParams);
     }
 
@@ -231,8 +222,8 @@ export default class RecordService extends BaseCrudService<Record> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = Record>(id: string, bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
-        return super.update<Record>(id, bodyParams, queryParams).then((item) => {
+    update<T = RecordModel>(id: string, bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
+        return super.update<RecordModel>(id, bodyParams, queryParams).then((item) => {
             if (
                 // is record auth
                 this.client.authStore.model?.id === item?.id &&
@@ -279,7 +270,7 @@ export default class RecordService extends BaseCrudService<Record> {
     /**
      * Prepare successful collection authorization response.
      */
-    protected authResponse<T = Record>(responseData: any): RecordAuthResponse<T> {
+    protected authResponse<T = RecordModel>(responseData: any): RecordAuthResponse<T> {
         const record = this.decode(responseData?.record || {});
 
         this.client.authStore.save(responseData?.token, record);
@@ -316,7 +307,7 @@ export default class RecordService extends BaseCrudService<Record> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = Record>(
+    authWithPassword<T = RecordModel>(
         usernameOrEmail: string,
         password: string,
         bodyParams = {},
@@ -345,7 +336,7 @@ export default class RecordService extends BaseCrudService<Record> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2Code<T = Record>(
+    authWithOAuth2Code<T = RecordModel>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -375,7 +366,7 @@ export default class RecordService extends BaseCrudService<Record> {
      * Please use `authWithOAuth2Code()` OR its simplified realtime version
      * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
      */
-    async authWithOAuth2<T = Record>(
+    async authWithOAuth2<T = RecordModel>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -416,9 +407,9 @@ export default class RecordService extends BaseCrudService<Record> {
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
      */
-    async authWithOAuth2<T = Record>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>
+    async authWithOAuth2<T = RecordModel>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>
 
-    async authWithOAuth2<T = Record>(...args: any): Promise<RecordAuthResponse<T>> {
+    async authWithOAuth2<T = RecordModel>(...args: any): Promise<RecordAuthResponse<T>> {
         // fallback to legacy format
         if (args.length > 1 || typeof args?.[0] === 'string') {
             console.warn("PocketBase: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.");
@@ -495,7 +486,7 @@ export default class RecordService extends BaseCrudService<Record> {
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = Record>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<RecordAuthResponse<T>> {
+    authRefresh<T = RecordModel>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<RecordAuthResponse<T>> {
         return this.client.send(this.baseCollectionPath + '/auth-refresh', {
             'method': 'POST',
             'params': queryParams,
@@ -629,20 +620,10 @@ export default class RecordService extends BaseCrudService<Record> {
     listExternalAuths(
         recordId: string,
         queryParams: BaseQueryParams = {}
-    ): Promise<Array<ExternalAuth>> {
+    ): Promise<Array<ExternalAuthModel>> {
         return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths', {
             'method': 'GET',
             'params': queryParams,
-        }).then((responseData) => {
-            const items: Array<ExternalAuth> = [];
-
-            if (Array.isArray(responseData)) {
-                for (const item of responseData) {
-                    items.push(new ExternalAuth(item));
-                }
-            }
-
-            return items;
         });
     }
 

@@ -3,7 +3,7 @@ import { FetchMock }             from 'tests/mocks';
 import { crudServiceTestsSuite } from '../suites';
 import Client                    from '@/Client';
 import CollectionService         from '@/services/CollectionService';
-import Collection                from '@/models/Collection';
+import { CollectionModel }       from '@/services/utils/ResponseModels';
 
 describe('CollectionService', function() {
     const client = new Client('test_base_url');
@@ -38,7 +38,7 @@ describe('CollectionService', function() {
                 replyBody: true,
             });
 
-            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<Collection>, true);
+            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<CollectionModel>, true);
 
             assert.deepEqual(result, true);
         });

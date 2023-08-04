@@ -1,8 +1,7 @@
-import { assert }    from 'chai';
-import Client        from '@/Client';
-import FileService   from '@/services/FileService';
-import Record        from '@/models/Record';
-import { FetchMock } from 'tests/mocks';
+import { assert }      from 'chai';
+import Client          from '@/Client';
+import FileService     from '@/services/FileService';
+import { FetchMock }   from 'tests/mocks';
 
 describe('FileService', function () {
     const client    = new Client('test_base_url');
@@ -23,14 +22,14 @@ describe('FileService', function () {
 
     describe('getFileUrl()', function () {
         it('Should return a formatted url', async function () {
-            const record = new Record({'id': '456', 'collectionId': '123'});
+            const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = service.getUrl(record, 'demo.png')
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo.png');
         });
 
         it('Should return a formatted url + query params', async function () {
-            const record = new Record({'id': '456', 'collectionId': '123'});
+            const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = service.getUrl(record, 'demo=', {'test': 'abc'})
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo%3D?test=abc');

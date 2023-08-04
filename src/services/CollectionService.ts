@@ -1,15 +1,8 @@
-import Collection          from '@/models/Collection';
 import BaseCrudService     from '@/services/utils/BaseCrudService';
 import { BaseQueryParams } from '@/services/utils/QueryParams';
+import {CollectionModel}   from '@/services/utils/ResponseModels';
 
-export default class CollectionService extends BaseCrudService<Collection> {
-    /**
-     * @inheritdoc
-     */
-    decode(data: { [key: string]: any }): Collection {
-        return new Collection(data);
-    }
-
+export default class CollectionService extends BaseCrudService<CollectionModel> {
     /**
      * @inheritdoc
      */
@@ -25,7 +18,7 @@ export default class CollectionService extends BaseCrudService<Collection> {
      * (including their related records data)!
      */
     async import(
-        collections: Array<Collection>,
+        collections: Array<CollectionModel>,
         deleteMissing: boolean = false,
         queryParams: BaseQueryParams = {}
     ): Promise<true> {

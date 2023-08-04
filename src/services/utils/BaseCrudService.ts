@@ -1,7 +1,6 @@
 import BaseService         from '@/services/utils/BaseService';
-import ListResult          from '@/models/utils/ListResult';
-import BaseModel           from '@/models/utils/BaseModel';
 import ClientResponseError from '@/ClientResponseError';
+import { ResultList }      from '@/services/utils/ResponseModels';
 
 import {
     BaseQueryParams,
@@ -9,16 +8,18 @@ import {
     FullListQueryParams
 } from '@/services/utils/QueryParams';
 
-export default abstract class CrudService<M extends BaseModel> extends BaseService   {
-    /**
-     * Response data decoder.
-     */
-    abstract decode(data: { [key: string]: any }): M
-
+export default abstract class CrudService<M> extends BaseService   {
     /**
      * Base path for the crud actions (without trailing slash, eg. '/admins').
      */
     abstract get baseCrudPath(): string
+
+    /**
+     * Response data decoder.
+     */
+    decode<T = M>(data: { [key: string]: any }): T {
+        return data as T;
+    }
 
     /**
      * Returns a promise with all list items batch fetched at once
@@ -54,7 +55,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseServi
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<T>> {
+    getList<T = M>(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ResultList<T>> {
         queryParams = Object.assign({
             'page': page,
             'perPage': perPage,
@@ -65,20 +66,16 @@ export default abstract class CrudService<M extends BaseModel> extends BaseServi
             'params': queryParams,
         }).then((responseData: any) => {
             const items: Array<T> = [];
+
             if (responseData?.items) {
                 responseData.items = responseData.items || [];
                 for (const item of responseData.items) {
-                    items.push(this.decode(item) as any as T);
+                    items.push(this.decode<T>(item));
                 }
+                responseData.items = items;
             }
 
-            return new ListResult<T>(
-                responseData?.page || 1,
-                responseData?.perPage || 0,
-                responseData?.totalItems || 0,
-                responseData?.totalPages || 0,
-                items,
-            );
+            return responseData;
         });
     }
 
@@ -139,7 +136,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseServi
             'method': 'POST',
             'params': queryParams,
             'body':   bodyParams,
-        }).then((responseData: any) => this.decode(responseData) as any as T);
+        }).then((responseData: any) => this.decode<T>(responseData));
     }
 
     /**
@@ -152,7 +149,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseServi
             'method': 'PATCH',
             'params': queryParams,
             'body':   bodyParams,
-        }).then((responseData: any) => this.decode(responseData) as any as T);
+        }).then((responseData: any) => this.decode<T>(responseData));
     }
 
     /**
@@ -177,7 +174,7 @@ export default abstract class CrudService<M extends BaseModel> extends BaseServi
 
         let request = async (page: number): Promise<Array<any>> => {
             return this.getList(page, batchSize || 500, queryParams).then((list) => {
-                const castedList = (list as any as ListResult<T>);
+                const castedList = (list as any as ResultList<T>);
                 const items      = castedList.items;
 
                 result = result.concat(items);

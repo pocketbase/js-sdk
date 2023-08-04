@@ -1,21 +1,19 @@
 import { assert }     from 'chai';
 import LocalAuthStore from '@/stores/LocalAuthStore';
-import Admin          from '@/models/Admin';
-import Record         from '@/models/Record';
 
 describe('LocalAuthStore', function() {
     describe('save()', function() {
         it('Should store auth data', function() {
             const store = new LocalAuthStore();
 
-            store.save('test1', new Record({ 'id': 'id1' }));
+            store.save('test1', { 'id': 'id1' } as any);
             assert.equal(store.token, 'test1');
-            assert.deepEqual(store.model, new Record({ 'id': 'id1' }));
+            assert.deepEqual(store.model, { 'id': 'id1' } as any);
 
             // update
-            store.save('test2', new Admin({ 'id': 'id2' }));
+            store.save('test2', { 'id': 'id2' } as any);
             assert.equal(store.token, 'test2');
-            assert.deepEqual(store.model, new Admin({ 'id': 'id2' }));
+            assert.deepEqual(store.model, { 'id': 'id2' } as any);
         });
     });
 
@@ -23,9 +21,9 @@ describe('LocalAuthStore', function() {
         it('Should remove all stored auth data', function() {
             const store = new LocalAuthStore();
 
-            store.save('test', new Admin({ 'id': 'id1' }));
+            store.save('test', { 'id': 'id1' } as any);
             assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, new Admin({ 'id': 'id1' }));
+            assert.deepEqual(store.model, { 'id': 'id1' } as any);
 
             store.clear();
             assert.equal(store.token, '');
@@ -38,7 +36,7 @@ describe('LocalAuthStore', function() {
             const store = new LocalAuthStore();
 
             assert.equal(store.token, '');
-            store.save('test', new Record({ 'id': "1" }));
+            store.save('test', { 'id': "1" } as any);
             assert.equal(store.token, 'test');
         });
     });
@@ -48,8 +46,8 @@ describe('LocalAuthStore', function() {
             const store = new LocalAuthStore();
 
             assert.deepEqual(store.model, null);
-            store.save('test', new Record({ 'id': "1" }));
-            assert.deepEqual(store.model, new Record({ 'id': "1" }));
+            store.save('test', { 'id': "1" } as any);
+            assert.deepEqual(store.model, { 'id': "1" } as any);
         });
     });
 
@@ -59,13 +57,13 @@ describe('LocalAuthStore', function() {
 
             assert.isFalse(store.isValid, 'empty token string (initial)');
 
-            store.save('test', new Record({ 'id': "1" }));
+            store.save('test');
             assert.isFalse(store.isValid, 'invalid token string');
 
-            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTYyNDc4ODAwMH0.WOzXh8TQh6fBXJJlOvHktBuv7D8eSyrYx4_IBj2Deyo', new Record({ 'id': "1" }));
+            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTYyNDc4ODAwMH0.WOzXh8TQh6fBXJJlOvHktBuv7D8eSyrYx4_IBj2Deyo');
             assert.isFalse(store.isValid, 'expired token');
 
-            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE', new Record({ 'id': "1" }));
+            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE');
             assert.isTrue(store.isValid, 'valid token');
         });
     });
@@ -91,24 +89,25 @@ describe('LocalAuthStore', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
-                new Record({ 'id': "1" }),
+                { 'id': "1" } as any,
             );
 
             const result = store.exportToCookie();
 
-            assert.equal(result, "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22created%22%3A%22%22%2C%22updated%22%3A%22%22%2C%22collectionId%22%3A%22%22%2C%22collectionName%22%3A%22%22%2C%22expand%22%3A%7B%7D%7D%7D; Path=/; Expires=Thu, 27 Jun 2030 10:00:00 GMT; HttpOnly; Secure; SameSite=Strict");
+            assert.equal(result, "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%7D%7D; Path=/; Expires=Thu, 27 Jun 2030 10:00:00 GMT; HttpOnly; Secure; SameSite=Strict");
         });
 
         it('Should generate a cookie from the store data (with custom options)', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
-                new Record({
-                    id:       '1',
-                    email:    'test@example.com',
-                    verified: true,
-                    name:     'test',
-                }),
+                {
+                    id:           '1',
+                    email:        'test@example.com',
+                    collectionId: 'test_collection_id',
+                    verified:     true,
+                    name:         'test',
+                } as any,
             );
 
             const result = store.exportToCookie({
@@ -117,19 +116,20 @@ describe('LocalAuthStore', function() {
                 httpOnly: true,
             }, 'custom_key');
 
-            assert.equal(result, 'custom_key=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22verified%22%3Atrue%2C%22name%22%3A%22test%22%2C%22created%22%3A%22%22%2C%22updated%22%3A%22%22%2C%22collectionId%22%3A%22%22%2C%22collectionName%22%3A%22%22%2C%22expand%22%3A%7B%7D%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict');
+            assert.equal(result, 'custom_key=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%2C%22name%22%3A%22test%22%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict');
         });
 
         it('Should strip the model data in the generated cookie if exceed 4096', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
-                new Record({
-                    id:       '1',
-                    email:    'test@example.com',
-                    verified: true,
-                    name:     'a'.repeat(4000),
-                }),
+                {
+                    id:             '1',
+                    email:          'test@example.com',
+                    collectionId:   'test_collection_id',
+                    verified:       true,
+                    name:           'a'.repeat(4000),
+                } as any,
             );
 
             const result = store.exportToCookie({
@@ -138,7 +138,7 @@ describe('LocalAuthStore', function() {
                 httpOnly: true,
             });
 
-            assert.equal(result, 'pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22verified%22%3Atrue%2C%22collectionId%22%3A%22%22%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict');
+            assert.equal(result, 'pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict');
         });
     });
 
@@ -158,7 +158,7 @@ describe('LocalAuthStore', function() {
             });
 
             // trigger save() change
-            store.save('test', new Record({ 'id': '1' }));
+            store.save('test');
             assert.equal(callback1Calls, 2); // +1 because of the immediate invocation
             assert.equal(callback2Calls, 1);
 
@@ -170,14 +170,14 @@ describe('LocalAuthStore', function() {
             // remove the second listener (aka. callback1Calls shouldn't be called anymore)
             removal1();
 
-            store.save('test', new Record({ 'id': '1' }));
+            store.save('test');
             assert.equal(callback1Calls, 3);
             assert.equal(callback2Calls, 3);
 
             // remove the second listener (aka. callback2Calls shouldn't be called anymore)
             removal2();
 
-            store.save('test', new Record({ 'id': '1' }));
+            store.save('test');
             assert.equal(callback1Calls, 3);
             assert.equal(callback2Calls, 3);
         });

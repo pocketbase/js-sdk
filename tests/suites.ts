@@ -1,10 +1,8 @@
 import { assert }      from 'chai';
 import BaseCrudService from '@/services/utils/BaseCrudService';
-import BaseModel       from '@/models/utils/BaseModel';
-import ListResult      from '@/models/utils/ListResult';
 import { FetchMock }   from './mocks';
 
-export function crudServiceTestsSuite<M extends BaseModel>(
+export function crudServiceTestsSuite<M>(
     service: BaseCrudService<M>,
     expectedBasePath: string,
 ) {
@@ -179,9 +177,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 ];
 
                 assert.deepEqual(result, expected);
-                for (let i in result) {
-                    assert.instanceOf(result[i], expected[i].constructor);
-                }
             });
             it('items.length < batchSize (aka. no empty request stop check)', async function() {
                 const result = await service.getFullList({ 'batch': 2, 'q1': 'noEmptyRequest' });
@@ -192,9 +187,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 ];
 
                 assert.deepEqual(result, expected);
-                for (let i in result) {
-                    assert.instanceOf(result[i], expected[i].constructor);
-                }
             });
         });
 
@@ -203,10 +195,13 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const list = await service.getList(2, 1, { 'q1': 'abc' });
                 const expected = [service.decode({ 'id': 'item3' })];
 
-                assert.deepEqual(list, new ListResult(2, 1, 3, 3, expected));
-                for (let i in list.items) {
-                    assert.instanceOf(list.items[i], expected[i].constructor);
-                }
+                assert.deepEqual(list, {
+                    page:       2,
+                    perPage:    1,
+                    totalItems: 3,
+                    totalPages: 3,
+                    items:      expected,
+                });
             });
         });
 
@@ -215,7 +210,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const result = await service.getFirstListItem("test=123", { 'q1': 'abc' });
                 const expected = service.decode({ 'id': 'item1' });
 
-                assert.instanceOf(result, expected.constructor);
                 assert.deepEqual(result, expected);
             });
         });
@@ -225,7 +219,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const result = await service.getOne(id, { 'q1': 'abc' });
                 const expected = service.decode({ 'id': 'item-one' });
 
-                assert.instanceOf(result, expected.constructor);
                 assert.deepEqual(result, expected);
             });
         });
@@ -235,7 +228,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const result = await service.create({ 'b1': 123 }, { 'q1': 456 });
                 const expected = service.decode({ 'id': 'item-create' });
 
-                assert.instanceOf(result, expected.constructor);
                 assert.deepEqual(result, expected);
             });
         });
@@ -245,7 +237,6 @@ export function crudServiceTestsSuite<M extends BaseModel>(
                 const result = await service.update(id, { 'b1': 123 }, { 'q1': 456 });
                 const expected = service.decode({ 'id': 'item-update' });
 
-                assert.instanceOf(result, expected.constructor);
                 assert.deepEqual(result, expected);
             });
         });
