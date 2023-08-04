@@ -1,8 +1,8 @@
 import Collection          from '@/models/Collection';
-import CrudService         from '@/services/utils/CrudService';
+import BaseCrudService     from '@/services/utils/BaseCrudService';
 import { BaseQueryParams } from '@/services/utils/QueryParams';
 
-export default class CollectionService extends CrudService<Collection> {
+export default class CollectionService extends BaseCrudService<Collection> {
     /**
      * @inheritdoc
      */

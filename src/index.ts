@@ -11,7 +11,7 @@ import LogRequest          from '@/models/LogRequest';
 import BaseModel           from '@/models/utils/BaseModel';
 import ListResult          from '@/models/utils/ListResult';
 import SchemaField         from '@/models/utils/SchemaField';
-import CrudService         from '@/services/utils/CrudService';
+import BaseCrudService     from '@/services/utils/BaseCrudService';
 import AdminService        from '@/services/AdminService';
 import CollectionService   from '@/services/CollectionService';
 import LogService          from '@/services/LogService';
@@ -64,7 +64,7 @@ export {
     SchemaField,
 
     // services
-    CrudService,
+    BaseCrudService,
     AdminService,
     CollectionService,
     LogService,

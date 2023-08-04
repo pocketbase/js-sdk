@@ -3,7 +3,7 @@ import ClientResponseError from '@/ClientResponseError';
 import Record              from '@/models/Record';
 import ExternalAuth        from '@/models/ExternalAuth';
 import ListResult          from '@/models/utils/ListResult';
-import CrudService         from '@/services/utils/CrudService';
+import BaseCrudService     from '@/services/utils/BaseCrudService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
 import {
     BaseQueryParams,
@@ -60,7 +60,7 @@ export interface OAuth2AuthConfig {
     body?: {[key: string]: any};
 }
 
-export default class RecordService extends CrudService<Record> {
+export default class RecordService extends BaseCrudService<Record> {
     readonly collectionIdOrName: string;
 
     constructor(client: Client, collectionIdOrName: string) {

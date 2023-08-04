@@ -1,16 +1,16 @@
-import { assert }     from 'chai';
-import CrudService    from '@/services/utils/CrudService';
-import BaseModel      from '@/models/utils/BaseModel';
-import ListResult     from '@/models/utils/ListResult';
-import { FetchMock }  from './mocks';
+import { assert }      from 'chai';
+import BaseCrudService from '@/services/utils/BaseCrudService';
+import BaseModel       from '@/models/utils/BaseModel';
+import ListResult      from '@/models/utils/ListResult';
+import { FetchMock }   from './mocks';
 
 export function crudServiceTestsSuite<M extends BaseModel>(
-    service: CrudService<M>,
+    service: BaseCrudService<M>,
     expectedBasePath: string,
 ) {
     const id = 'abc=';
 
-    describe('CrudServiceTests', function() {
+    describe('BaseCrudServiceTests', function() {
         const fetchMock = new FetchMock();
 
         before(function () {

@@ -1,57 +1,66 @@
-import BaseModel           from '@/models/utils/BaseModel';
-import ListResult          from '@/models/utils/ListResult';
 import BaseService         from '@/services/utils/BaseService';
+import ListResult          from '@/models/utils/ListResult';
+import BaseModel           from '@/models/utils/BaseModel';
 import ClientResponseError from '@/ClientResponseError';
+
 import {
     BaseQueryParams,
-    ListQueryParams
+    ListQueryParams,
+    FullListQueryParams
 } from '@/services/utils/QueryParams';
 
-// @todo since there is no longer need of SubCrudService consider merging with CrudService in v0.9+
-export default abstract class BaseCrudService<M extends BaseModel> extends BaseService {
+export default abstract class CrudService<M extends BaseModel> extends BaseService   {
     /**
      * Response data decoder.
      */
     abstract decode(data: { [key: string]: any }): M
 
     /**
-     * Returns a promise with all list items batch fetched at once.
+     * Base path for the crud actions (without trailing slash, eg. '/admins').
      */
-    protected _getFullList<T = M>(basePath: string, batchSize = 500, queryParams: ListQueryParams = {}): Promise<Array<T>> {
-        queryParams = Object.assign({
-            'skipTotal': 1,
-        }, queryParams);
+    abstract get baseCrudPath(): string
 
-        let result: Array<T> = [];
+    /**
+     * Returns a promise with all list items batch fetched at once
+     * (by default 500 items per request; to change it set the `batch` query param).
+     *
+     * You can use the generic T to supply a wrapper type of the crud model.
+     */
+    getFullList<T = M>(queryParams?: FullListQueryParams): Promise<Array<T>>
 
-        let request = async (page: number): Promise<Array<any>> => {
-            return this._getList(basePath, page, batchSize || 500, queryParams).then((list) => {
-                const castedList = (list as any as ListResult<T>);
-                const items      = castedList.items;
+    /**
+     * Legacy version of getFullList with explicitly specified batch size.
+     */
+    getFullList<T = M>(batch?: number, queryParams?: ListQueryParams): Promise<Array<T>>
 
-                result = result.concat(items);
-
-                if (items.length == list.perPage) {
-                    return request(page + 1);
-                }
-
-                return result;
-            });
+    getFullList<T = M>(batchOrqueryParams?: number|FullListQueryParams, queryParams?: ListQueryParams): Promise<Array<T>> {
+        if (typeof batchOrqueryParams == "number") {
+            return this._getFullList<T>(batchOrqueryParams, queryParams);
         }
 
-        return request(1);
+        const params = Object.assign({}, batchOrqueryParams, queryParams);
+
+        let batch = 500;
+        if (params.batch) {
+            batch = params.batch;
+            delete params.batch;
+        }
+
+        return this._getFullList<T>(batch, params);
     }
 
     /**
      * Returns paginated items list.
+     *
+     * You can use the generic T to supply a wrapper type of the crud model.
      */
-    protected _getList<T = M>(basePath: string, page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<T>> {
+    getList<T = M>(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ListResult<T>> {
         queryParams = Object.assign({
             'page': page,
             'perPage': perPage,
         }, queryParams);
 
-        return this.client.send(basePath, {
+        return this.client.send(this.baseCrudPath, {
             'method': 'GET',
             'params': queryParams,
         }).then((responseData: any) => {
@@ -74,32 +83,24 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     }
 
     /**
-     * Returns single item by its id.
-     */
-    protected _getOne<T = M>(basePath: string, id: string, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(basePath + '/' + encodeURIComponent(id), {
-            'method': 'GET',
-            'params': queryParams
-        }).then((responseData: any) => this.decode(responseData) as any as T);
-    }
-
-    /**
-     * Returns the first found item by a list filter.
+     * Returns the first found item by the specified filter.
      *
-     * Internally it calls `_getList(basePath, 1, 1, { filter, skipTotal })`
-     * and returns its first item.
+     * Internally it calls `getList(1, 1, { filter, skipTotal })` and
+     * returns the first found item.
      *
-     * For consistency with `_getOne`, this method will throw a 404
+     * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * For consistency with `getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
      */
-    protected _getFirstListItem<T = M>(basePath: string, filter: string, queryParams: BaseQueryParams = {}): Promise<T> {
+    getFirstListItem<T = M>(filter: string, queryParams: BaseQueryParams = {}): Promise<T> {
         queryParams = Object.assign({
-            'filter': filter,
-            'skipTotal': 1,
-            '$cancelKey': 'one_by_filter_' + basePath + "_" + filter,
+            'filter':     filter,
+            'skipTotal':  1,
+            '$cancelKey': 'one_by_filter_' + this.baseCrudPath + "_" + filter,
         }, queryParams);
 
-        return this._getList<T>(basePath, 1, 1, queryParams)
+        return this.getList<T>(1, 1, queryParams)
             .then((result) => {
                 if (!result?.items?.length) {
                     throw new ClientResponseError({
@@ -117,34 +118,78 @@ export default abstract class BaseCrudService<M extends BaseModel> extends BaseS
     }
 
     /**
-     * Creates a new item.
+     * Returns single item by its id.
+     *
+     * You can use the generic T to supply a wrapper type of the crud model.
      */
-    protected _create<T = M>(basePath: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(basePath, {
+    getOne<T = M>(id: string, queryParams: BaseQueryParams = {}): Promise<T> {
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
+            'method': 'GET',
+            'params': queryParams
+        }).then((responseData: any) => this.decode(responseData) as any as T);
+    }
+
+    /**
+     * Creates a new item.
+     *
+     * You can use the generic T to supply a wrapper type of the crud model.
+     */
+    create<T = M>(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
+        return this.client.send(this.baseCrudPath, {
             'method': 'POST',
             'params': queryParams,
-            'body': bodyParams,
+            'body':   bodyParams,
         }).then((responseData: any) => this.decode(responseData) as any as T);
     }
 
     /**
      * Updates an existing item by its id.
+     *
+     * You can use the generic T to supply a wrapper type of the crud model.
      */
-    protected _update<T = M>(basePath: string, id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(basePath + '/' + encodeURIComponent(id), {
+    update<T = M>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
             'method': 'PATCH',
             'params': queryParams,
-            'body': bodyParams,
+            'body':   bodyParams,
         }).then((responseData: any) => this.decode(responseData) as any as T);
     }
 
     /**
      * Deletes an existing item by its id.
      */
-    protected _delete(basePath: string, id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(basePath + '/' + encodeURIComponent(id), {
+    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
             'method': 'DELETE',
             'params': queryParams,
         }).then(() => true);
+    }
+
+    /**
+     * Returns a promise with all list items batch fetched at once.
+     */
+    protected _getFullList<T = M>(batchSize = 500, queryParams: ListQueryParams = {}): Promise<Array<T>> {
+        queryParams = Object.assign({
+            'skipTotal': 1,
+        }, queryParams);
+
+        let result: Array<T> = [];
+
+        let request = async (page: number): Promise<Array<any>> => {
+            return this.getList(page, batchSize || 500, queryParams).then((list) => {
+                const castedList = (list as any as ListResult<T>);
+                const items      = castedList.items;
+
+                result = result.concat(items);
+
+                if (items.length == list.perPage) {
+                    return request(page + 1);
+                }
+
+                return result;
+            });
+        }
+
+        return request(1);
     }
 }

@@ -1,5 +1,5 @@
 import Admin               from '@/models/Admin';
-import CrudService         from '@/services/utils/CrudService';
+import BaseCrudService     from '@/services/utils/BaseCrudService';
 import { BaseQueryParams } from '@/services/utils/QueryParams';
 
 export interface AdminAuthResponse {
@@ -9,7 +9,7 @@ export interface AdminAuthResponse {
     admin: Admin;
 }
 
-export default class AdminService extends CrudService<Admin> {
+export default class AdminService extends BaseCrudService<Admin> {
     /**
      * @inheritdoc
      */
