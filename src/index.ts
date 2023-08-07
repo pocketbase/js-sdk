@@ -40,7 +40,8 @@ import {
     RecordFullListQueryParams,
 } from '@/services/utils/QueryParams';
 
-import * as models from '@/services/utils/ResponseModels';
+// @todo export model types
+// import * as models from '@/services/utils/ResponseModels';
 
 export {
     ClientResponseError,
@@ -57,7 +58,6 @@ export {
     RealtimeService,
     RecordService,
     SettingsService,
-    models,
 
     //types
     HealthCheckResponse,

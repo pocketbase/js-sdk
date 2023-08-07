@@ -27,10 +27,11 @@
     "scripts": {
         "build": "rm -rf dist && rollup -c",
         "dev": "rollup -c -w",
-        "test": "env TS_NODE_PROJECT='tsconfig-test.json' mocha 'tests/**/*.spec.ts' --require=ts-node/register",
+        "test": "env TS_NODE_PROJECT='tsconfig-test.json' mocha 'tests/**/*.spec.ts' -n loader=ts-node/esm",
         "prepublishOnly": "npm run build"
     },
     "devDependencies": {
+        "@rollup/plugin-terser": "^0.4.3",
         "@types/chai": "^4.2.19",
         "@types/chai-as-promised": "^7.1.4",
         "@types/mocha": "^8.2.2",
@@ -38,12 +39,11 @@
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1",
         "mocha": "^9.0.1",
-        "rollup": "^2.79.1",
-        "rollup-plugin-terser": "^7.0.0",
-        "rollup-plugin-ts": "^2.0.0",
+        "rollup": "^3.0.0",
+        "rollup-plugin-ts": "^3.0.0",
         "ts-node": "^10.0.0",
         "tsconfig-paths": "^4.0.0",
         "tslib": "^2.4.0",
-        "typescript": "4.6.4"
+        "typescript": "^5.1.6"
     }
 }

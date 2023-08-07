@@ -1,25 +1,11 @@
-import ts         from 'rollup-plugin-ts';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
+import ts     from 'rollup-plugin-ts';
 
 const isProduction = !process.env.ROLLUP_WATCH;
 
 function basePlugins() {
     return [
-        ts({
-            hook: {
-                outputPath: (path, kind) => {
-                    if (kind === 'declaration') {
-                        // replace .es.d.ts with .es.d.mts (see #92)
-                        //
-                        // this usually is already done in rollup-plugin-ts v3
-                        // and could be removed after upgrading
-                        return path.replace('.es.d.ts', '.es.d.mts');
-                    }
-
-                    return path;
-                }
-            }
-        }),
+        ts(),
 
         // minify if we're building for production
         // (aka. npm run build instead of npm run dev)
