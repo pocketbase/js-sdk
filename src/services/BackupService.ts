@@ -1,8 +1,13 @@
-import BaseService        from '@/services/utils/BaseService';
-import { CommonOptions }  from '@/services/utils/options';
-import { BackupFileInfo } from '@/services/utils/dtos';
+import { BaseService }   from '@/services/utils/BaseService';
+import { CommonOptions } from '@/services/utils/options';
 
-export default class BackupService extends BaseService {
+export interface BackupFileInfo {
+    key:      string;
+    size:     number;
+    modified: string;
+}
+
+export class BackupService extends BaseService {
     /**
      * Returns list with all available backup files.
      */

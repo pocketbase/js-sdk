@@ -1,6 +1,6 @@
-import BaseCrudService from '@/services/utils/BaseCrudService';
-import { AdminModel }  from '@/services/utils/dtos';
-import { CommonOptions } from '@/services/utils/options';
+import { CrudService }                from '@/services/utils/CrudService';
+import { AdminModel }                 from '@/services/utils/dtos';
+import { CommonOptions }              from '@/services/utils/options';
 import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
 
 export interface AdminAuthResponse {
@@ -10,7 +10,7 @@ export interface AdminAuthResponse {
     admin: AdminModel;
 }
 
-export default class AdminService extends BaseCrudService<AdminModel> {
+export class AdminService extends CrudService<AdminModel> {
     /**
      * @inheritdoc
      */

@@ -1,14 +1,13 @@
-import BaseService         from '@/services/utils/BaseService';
-import ClientResponseError from '@/ClientResponseError';
-import { ResultList }      from '@/services/utils/dtos';
-
+import { BaseService }         from '@/services/utils/BaseService';
+import { ClientResponseError } from '@/ClientResponseError';
+import { ResultList }          from '@/services/utils/dtos';
 import {
     CommonOptions,
     ListOptions,
     FullListOptions
 } from '@/services/utils/options';
 
-export default abstract class CrudService<M> extends BaseService   {
+export abstract class CrudService<M> extends BaseService   {
     /**
      * Base path for the crud actions (without trailing slash, eg. '/admins').
      */

@@ -1,7 +1,7 @@
 import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
-import { FetchMock } from '../mocks';
-import Client        from '@/Client';
-import HealthService from '@/services/HealthService';
+import { FetchMock }     from '../mocks';
+import Client            from '@/Client';
+import { HealthService } from '@/services/HealthService';
 
 describe('HealthService', function () {
     const client    = new Client('test_base_url');

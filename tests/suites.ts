@@ -1,14 +1,14 @@
 import { describe, assert, test, beforeAll, afterAll } from 'vitest';
-import BaseCrudService from '@/services/utils/BaseCrudService';
+import { CrudService } from '@/services/utils/CrudService';
 import { FetchMock }   from './mocks';
 
 export function crudServiceTestsSuite<M>(
-    service: BaseCrudService<M>,
+    service: CrudService<M>,
     expectedBasePath: string,
 ) {
     const id = 'abc=';
 
-    describe('BaseCrudServiceTests', function() {
+    describe('CrudServiceTests', function() {
         const fetchMock = new FetchMock();
 
         beforeAll(function () {

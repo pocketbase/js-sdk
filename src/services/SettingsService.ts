@@ -1,11 +1,11 @@
-import BaseService from '@/services/utils/BaseService';
+import { BaseService }   from '@/services/utils/BaseService';
 import { CommonOptions } from '@/services/utils/options';
 
 interface appleClientSecret {
     secret: string;
 }
 
-export default class SettingsService extends BaseService {
+export class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
      */

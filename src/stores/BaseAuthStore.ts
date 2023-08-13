@@ -12,7 +12,7 @@ const defaultCookieKey = 'pb_auth';
  * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
  */
-export default abstract class BaseAuthStore {
+export abstract class BaseAuthStore {
     protected baseToken: string = '';
     protected baseModel: AuthModel = null;
 

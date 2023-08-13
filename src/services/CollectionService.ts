@@ -1,8 +1,8 @@
-import BaseCrudService     from '@/services/utils/BaseCrudService';
+import { CrudService }     from '@/services/utils/CrudService';
 import { CollectionModel } from '@/services/utils/dtos';
-import { CommonOptions } from '@/services/utils/options';
+import { CommonOptions }   from '@/services/utils/options';
 
-export default class CollectionService extends BaseCrudService<CollectionModel> {
+export class CollectionService extends CrudService<CollectionModel> {
     /**
      * @inheritdoc
      */

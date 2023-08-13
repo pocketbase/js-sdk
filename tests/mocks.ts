@@ -1,4 +1,4 @@
-import ClientResponseError from "@/ClientResponseError";
+import { ClientResponseError } from "@/ClientResponseError";
 
 export type RequestMock = {
     method?:    string,

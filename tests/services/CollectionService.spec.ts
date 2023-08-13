@@ -2,7 +2,7 @@ import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
 import { FetchMock }             from '../mocks';
 import { crudServiceTestsSuite } from '../suites';
 import Client                    from '@/Client';
-import CollectionService         from '@/services/CollectionService';
+import { CollectionService }     from '@/services/CollectionService';
 import { CollectionModel }       from '@/services/utils/dtos';
 
 describe('CollectionService', function() {

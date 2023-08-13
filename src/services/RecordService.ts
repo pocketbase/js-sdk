@@ -1,8 +1,8 @@
-import Client              from '@/Client';
-import ClientResponseError from '@/ClientResponseError';
-import BaseCrudService     from '@/services/utils/BaseCrudService';
-import { ResultList, RecordModel, ExternalAuthModel }     from '@/services/utils/dtos';
+import Client from '@/Client';
+import { CrudService } from '@/services/utils/CrudService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
+import { ClientResponseError } from '@/ClientResponseError';
+import { ResultList, RecordModel, ExternalAuthModel } from '@/services/utils/dtos';
 import {
     SendOptions,
     CommonOptions,
@@ -65,7 +65,7 @@ export interface OAuth2AuthConfig extends SendOptions {
     query?: RecordOptions;
 }
 
-export default class RecordService extends BaseCrudService<RecordModel> {
+export class RecordService extends CrudService<RecordModel> {
     readonly collectionIdOrName: string;
 
     constructor(client: Client, collectionIdOrName: string) {

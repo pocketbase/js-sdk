@@ -1,5 +1,5 @@
 import { describe, assert, test } from 'vitest';
-import LocalAuthStore from '@/stores/LocalAuthStore';
+import { LocalAuthStore } from '@/stores/LocalAuthStore';
 
 describe('LocalAuthStore', function() {
     describe('save()', function() {

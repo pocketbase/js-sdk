@@ -1,15 +1,15 @@
-import ClientResponseError          from '@/ClientResponseError';
-import BaseAuthStore                from '@/stores/BaseAuthStore';
-import LocalAuthStore               from '@/stores/LocalAuthStore';
-import SettingsService              from '@/services/SettingsService';
-import AdminService                 from '@/services/AdminService';
-import RecordService                from '@/services/RecordService';
-import CollectionService            from '@/services/CollectionService';
-import LogService                   from '@/services/LogService';
-import RealtimeService              from '@/services/RealtimeService';
-import HealthService                from '@/services/HealthService';
-import FileService                  from '@/services/FileService';
-import BackupService                from '@/services/BackupService';
+import { ClientResponseError }      from '@/ClientResponseError';
+import { BaseAuthStore }            from '@/stores/BaseAuthStore';
+import { LocalAuthStore }           from '@/stores/LocalAuthStore';
+import { SettingsService }          from '@/services/SettingsService';
+import { AdminService }             from '@/services/AdminService';
+import { RecordService }            from '@/services/RecordService';
+import { CollectionService }        from '@/services/CollectionService';
+import { LogService }               from '@/services/LogService';
+import { RealtimeService }          from '@/services/RealtimeService';
+import { HealthService }            from '@/services/HealthService';
+import { FileService }              from '@/services/FileService';
+import { BackupService }            from '@/services/BackupService';
 import { SendOptions, FileOptions } from '@/services/utils/options';
 
 // list of known SendOptions keys (everything else is treated as query param)

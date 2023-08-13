@@ -1,5 +1,5 @@
 import { describe, assert, test } from 'vitest';
-import ClientResponseError from '@/ClientResponseError';
+import { ClientResponseError }    from '@/ClientResponseError';
 
 describe('ClientResponseError', function() {
     describe('constructor()', function() {

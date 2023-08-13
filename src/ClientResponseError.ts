@@ -2,7 +2,7 @@
  * ClientResponseError is a custom Error class that is intended to wrap
  * and normalize any error thrown by `Client.send()`.
  */
-export default class ClientResponseError extends Error {
+export class ClientResponseError extends Error {
     url: string                    = '';
     status: number                 = 0;
     response: {[key: string]: any} = {};

@@ -75,7 +75,7 @@ export function cookieParse(str: string, options?: ParseOptions): { [key: string
     return result;
 };
 
-export interface SerializeOptions{
+export interface SerializeOptions {
     encode?:   (val: string | number | boolean) => string,
     maxAge?:   number,
     domain?:   string,

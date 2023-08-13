@@ -1,5 +1,5 @@
-import BaseService         from '@/services/utils/BaseService';
-import ClientResponseError from '@/ClientResponseError';
+import { BaseService }         from '@/services/utils/BaseService';
+import { ClientResponseError } from '@/ClientResponseError';
 
 interface promiseCallbacks {
     resolve: Function
@@ -8,7 +8,7 @@ interface promiseCallbacks {
 
 export type UnsubscribeFunc = () => Promise<void>;
 
-export default class RealtimeService extends BaseService {
+export class RealtimeService extends BaseService {
     clientId: string = "";
 
     private eventSource: EventSource | null = null;

@@ -2,7 +2,7 @@ import { describe, assert, test, beforeAll, afterAll, beforeEach, afterEach } fr
 import { crudServiceTestsSuite } from '../suites';
 import { FetchMock }             from '../mocks';
 import Client                    from '@/Client';
-import RecordService             from '@/services/RecordService';
+import { RecordService }         from '@/services/RecordService';
 import { RecordModel }           from '@/services/utils/dtos';
 
 describe('RecordService', function() {

@@ -1,8 +1,13 @@
-import BaseService             from '@/services/utils/BaseService';
-import { CommonOptions }       from '@/services/utils/options';
-import { HealthCheckResponse } from '@/services/utils/dtos';
+import { BaseService }   from '@/services/utils/BaseService';
+import { CommonOptions } from '@/services/utils/options';
 
-export default class HealthService extends BaseService {
+export interface HealthCheckResponse {
+    code:    number;
+    message: string;
+    data:    {[key: string]: any};
+}
+
+export class HealthService extends BaseService {
     /**
      * Checks the health status of the api.
      */

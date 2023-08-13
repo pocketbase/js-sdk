@@ -1,7 +1,7 @@
-import BaseService from '@/services/utils/BaseService';
+import { BaseService } from '@/services/utils/BaseService';
 import { CommonOptions, FileOptions } from '@/services/utils/options';
 
-export default class FileService extends BaseService {
+export class FileService extends BaseService {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */

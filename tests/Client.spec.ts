@@ -1,8 +1,8 @@
 import { describe, assert, expect, test, beforeAll, afterAll, afterEach } from 'vitest';
-import Client         from '@/Client';
-import LocalAuthStore from '@/stores/LocalAuthStore';
-import RecordService  from '@/services/RecordService';
-import { FetchMock }  from './mocks';
+import Client             from '@/Client';
+import { LocalAuthStore } from '@/stores/LocalAuthStore';
+import { RecordService }  from '@/services/RecordService';
+import { FetchMock }      from './mocks';
 
 describe('Client', function() {
     const fetchMock = new FetchMock();

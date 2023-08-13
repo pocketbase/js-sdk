@@ -1,16 +1,17 @@
-import BaseService from '@/services/utils/BaseService';
-import {
-    ResultList,
-    LogRequestModel,
-    HourlyStats,
-}  from '@/services/utils/dtos';
+import { BaseService } from '@/services/utils/BaseService';
+import { ResultList, LogRequestModel }  from '@/services/utils/dtos';
 import {
     CommonOptions,
     ListOptions,
     LogStatsOptions,
 } from '@/services/utils/options';
 
-export default class LogService extends BaseService {
+export interface HourlyStats {
+    total: number;
+    date:  string;
+}
+
+export class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */

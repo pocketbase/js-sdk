@@ -1,10 +1,10 @@
-import BaseAuthStore, { AuthModel } from '@/stores/BaseAuthStore';
+import { BaseAuthStore, AuthModel } from '@/stores/BaseAuthStore';
 
 /**
  * The default token store for browsers with auto fallback
  * to runtime/memory if local storage is undefined (eg. in node env).
  */
-export default class LocalAuthStore extends BaseAuthStore {
+export class LocalAuthStore extends BaseAuthStore {
     private storageFallback: { [key: string]: any } = {};
     private storageKey: string
 
