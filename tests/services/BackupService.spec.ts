@@ -1,18 +1,18 @@
-import { assert }    from 'chai';
+import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { FetchMock } from '../mocks';
 import Client        from '@/Client';
 import BackupService from '@/services/BackupService';
-import { FetchMock } from 'tests/mocks';
 
 describe('BackupService', function () {
     const client    = new Client('test_base_url');
     const service   = new BackupService(client);
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -21,7 +21,7 @@ describe('BackupService', function () {
     });
 
     describe('getFullList()', function () {
-        it('Should fetch all backups', async function () {
+        test('Should fetch all backups', async function () {
             const replyBody = [
                 {key: "test1", size: 100, modified: "2023-05-18 10:00:00.123Z"},
                 {key: "test2", size: 200, modified: "2023-05-18 11:00:00.123Z"},
@@ -42,7 +42,7 @@ describe('BackupService', function () {
 
 
     describe('create()', function () {
-        it('Should initialize a backup create', async function () {
+        test('Should initialize a backup create', async function () {
             fetchMock.on({
                 method:    'POST',
                 url:       service.client.buildUrl('/api/backups') + '?q1=123',
@@ -58,7 +58,7 @@ describe('BackupService', function () {
     });
 
     describe('delete()', function () {
-        it('Should delete a single backup', async function () {
+        test('Should delete a single backup', async function () {
             fetchMock.on({
                 method:    'DELETE',
                 url:       service.client.buildUrl('/api/backups') + '/%40test?q1=123',
@@ -73,7 +73,7 @@ describe('BackupService', function () {
     });
 
     describe('restore()', function () {
-        it('Should initialize a backup restore', async function () {
+        test('Should initialize a backup restore', async function () {
             fetchMock.on({
                 method:    'POST',
                 url:       service.client.buildUrl('/api/backups') + '/%40test/restore?q1=123',
@@ -88,7 +88,7 @@ describe('BackupService', function () {
     });
 
     describe('getDownloadUrl()', function () {
-        it('Should initialize a backup getDownloadUrl', function () {
+        test('Should initialize a backup getDownloadUrl', function () {
             const result = service.getDownloadUrl("@token", "@test");
 
             assert.deepEqual(result, service.client.buildUrl('/api/backups') + '/%40test?token=%40token');

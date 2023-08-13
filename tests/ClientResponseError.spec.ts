@@ -1,9 +1,9 @@
-import { assert }          from 'chai';
+import { describe, assert, test } from 'vitest';
 import ClientResponseError from '@/ClientResponseError';
 
 describe('ClientResponseError', function() {
     describe('constructor()', function() {
-        it('with object-like value', function() {
+        test('with object-like value', function() {
             const err = new ClientResponseError({
                 url: "http://example.com",
                 status: 400,
@@ -20,7 +20,7 @@ describe('ClientResponseError', function() {
             assert.equal(err.message, "test message");
         });
 
-        it('with non-object value', function() {
+        test('with non-object value', function() {
             const err = new ClientResponseError("test");
 
             assert.equal(err.url, "");
@@ -31,7 +31,7 @@ describe('ClientResponseError', function() {
             assert.equal(err.message, "Something went wrong while processing your request.");
         });
 
-        it('with plain error', function() {
+        test('with plain error', function() {
             const plainErr = new Error("test")
             const err = new ClientResponseError(plainErr);
 
@@ -43,7 +43,7 @@ describe('ClientResponseError', function() {
             assert.equal(err.message, "Something went wrong while processing your request.");
         });
 
-        it('with ClientResponseError error', function() {
+        test('with ClientResponseError error', function() {
             const err0 = new ClientResponseError({
                 url: "http://example.com",
                 status: 400,
@@ -61,7 +61,7 @@ describe('ClientResponseError', function() {
             assert.equal(err.message, "test message");
         });
 
-        it('with abort error', function() {
+        test('with abort error', function() {
             const err0 = new DOMException("test");
             const err = new ClientResponseError(err0);
 

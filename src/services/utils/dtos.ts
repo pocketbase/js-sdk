@@ -68,3 +68,20 @@ export interface RecordModel extends BaseModel {
     collectionName: string;
     expand?:        {[key: string]: any};
 }
+
+export interface HourlyStats {
+    total: number;
+    date:  string;
+}
+
+export interface HealthCheckResponse {
+    code:    number;
+    message: string;
+    data:    {[key: string]: any};
+}
+
+export interface BackupFileInfo {
+    key:      string;
+    size:     number;
+    modified: string;
+}

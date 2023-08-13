@@ -1,5 +1,5 @@
-import BaseService         from '@/services/utils/BaseService';
-import { BaseQueryParams } from '@/services/utils/QueryParams';
+import BaseService from '@/services/utils/BaseService';
+import { CommonOptions } from '@/services/utils/options';
 
 interface appleClientSecret {
     secret: string;
@@ -9,22 +9,27 @@ export default class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
      */
-    getAll(queryParams: BaseQueryParams = {}): Promise<{[key: string]:any}> {
-        return this.client.send('/api/settings', {
+    getAll(options?: CommonOptions): Promise<{[key: string]:any}> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams,
-        }).then((responseData) => responseData || {});
+        }, options);
+
+        return this.client.send('/api/settings', options);
     }
 
     /**
      * Bulk updates app settings.
      */
-    update(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<{[key: string]:any}> {
-        return this.client.send('/api/settings', {
+    update(
+        bodyParams?: {[key:string]:any}|FormData,
+        options?: CommonOptions,
+    ): Promise<{[key: string]:any}> {
+        options = Object.assign({
             'method': 'PATCH',
-            'params': queryParams,
             'body':   bodyParams,
-        }).then((responseData) => responseData || {});
+        }, options);
+
+        return this.client.send('/api/settings', options);
     }
 
     /**
@@ -32,16 +37,16 @@ export default class SettingsService extends BaseService {
      *
      * The currently supported `filesystem` are "storage" and "backups".
      */
-    testS3(filesystem: string = "storage", queryParams: BaseQueryParams = {}): Promise<boolean> {
-        const bodyParams = {
-            'filesystem': filesystem,
-        };
-
-        return this.client.send('/api/settings/test/s3', {
+    testS3(filesystem: string = "storage", options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'filesystem': filesystem,
+            },
+        }, options);
+
+        return this.client.send('/api/settings/test/s3', options)
+            .then(() => true);
     }
 
     /**
@@ -52,17 +57,17 @@ export default class SettingsService extends BaseService {
      * - password-reset
      * - email-change
      */
-    testEmail(toEmail: string, emailTemplate: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        const bodyParams = {
-            'email':    toEmail,
-            'template': emailTemplate,
-        };
-
-        return this.client.send('/api/settings/test/email', {
+    testEmail(toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'email':    toEmail,
+                'template': emailTemplate,
+            },
+        }, options);
+
+        return this.client.send('/api/settings/test/email', options)
+            .then(() => true);
     }
 
     /**
@@ -74,21 +79,19 @@ export default class SettingsService extends BaseService {
         keyId: string,
         privateKey: string,
         duration: number,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {}
+        options?: CommonOptions,
     ): Promise<appleClientSecret> {
-        bodyParams = Object.assign({
-            clientId,
-            teamId,
-            keyId,
-            privateKey,
-            duration,
-        }, bodyParams);
-
-        return this.client.send('/api/settings/apple/generate-client-secret', {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        });
+            'body': {
+                clientId,
+                teamId,
+                keyId,
+                privateKey,
+                duration,
+            },
+        }, options);
+
+        return this.client.send('/api/settings/apple/generate-client-secret', options);
     }
 }

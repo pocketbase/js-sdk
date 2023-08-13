@@ -1,5 +1,5 @@
 import BaseService from '@/services/utils/BaseService';
-import { BaseQueryParams, FileQueryParams } from '@/services/utils/QueryParams';
+import { CommonOptions, FileOptions } from '@/services/utils/options';
 
 export default class FileService extends BaseService {
     /**
@@ -8,7 +8,7 @@ export default class FileService extends BaseService {
     getUrl(
         record: Pick<{[key:string]:any}, "id" | "collectionId" | "collectionName">,
         filename: string,
-        queryParams: FileQueryParams = {}
+        queryParams: FileOptions = {}
     ): string {
         const parts = [];
         parts.push("api")
@@ -36,10 +36,12 @@ export default class FileService extends BaseService {
     /**
      * Requests a new private file access token for the current auth model (admin or record).
      */
-    getToken(queryParams: BaseQueryParams = {}): Promise<string> {
-        return this.client.send('/api/files/token', {
+    getToken(options?: CommonOptions): Promise<string> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-        }).then((data) => data?.token || '');
+        }, options);
+
+        return this.client.send('/api/files/token', options)
+            .then((data) => data?.token || '');
     }
 }

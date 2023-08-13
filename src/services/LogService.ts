@@ -2,51 +2,48 @@ import BaseService from '@/services/utils/BaseService';
 import {
     ResultList,
     LogRequestModel,
-}  from '@/services/utils/ResponseModels';
+    HourlyStats,
+}  from '@/services/utils/dtos';
 import {
-    BaseQueryParams,
-    ListQueryParams,
-    LogStatsQueryParams,
-} from '@/services/utils/QueryParams';
-
-export interface HourlyStats {
-    total: number;
-    date:  string;
-}
+    CommonOptions,
+    ListOptions,
+    LogStatsOptions,
+} from '@/services/utils/options';
 
 export default class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ResultList<LogRequestModel>> {
-        queryParams = Object.assign({
+    getRequestsList(page = 1, perPage = 30, options?: ListOptions): Promise<ResultList<LogRequestModel>> {
+        options = Object.assign({'method': 'GET'}, options);
+
+        options.query = Object.assign({
             'page':    page,
             'perPage': perPage,
-        }, queryParams);
+        }, options.query);
 
-        return this.client.send('/api/logs/requests', {
-            'method': 'GET',
-            'params': queryParams,
-        });
+        return this.client.send('/api/logs/requests', options);
     }
 
     /**
      * Returns a single logged request by its id.
      */
-    getRequest(id: string, queryParams: BaseQueryParams = {}): Promise<LogRequestModel> {
-        return this.client.send('/api/logs/requests/' + encodeURIComponent(id), {
+    getRequest(id: string, options?: CommonOptions): Promise<LogRequestModel> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams
-        });
+        }, options);
+
+        return this.client.send('/api/logs/requests/' + encodeURIComponent(id), options);
     }
 
     /**
      * Returns request logs statistics.
      */
-    getRequestsStats(queryParams: LogStatsQueryParams = {}): Promise<Array<HourlyStats>> {
-        return this.client.send('/api/logs/requests/stats', {
+    getRequestsStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams
-        });
+        }, options);
+
+        return this.client.send('/api/logs/requests/stats', options);
     }
 }

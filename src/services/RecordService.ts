@@ -1,19 +1,29 @@
 import Client              from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
 import BaseCrudService     from '@/services/utils/BaseCrudService';
-import { ResultList, RecordModel, ExternalAuthModel }     from '@/services/utils/ResponseModels';
+import { ResultList, RecordModel, ExternalAuthModel }     from '@/services/utils/dtos';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
 import {
-    BaseQueryParams,
-    RecordQueryParams,
-    RecordListQueryParams,
-    RecordFullListQueryParams,
-} from '@/services/utils/QueryParams';
+    SendOptions,
+    CommonOptions,
+    RecordOptions,
+    RecordListOptions,
+    RecordFullListOptions,
+} from '@/services/utils/options';
+import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
 
 export interface RecordAuthResponse<T = RecordModel> {
+    // The signed PocketBase auth record.
     record: T;
-    token:  string;
-    meta?:  {[key: string]: any};
+
+    // The PocketBase record auth token.
+    //
+    // If you are looking for the OAuth2 access and refresh tokens
+    // they are available under the `meta.accessToken` and `meta.refreshToken` props.
+    token: string;
+
+    // Auth meta data usually filled when OAuth2 is used.
+    meta?: {[key: string]: any};
 }
 
 export interface AuthProviderInfo {
@@ -38,7 +48,7 @@ export interface RecordSubscription<T = RecordModel> {
 
 export type OAuth2UrlCallback = (url: string) => void|Promise<void>;
 
-export interface OAuth2AuthConfig {
+export interface OAuth2AuthConfig extends SendOptions {
     // the name of the OAuth2 provider (eg. "google")
     provider: string;
 
@@ -52,10 +62,7 @@ export interface OAuth2AuthConfig {
     urlCallback?: OAuth2UrlCallback;
 
     // optional query params to send with the PocketBase auth request (eg. fields, expand, etc.)
-    query?: RecordQueryParams;
-
-    // optional body params to send with the PocketBase auth request
-    body?: {[key: string]: any};
+    query?: RecordOptions;
 }
 
 export default class RecordService extends BaseCrudService<RecordModel> {
@@ -168,22 +175,22 @@ export default class RecordService extends BaseCrudService<RecordModel> {
     /**
      * @inheritdoc
      */
-    getFullList<T = RecordModel>(queryParams?: RecordFullListQueryParams): Promise<Array<T>>
+    getFullList<T = RecordModel>(options?: RecordFullListOptions): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = RecordModel>(batch?: number, queryParams?: RecordListQueryParams): Promise<Array<T>>
+    getFullList<T = RecordModel>(batch?: number, options?: RecordListOptions): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = RecordModel>(batchOrQueryParams?: number|RecordFullListQueryParams, queryParams?: RecordListQueryParams): Promise<Array<T>> {
-        if (typeof batchOrQueryParams == "number") {
-            return super.getFullList<T>(batchOrQueryParams, queryParams);
+    getFullList<T = RecordModel>(batchOrOptions?: number|RecordFullListOptions, options?: RecordListOptions): Promise<Array<T>> {
+        if (typeof batchOrOptions == "number") {
+            return super.getFullList<T>(batchOrOptions, options);
         }
 
-        const params = Object.assign({}, batchOrQueryParams, queryParams);
+        const params = Object.assign({}, batchOrOptions, options);
 
         return super.getFullList<T>(params);
     }
@@ -191,29 +198,29 @@ export default class RecordService extends BaseCrudService<RecordModel> {
     /**
      * @inheritdoc
      */
-    getList<T = RecordModel>(page = 1, perPage = 30, queryParams: RecordListQueryParams = {}): Promise<ResultList<T>> {
-        return super.getList<T>(page, perPage, queryParams);
+    getList<T = RecordModel>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ResultList<T>> {
+        return super.getList<T>(page, perPage, options);
     }
 
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = RecordModel>(filter: string, queryParams: RecordListQueryParams = {}): Promise<T> {
-        return super.getFirstListItem<T>(filter, queryParams);
+    getFirstListItem<T = RecordModel>(filter: string, options?: RecordListOptions): Promise<T> {
+        return super.getFirstListItem<T>(filter, options);
     }
 
     /**
      * @inheritdoc
      */
-    getOne<T = RecordModel>(id: string, queryParams: RecordQueryParams = {}): Promise<T> {
-        return super.getOne<T>(id, queryParams);
+    getOne<T = RecordModel>(id: string, options?: RecordOptions): Promise<T> {
+        return super.getOne<T>(id, options);
     }
 
     /**
      * @inheritdoc
      */
-    create<T = RecordModel>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
-        return super.create<T>(bodyParams, queryParams);
+    create<T = RecordModel>(bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+        return super.create<T>(bodyParams, options);
     }
 
     /**
@@ -222,8 +229,8 @@ export default class RecordService extends BaseCrudService<RecordModel> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = RecordModel>(id: string, bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<T> {
-        return super.update<RecordModel>(id, bodyParams, queryParams).then((item) => {
+    update<T = RecordModel>(id: string, bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+        return super.update<RecordModel>(id, bodyParams, options).then((item) => {
             if (
                 // is record auth
                 this.client.authStore.model?.id === item?.id &&
@@ -245,8 +252,8 @@ export default class RecordService extends BaseCrudService<RecordModel> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return super.delete(id, queryParams).then((success) => {
+    delete(id: string, options?: CommonOptions): Promise<boolean> {
+        return super.delete(id, options).then((success) => {
             if (
                 success &&
                 // is record auth
@@ -285,18 +292,20 @@ export default class RecordService extends BaseCrudService<RecordModel> {
     /**
      * Returns all available collection auth methods.
      */
-    listAuthMethods(queryParams: BaseQueryParams = {}): Promise<AuthMethodsList> {
-        return this.client.send(this.baseCollectionPath + '/auth-methods', {
+    listAuthMethods(options?: CommonOptions): Promise<AuthMethodsList> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams,
-        }).then((responseData: any) => {
-            return Object.assign({}, responseData, {
-                // normalize common fields
-                'usernamePassword': !!responseData?.usernamePassword,
-                'emailPassword':    !!responseData?.emailPassword,
-                'authProviders':    Array.isArray(responseData?.authProviders) ? responseData?.authProviders : [],
+        }, options);
+
+        return this.client.send(this.baseCollectionPath + '/auth-methods', options)
+            .then((responseData: any) => {
+                return Object.assign({}, responseData, {
+                    // normalize common fields
+                    'usernamePassword': !!responseData?.usernamePassword,
+                    'emailPassword':    !!responseData?.emailPassword,
+                    'authProviders':    Array.isArray(responseData?.authProviders) ? responseData?.authProviders : [],
+                });
             });
-        });
     }
 
     /**
@@ -307,22 +316,32 @@ export default class RecordService extends BaseCrudService<RecordModel> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = RecordModel>(
-        usernameOrEmail: string,
-        password: string,
-        bodyParams = {},
-        queryParams: RecordQueryParams = {},
-    ): Promise<RecordAuthResponse<T>> {
-        bodyParams = Object.assign({
-            'identity': usernameOrEmail,
-            'password': password,
-        }, bodyParams);
+    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>
 
-        return this.client.send(this.baseCollectionPath + '/auth-with-password', {
-            'method':  'POST',
-            'params':  queryParams,
-            'body':    bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+    /**
+     * @deprecated
+     * Consider using authWithPassword(usernameOrEmail, password, options?).
+     */
+    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>
+
+    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+        let options: any = {
+            'method': 'POST',
+            'body': {
+                'identity': usernameOrEmail,
+                'password': password,
+            },
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of authWithPassword(usernameOrEmail, pass, body?, query?) is depreacted. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/auth-with-password', options)
+            .then((data) => this.authResponse<T>(data));
     }
 
     /**
@@ -341,23 +360,53 @@ export default class RecordService extends BaseCrudService<RecordModel> {
         code: string,
         codeVerifier: string,
         redirectUrl: string,
-        createData = {},
-        bodyParams = {},
-        queryParams: RecordQueryParams = {},
-    ): Promise<RecordAuthResponse<T>> {
-        bodyParams = Object.assign({
-            'provider':     provider,
-            'code':         code,
-            'codeVerifier': codeVerifier,
-            'redirectUrl':  redirectUrl,
-            'createData':  createData,
-        }, bodyParams);
+        createData?: {[key:string]:any},
+        options?: RecordOptions,
+    ): Promise<RecordAuthResponse<T>>
 
-        return this.client.send(this.baseCollectionPath + '/auth-with-oauth2', {
-            'method':  'POST',
-            'params':  queryParams,
-            'body':    bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+    /**
+     * @deprecated
+     * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createdData, options?).
+     */
+    authWithOAuth2Code<T = RecordModel>(
+        provider: string,
+        code: string,
+        codeVerifier: string,
+        redirectUrl: string,
+        createData?: {[key:string]:any},
+        body?: any,
+        query?: any
+    ): Promise<RecordAuthResponse<T>>
+
+    authWithOAuth2Code<T = RecordModel>(
+        provider: string,
+        code: string,
+        codeVerifier: string,
+        redirectUrl: string,
+        createData?: {[key:string]:any},
+        bodyOrOptions?: any,
+        query?: any
+    ): Promise<RecordAuthResponse<T>> {
+        let options: any = {
+            'method': 'POST',
+            'body': {
+                'provider':     provider,
+                'code':         code,
+                'codeVerifier': codeVerifier,
+                'redirectUrl':  redirectUrl,
+                'createData':   createData,
+            },
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is depreacted. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/auth-with-oauth2', options)
+            .then((data) => this.authResponse<T>(data));
     }
 
     /**
@@ -373,7 +422,7 @@ export default class RecordService extends BaseCrudService<RecordModel> {
         redirectUrl: string,
         createData?: {[key: string]: any},
         bodyParams?: {[key: string]: any},
-        queryParams?: RecordQueryParams,
+        queryParams?: RecordOptions,
     ): Promise<RecordAuthResponse<T>>
 
     /**
@@ -448,15 +497,21 @@ export default class RecordService extends BaseCrudService<RecordModel> {
                             throw new Error("State parameters don't match.");
                         }
 
+                        // clear the non SendOptions props
+                        const options = Object.assign({}, config);
+                        delete options.provider;
+                        delete options.scopes;
+                        delete options.createData;
+                        delete options.urlCallback;
+
                         const authData = await this.authWithOAuth2Code<T>(
                             provider.name,
                             e.code,
                             provider.codeVerifier,
                             redirectUrl,
                             config.createData,
-                            config.body,
-                            config.query,
-                        )
+                            options,
+                        );
 
                         resolve(authData);
                     } catch (err) {
@@ -486,31 +541,57 @@ export default class RecordService extends BaseCrudService<RecordModel> {
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = RecordModel>(bodyParams = {}, queryParams: RecordQueryParams = {}): Promise<RecordAuthResponse<T>> {
-        return this.client.send(this.baseCollectionPath + '/auth-refresh', {
+    authRefresh<T = RecordModel>(options?: RecordOptions): Promise<RecordAuthResponse<T>>
+
+    /**
+     * @deprecated
+     * Consider using authRefresh(options?).
+     */
+    authRefresh<T = RecordModel>(body?: any, query?: any): Promise<RecordAuthResponse<T>>
+
+    authRefresh<T = RecordModel>(bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then((data) => this.authResponse<T>(data));
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of authRefresh(body?, query?) is depreacted. Consider replacing it with authRefresh(options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/auth-refresh', options)
+            .then((data) => this.authResponse<T>(data));
     }
 
     /**
      * Sends auth record password reset request.
      */
-    requestPasswordReset(
-        email: string,
-        bodyParams  = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'email': email,
-        }, bodyParams);
+    requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/request-password-reset', {
+    /**
+     * @deprecated
+     * Consider using requestPasswordReset(email, options?).
+     */
+    requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
+
+    requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'email': email,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of requestPasswordReset(email, body?, query?) is depreacted. Consider replacing it with requestPasswordReset(email, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/request-password-reset', options).then(() => true);
     }
 
     /**
@@ -520,125 +601,191 @@ export default class RecordService extends BaseCrudService<RecordModel> {
         passwordResetToken: string,
         password: string,
         passwordConfirm: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'token':           passwordResetToken,
-            'password':        password,
-            'passwordConfirm': passwordConfirm,
-        }, bodyParams);
+        options?: CommonOptions,
+    ): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/confirm-password-reset', {
+    /**
+     * @deprecated
+     * Consider using confirmPasswordReset(passwordResetToken, password, passwordConfirm, options?).
+     */
+    confirmPasswordReset(
+        passwordResetToken: string,
+        password: string,
+        passwordConfirm: string,
+        body?: any,
+        query?: any,
+    ): Promise<boolean>
+
+    confirmPasswordReset(
+        passwordResetToken: string,
+        password: string,
+        passwordConfirm: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'token':           passwordResetToken,
+                'password':        password,
+                'passwordConfirm': passwordConfirm,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of confirmPasswordReset(token, password, passwordConfirm, body?, query?) is depreacted. Consider replacing it with confirmPasswordReset(token, password, passwordConfirm, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/confirm-password-reset', options)
+            .then(() => true);
     }
 
     /**
      * Sends auth record verification email request.
      */
-    requestVerification(
-        email: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'email': email,
-        }, bodyParams);
+    requestVerification(email: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/request-verification', {
+    /**
+     * @deprecated
+     * Consider using requestVerification(email, options?).
+     */
+    requestVerification(email: string, body?: any, query?: any): Promise<boolean>
+
+    requestVerification(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'email': email,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of requestVerification(email, body?, query?) is depreacted. Consider replacing it with requestVerification(email, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/request-verification', options)
+            .then(() => true);
     }
 
     /**
      * Confirms auth record email verification request.
      */
-    confirmVerification(
-        verificationToken: string,
-        bodyParams  = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'token': verificationToken,
-        }, bodyParams);
+    confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/confirm-verification', {
+    /**
+     * @deprecated
+     * Consider using confirmVerification(verificationToken, options?).
+     */
+    confirmVerification(verificationToken: string, body?: any, query?: any): Promise<boolean>
+
+    confirmVerification(verificationToken: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'token': verificationToken,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of confirmVerification(token, body?, query?) is depreacted. Consider replacing it with confirmVerification(token, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/confirm-verification', options)
+            .then(() => true);
     }
 
     /**
      * Sends an email change request to the authenticated record model.
      */
-    requestEmailChange(
-        newEmail: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'newEmail': newEmail,
-        }, bodyParams);
+    requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/request-email-change', {
+    /**
+     * @deprecated
+     * Consider using requestEmailChange(newEmail, options?).
+     */
+    requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>
+
+    requestEmailChange(newEmail: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'newEmail': newEmail,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of requestEmailChange(newEmail, body?, query?) is depreacted. Consider replacing it with requestEmailChange(newEmail, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/request-email-change', options)
+            .then(() => true);
     }
 
     /**
      * Confirms auth record's new email address.
      */
-    confirmEmailChange(
-        emailChangeToken: string,
-        password: string,
-        bodyParams  = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'token': emailChangeToken,
-            'password': password,
-        }, bodyParams);
+    confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCollectionPath + '/confirm-email-change', {
+
+    /**
+     * @deprecated
+     * Consider using confirmEmailChange(emailChangeToken, password, options?).
+     */
+    confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>
+
+    confirmEmailChange(emailChangeToken: string, password: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'token':    emailChangeToken,
+                'password': password,
+            }
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of confirmEmailChange(token, password, body?, query?) is depreacted. Consider replacing it with confirmEmailChange(token, password, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCollectionPath + '/confirm-email-change', options)
+            .then(() => true);
     }
 
     /**
      * Lists all linked external auth providers for the specified auth record.
      */
-    listExternalAuths(
-        recordId: string,
-        queryParams: BaseQueryParams = {}
-    ): Promise<Array<ExternalAuthModel>> {
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths', {
+    listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams,
-        });
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths', options);
     }
 
     /**
      * Unlink a single external auth provider from the specified auth record.
      */
-    unlinkExternalAuth(
-        recordId: string,
-        provider: string,
-        queryParams: BaseQueryParams = {}
-    ): Promise<boolean> {
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths/' + encodeURIComponent(provider), {
+    unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'DELETE',
-            'params': queryParams,
-        }).then(() => true);
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths/' + encodeURIComponent(provider), options)
+            .then(() => true);
     }
 
     // ---------------------------------------------------------------

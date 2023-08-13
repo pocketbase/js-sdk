@@ -1,12 +1,12 @@
 import BaseService         from '@/services/utils/BaseService';
 import ClientResponseError from '@/ClientResponseError';
-import { ResultList }      from '@/services/utils/ResponseModels';
+import { ResultList }      from '@/services/utils/dtos';
 
 import {
-    BaseQueryParams,
-    ListQueryParams,
-    FullListQueryParams
-} from '@/services/utils/QueryParams';
+    CommonOptions,
+    ListOptions,
+    FullListOptions
+} from '@/services/utils/options';
 
 export default abstract class CrudService<M> extends BaseService   {
     /**
@@ -27,27 +27,27 @@ export default abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getFullList<T = M>(queryParams?: FullListQueryParams): Promise<Array<T>>
+    getFullList<T = M>(options?: FullListOptions): Promise<Array<T>>
 
     /**
      * Legacy version of getFullList with explicitly specified batch size.
      */
-    getFullList<T = M>(batch?: number, queryParams?: ListQueryParams): Promise<Array<T>>
+    getFullList<T = M>(batch?: number, options?: ListOptions): Promise<Array<T>>
 
-    getFullList<T = M>(batchOrqueryParams?: number|FullListQueryParams, queryParams?: ListQueryParams): Promise<Array<T>> {
+    getFullList<T = M>(batchOrqueryParams?: number|FullListOptions, options?: ListOptions): Promise<Array<T>> {
         if (typeof batchOrqueryParams == "number") {
-            return this._getFullList<T>(batchOrqueryParams, queryParams);
+            return this._getFullList<T>(batchOrqueryParams, options);
         }
 
-        const params = Object.assign({}, batchOrqueryParams, queryParams);
+        options = Object.assign({}, batchOrqueryParams, options);
 
         let batch = 500;
-        if (params.batch) {
-            batch = params.batch;
-            delete params.batch;
+        if (options.batch) {
+            batch = options.batch;
+            delete options.batch;
         }
 
-        return this._getFullList<T>(batch, params);
+        return this._getFullList<T>(batch, options);
     }
 
     /**
@@ -55,28 +55,30 @@ export default abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page = 1, perPage = 30, queryParams: ListQueryParams = {}): Promise<ResultList<T>> {
-        queryParams = Object.assign({
-            'page': page,
+    getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ResultList<T>> {
+        options = Object.assign({
+            method: 'GET'
+        }, options);
+
+        options.query = Object.assign({
+            'page':    page,
             'perPage': perPage,
-        }, queryParams);
+        }, options.query);
 
-        return this.client.send(this.baseCrudPath, {
-            'method': 'GET',
-            'params': queryParams,
-        }).then((responseData: any) => {
-            const items: Array<T> = [];
+        return this.client.send(this.baseCrudPath, options)
+            .then((responseData: any) => {
+                const items: Array<T> = [];
 
-            if (responseData?.items) {
-                responseData.items = responseData.items || [];
-                for (const item of responseData.items) {
-                    items.push(this.decode<T>(item));
+                if (responseData?.items) {
+                    responseData.items = responseData.items || [];
+                    for (const item of responseData.items) {
+                        items.push(this.decode<T>(item));
+                    }
+                    responseData.items = items;
                 }
-                responseData.items = items;
-            }
 
-            return responseData;
-        });
+                return responseData;
+            });
     }
 
     /**
@@ -90,14 +92,17 @@ export default abstract class CrudService<M> extends BaseService   {
      * For consistency with `getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
      */
-    getFirstListItem<T = M>(filter: string, queryParams: BaseQueryParams = {}): Promise<T> {
-        queryParams = Object.assign({
+    getFirstListItem<T = M>(filter: string, options?: CommonOptions): Promise<T> {
+        options = Object.assign({
+            'requestKey': 'one_by_filter_' + this.baseCrudPath + "_" + filter,
+        }, options);
+
+        options.query = Object.assign({
             'filter':     filter,
             'skipTotal':  1,
-            '$cancelKey': 'one_by_filter_' + this.baseCrudPath + "_" + filter,
-        }, queryParams);
+        }, options.query);
 
-        return this.getList<T>(1, 1, queryParams)
+        return this.getList<T>(1, 1, options)
             .then((result) => {
                 if (!result?.items?.length) {
                     throw new ClientResponseError({
@@ -119,11 +124,13 @@ export default abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getOne<T = M>(id: string, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
+    getOne<T = M>(id: string, options?: CommonOptions): Promise<T> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams
-        }).then((responseData: any) => this.decode(responseData) as any as T);
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), options)
+            .then((responseData: any) => this.decode<T>(responseData));
     }
 
     /**
@@ -131,12 +138,17 @@ export default abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    create<T = M>(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(this.baseCrudPath, {
+    create<T = M>(
+        bodyParams?: {[key:string]:any}|FormData,
+        options?: CommonOptions,
+    ): Promise<T> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
             'body':   bodyParams,
-        }).then((responseData: any) => this.decode<T>(responseData));
+        }, options);
+
+        return this.client.send(this.baseCrudPath, options)
+            .then((responseData: any) => this.decode<T>(responseData));
     }
 
     /**
@@ -144,36 +156,45 @@ export default abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    update<T = M>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
+    update<T = M>(
+        id: string,
+        bodyParams?: {[key:string]:any}|FormData,
+        options?: CommonOptions,
+    ): Promise<T> {
+        options = Object.assign({
             'method': 'PATCH',
-            'params': queryParams,
             'body':   bodyParams,
-        }).then((responseData: any) => this.decode<T>(responseData));
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), options)
+            .then((responseData: any) => this.decode<T>(responseData));
     }
 
     /**
      * Deletes an existing item by its id.
      */
-    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), {
+    delete(id: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'DELETE',
-            'params': queryParams,
-        }).then(() => true);
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(id), options)
+            .then(() => true);
     }
 
     /**
      * Returns a promise with all list items batch fetched at once.
      */
-    protected _getFullList<T = M>(batchSize = 500, queryParams: ListQueryParams = {}): Promise<Array<T>> {
-        queryParams = Object.assign({
+    protected _getFullList<T = M>(batchSize = 500, options?: ListOptions): Promise<Array<T>> {
+        options = options || {};
+        options.query = Object.assign({
             'skipTotal': 1,
-        }, queryParams);
+        }, options.query);
 
         let result: Array<T> = [];
 
         let request = async (page: number): Promise<Array<any>> => {
-            return this.getList(page, batchSize || 500, queryParams).then((list) => {
+            return this.getList(page, batchSize || 500, options).then((list) => {
                 const castedList = (list as any as ResultList<T>);
                 const items      = castedList.items;
 

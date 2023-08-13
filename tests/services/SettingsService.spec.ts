@@ -1,18 +1,18 @@
-import { assert }      from 'chai';
+import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { FetchMock }   from '../mocks';
 import Client          from '@/Client';
 import SettingsService from '@/services/SettingsService';
-import { FetchMock }   from 'tests/mocks';
 
 describe('SettingsService', function () {
     const client = new Client('test_base_url');
     const service = new SettingsService(client);
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -21,7 +21,7 @@ describe('SettingsService', function () {
     });
 
     describe('getAll()', function () {
-        it('Should fetch all app settings', async function () {
+        test('Should fetch all app settings', async function () {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl('/api/settings') + '?q1=123',
@@ -36,7 +36,7 @@ describe('SettingsService', function () {
     });
 
     describe('update()', function () {
-        it('Should send bulk app settings update', async function () {
+        test('Should send bulk app settings update', async function () {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/settings'),
@@ -52,7 +52,7 @@ describe('SettingsService', function () {
     });
 
     describe('testS3()', function () {
-        it('Should send S3 connection test request', async function () {
+        test('Should send S3 connection test request', async function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/settings/test/s3')+ '?q1=123',
@@ -68,7 +68,7 @@ describe('SettingsService', function () {
     });
 
     describe('testEmail()', function () {
-        it('Should send a test email request', async function () {
+        test('Should send a test email request', async function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/settings/test/email')+ '?q1=123',
@@ -84,7 +84,7 @@ describe('SettingsService', function () {
     });
 
     describe('generateAppleClientSecret()', function () {
-        it('Should send an Apple OAuth2 client secret request', async function () {
+        test('Should send an Apple OAuth2 client secret request', async function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/settings/apple/generate-client-secret')+ '?q1=123',
@@ -94,7 +94,6 @@ describe('SettingsService', function () {
                     keyId:      "3",
                     privateKey: "4",
                     duration:   5,
-                    b1:         6
                 },
                 replyCode: 204,
                 replyBody: { secret: "test" },
@@ -106,7 +105,6 @@ describe('SettingsService', function () {
                 "3",
                 "4",
                 5,
-                { "b1": 6 },
                 { "q1": 123 }
             );
 

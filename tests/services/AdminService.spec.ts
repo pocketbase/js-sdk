@@ -1,9 +1,9 @@
-import { assert }                from 'chai';
+import { describe, assert, test, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { crudServiceTestsSuite } from '../suites';
-import { FetchMock }             from 'tests/mocks';
+import { FetchMock }             from '../mocks';
 import Client                    from '@/Client';
 import AdminService              from '@/services/AdminService';
-import { AdminModel }            from '@/services/utils/ResponseModels';
+import { AdminModel }            from '@/services/utils/dtos';
 
 describe('AdminService', function() {
     const client = new Client('test_base_url');
@@ -18,11 +18,11 @@ describe('AdminService', function() {
         service.client.authStore.clear(); // reset
     });
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -42,7 +42,7 @@ describe('AdminService', function() {
     // ---------------------------------------------------------------
 
     describe('AuthStore sync', function() {
-        it('Should update the AuthStore admin model on matching update id', async function() {
+        test('Should update the AuthStore admin model on matching update id', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/admins/test123'),
@@ -60,7 +60,7 @@ describe('AdminService', function() {
             assert.equal(service.client.authStore.model?.email, "new@example.com");
         });
 
-        it('Should not update the AuthStore admin model on mismatched update id', async function() {
+        test('Should not update the AuthStore admin model on mismatched update id', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/admins/test123'),
@@ -78,7 +78,7 @@ describe('AdminService', function() {
             assert.equal(service.client.authStore.model?.email, "old@example.com");
         });
 
-        it('Should delete the AuthStore admin model on matching delete id', async function() {
+        test('Should delete the AuthStore admin model on matching delete id', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/admins/test123'),
@@ -92,7 +92,7 @@ describe('AdminService', function() {
             assert.isNull(service.client.authStore.model);
         });
 
-        it('Should not delete the AuthStore admin model on mismatched delete id', async function() {
+        test('Should not delete the AuthStore admin model on mismatched delete id', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/admins/test123'),
@@ -108,7 +108,7 @@ describe('AdminService', function() {
     });
 
     describe('authWithPassword()', function() {
-        it('Should auth an admin by its email and password', async function() {
+        test('Should auth an admin by its email and password', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/auth-with-password') + '?q1=456',
@@ -131,7 +131,7 @@ describe('AdminService', function() {
     });
 
     describe('authRefresh()', function() {
-        it('Should refresh an authorized admin instance', async function() {
+        test('Should refresh an authorized admin instance', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/auth-refresh') + '?q1=456',
@@ -150,7 +150,7 @@ describe('AdminService', function() {
     });
 
     describe('requestPasswordReset()', function() {
-        it('Should send a password reset request', async function() {
+        test('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/request-password-reset') + '?q1=456',
@@ -169,7 +169,7 @@ describe('AdminService', function() {
     });
 
     describe('confirmPasswordReset()', function() {
-        it('Should confirm a password reset request', async function() {
+        test('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/confirm-password-reset') + '?q1=456',

@@ -1,18 +1,18 @@
-import { assert }      from 'chai';
-import Client          from '@/Client';
-import FileService     from '@/services/FileService';
-import { FetchMock }   from 'tests/mocks';
+import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { FetchMock } from '../mocks';
+import Client        from '@/Client';
+import FileService   from '@/services/FileService';
 
 describe('FileService', function () {
     const client    = new Client('test_base_url');
     const service   = new FileService(client);
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -21,14 +21,14 @@ describe('FileService', function () {
     });
 
     describe('getFileUrl()', function () {
-        it('Should return a formatted url', async function () {
+        test('Should return a formatted url', async function () {
             const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = service.getUrl(record, 'demo.png')
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo.png');
         });
 
-        it('Should return a formatted url + query params', async function () {
+        test('Should return a formatted url + query params', async function () {
             const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = service.getUrl(record, 'demo=', {'test': 'abc'})
 
@@ -37,7 +37,7 @@ describe('FileService', function () {
     });
 
     describe('getToken()', function () {
-        it('Should send a file token request', async function () {
+        test('Should send a file token request', async function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/files/token')+ '?q1=123',

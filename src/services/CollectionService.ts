@@ -1,6 +1,6 @@
 import BaseCrudService     from '@/services/utils/BaseCrudService';
-import { BaseQueryParams } from '@/services/utils/QueryParams';
-import {CollectionModel}   from '@/services/utils/ResponseModels';
+import { CollectionModel } from '@/services/utils/dtos';
+import { CommonOptions } from '@/services/utils/options';
 
 export default class CollectionService extends BaseCrudService<CollectionModel> {
     /**
@@ -20,15 +20,17 @@ export default class CollectionService extends BaseCrudService<CollectionModel> 
     async import(
         collections: Array<CollectionModel>,
         deleteMissing: boolean = false,
-        queryParams: BaseQueryParams = {}
+        options?: CommonOptions,
     ): Promise<true> {
-        return this.client.send(this.baseCrudPath + '/import', {
+        options = Object.assign({
             'method': 'PUT',
-            'params': queryParams,
             'body': {
-                'collections':  collections,
+                'collections':   collections,
                 'deleteMissing': deleteMissing,
             }
-        }).then(() => true);
+        }, options);
+
+        return this.client.send(this.baseCrudPath + '/import', options)
+            .then(() => true);
     }
 }

@@ -1,9 +1,9 @@
-import { assert }                from 'chai';
-import { FetchMock }             from 'tests/mocks';
+import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { FetchMock }             from '../mocks';
 import { crudServiceTestsSuite } from '../suites';
 import Client                    from '@/Client';
 import CollectionService         from '@/services/CollectionService';
-import { CollectionModel }       from '@/services/utils/ResponseModels';
+import { CollectionModel }       from '@/services/utils/dtos';
 
 describe('CollectionService', function() {
     const client = new Client('test_base_url');
@@ -13,11 +13,11 @@ describe('CollectionService', function() {
 
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -26,7 +26,7 @@ describe('CollectionService', function() {
     });
 
     describe('import()', function () {
-        it('Should send a bulk import collections request', async function () {
+        test('Should send a bulk import collections request', async function () {
             fetchMock.on({
                 method: 'PUT',
                 url: service.client.buildUrl('/api/collections/import'),

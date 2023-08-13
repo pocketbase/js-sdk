@@ -1,20 +1,16 @@
-import BaseService         from '@/services/utils/BaseService';
-import { BaseQueryParams } from '@/services/utils/QueryParams';
-
-export interface HealthCheckResponse {
-    code:    number;
-    message: string;
-    data:    {[key: string]: any};
-}
+import BaseService             from '@/services/utils/BaseService';
+import { CommonOptions }       from '@/services/utils/options';
+import { HealthCheckResponse } from '@/services/utils/dtos';
 
 export default class HealthService extends BaseService {
     /**
      * Checks the health status of the api.
      */
-    check(queryParams: BaseQueryParams = {}): Promise<HealthCheckResponse> {
-        return this.client.send('/api/health', {
+    check(options?: CommonOptions): Promise<HealthCheckResponse> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams,
-        });
+        }, options);
+
+        return this.client.send('/api/health', options);
     }
 }

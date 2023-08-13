@@ -1,9 +1,9 @@
-import { assert } from 'chai';
+import { describe, assert, test } from 'vitest';
 import { getTokenPayload, isTokenExpired } from '@/stores/utils/jwt';
 
 describe('jwt', function () {
     describe('getTokenPayload()', function () {
-        it('Should extract JWT payload without validation', function () {
+        test('Should extract JWT payload without validation', function () {
             const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M'
 
             const payload = getTokenPayload(token);
@@ -11,7 +11,7 @@ describe('jwt', function () {
             assert.deepEqual(payload, { 'test': 123 });
         });
 
-        it('Should fallback to empty object on invalid JWT string', function () {
+        test('Should fallback to empty object on invalid JWT string', function () {
             const testCases = ['', 'abc', 'a.b.c'];
             for (let i in testCases) {
                 const test = testCases[i];
@@ -22,7 +22,7 @@ describe('jwt', function () {
     });
 
     describe('isTokenExpired()', function () {
-        it('Should successfully verify that a JWT token is expired or not', function () {
+        test('Should successfully verify that a JWT token is expired or not', function () {
             const testCases = [
                 // invalid JWT string
                 [true, ''],

@@ -1,5 +1,4 @@
 import Client, {
-    SendOptions,
     BeforeSendResult,
 } from '@/Client';
 import ClientResponseError from '@/ClientResponseError';
@@ -30,18 +29,18 @@ import { UnsubscribeFunc } from '@/services/RealtimeService';
 import { BackupFileInfo } from '@/services/BackupService';
 import { HealthCheckResponse } from '@/services/HealthService';
 import {
-    BaseQueryParams,
-    ListQueryParams,
-    RecordQueryParams,
-    RecordListQueryParams,
-    LogStatsQueryParams,
-    FileQueryParams,
-    FullListQueryParams,
-    RecordFullListQueryParams,
-} from '@/services/utils/QueryParams';
+    CommonOptions,
+    ListOptions,
+    RecordOptions,
+    RecordListOptions,
+    LogStatsOptions,
+    FileOptions,
+    FullListOptions,
+    RecordFullListOptions,
+} from '@/services/utils/options';
 
 // @todo export model types
-// import * as models from '@/services/utils/ResponseModels';
+// import * as models from '@/services/utils/dtos';
 
 export {
     ClientResponseError,
@@ -62,7 +61,6 @@ export {
     //types
     HealthCheckResponse,
     BackupFileInfo,
-    SendOptions,
     BeforeSendResult,
     RecordAuthResponse,
     AuthProviderInfo,
@@ -72,14 +70,14 @@ export {
     OAuth2AuthConfig,
     OnStoreChangeFunc,
     UnsubscribeFunc,
-    BaseQueryParams,
-    ListQueryParams,
-    RecordQueryParams,
-    RecordListQueryParams,
-    LogStatsQueryParams,
-    FileQueryParams,
-    FullListQueryParams,
-    RecordFullListQueryParams,
+    CommonOptions,
+    ListOptions,
+    RecordOptions,
+    RecordListOptions,
+    LogStatsOptions,
+    FileOptions,
+    FullListOptions,
+    RecordFullListOptions,
 };
 
 export default Client;

@@ -1,56 +1,56 @@
-import BaseService         from '@/services/utils/BaseService';
-import { BaseQueryParams } from '@/services/utils/QueryParams';
-
-export interface BackupFileInfo {
-    key:      string;
-    size:     number;
-    modified: string;
-}
+import BaseService        from '@/services/utils/BaseService';
+import { CommonOptions }  from '@/services/utils/options';
+import { BackupFileInfo } from '@/services/utils/dtos';
 
 export default class BackupService extends BaseService {
     /**
      * Returns list with all available backup files.
      */
-    getFullList(queryParams: BaseQueryParams = {}): Promise<Array<BackupFileInfo>> {
-        return this.client.send('/api/backups', {
+    getFullList(options?: CommonOptions): Promise<Array<BackupFileInfo>> {
+        options = Object.assign({
             'method': 'GET',
-            'params': queryParams,
-        });
+        }, options);
+
+        return this.client.send('/api/backups', options);
     }
 
     /**
      * Initializes a new backup.
      */
-    create(basename: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        const bodyParams = {
-            'name': basename,
-        };
-
-        return this.client.send('/api/backups', {
+    create(basename: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body':   {
+                'name': basename,
+            },
+        }, options);
+
+        return this.client.send('/api/backups', options)
+            .then(() => true);
     }
 
     /**
      * Deletes a single backup file.
      */
-    delete(key: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(`/api/backups/${encodeURIComponent(key)}`, {
+    delete(key: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'DELETE',
-            'params': queryParams,
-        }).then(() => true);
+        }, options);
+
+        return this.client.send(`/api/backups/${encodeURIComponent(key)}`, options)
+            .then(() => true);
     }
 
     /**
      * Initializes an app data restore from an existing backup.
      */
-    restore(key: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return this.client.send(`/api/backups/${encodeURIComponent(key)}/restore`, {
+    restore(key: string, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
             'method': 'POST',
-            'params': queryParams,
-        }).then(() => true);
+        }, options);
+
+        return this.client.send(`/api/backups/${encodeURIComponent(key)}/restore`, options)
+            .then(() => true);
     }
 
     /**

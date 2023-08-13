@@ -1,9 +1,9 @@
-import { assert }                from 'chai';
+import { describe, assert, test, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { crudServiceTestsSuite } from '../suites';
-import { FetchMock }             from 'tests/mocks';
+import { FetchMock }             from '../mocks';
 import Client                    from '@/Client';
 import RecordService             from '@/services/RecordService';
-import { RecordModel }           from '@/services/utils/ResponseModels';
+import { RecordModel }           from '@/services/utils/dtos';
 
 describe('RecordService', function() {
     const client  = new Client('test_base_url/');
@@ -17,11 +17,11 @@ describe('RecordService', function() {
         service.client.authStore.clear(); // reset
     });
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -30,7 +30,7 @@ describe('RecordService', function() {
     });
 
     describe('AuthStore sync', function() {
-        it('Should update the AuthStore record model on matching update id and collection', async function() {
+        test('Should update the AuthStore record model on matching update id and collection', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -51,7 +51,7 @@ describe('RecordService', function() {
             assert.equal(service.client.authStore.model?.email, "new@example.com");
         });
 
-        it('Should not update the AuthStore record model on matching id but mismatched collection', async function() {
+        test('Should not update the AuthStore record model on matching id but mismatched collection', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -73,7 +73,7 @@ describe('RecordService', function() {
             assert.equal(service.client.authStore.model?.email, "old@example.com");
         });
 
-        it('Should not update the AuthStore record model on mismatched update id', async function() {
+        test('Should not update the AuthStore record model on mismatched update id', async function() {
             fetchMock.on({
                 method: 'PATCH',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -95,7 +95,7 @@ describe('RecordService', function() {
             assert.equal(service.client.authStore.model?.email, "old@example.com");
         });
 
-        it('Should delete the AuthStore record model on matching delete id and collection', async function() {
+        test('Should delete the AuthStore record model on matching delete id and collection', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -112,7 +112,7 @@ describe('RecordService', function() {
             assert.isNull(service.client.authStore.model);
         });
 
-        it('Should not delete the AuthStore record model on matching delete id but mismatched collection', async function() {
+        test('Should not delete the AuthStore record model on matching delete id but mismatched collection', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -129,7 +129,7 @@ describe('RecordService', function() {
             assert.isNotNull(service.client.authStore.model);
         });
 
-        it('Should not delete the AuthStore record model on mismatched delete id', async function() {
+        test('Should not delete the AuthStore record model on mismatched delete id', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl('/api/collections/sub%3D/records/test123'),
@@ -161,7 +161,7 @@ describe('RecordService', function() {
     }
 
     describe('listAuthMethods()', function () {
-        it('Should fetch all available authorization methods', async function () {
+        test('Should fetch all available authorization methods', async function () {
             const expectedBody = {
                 'usernamePassword': true,
                 'emailPassword': true,
@@ -189,7 +189,7 @@ describe('RecordService', function() {
     });
 
     describe('authWithPassword()', function() {
-        it('Should authenticate a record by its username/email and password', async function() {
+        test('Should authenticate a record by its username/email and password', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-password?q1=456',
@@ -212,7 +212,7 @@ describe('RecordService', function() {
     });
 
     describe('authWithOAuth2Code()', function() {
-        it('Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
+        test('Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
@@ -238,7 +238,7 @@ describe('RecordService', function() {
     });
 
     describe('authWithOAuth2()', function() {
-        it('Should authenticate with OAuth2 a record using the legacy function overload', async function() {
+        test('Should authenticate with OAuth2 a record using the legacy function overload', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
@@ -266,7 +266,7 @@ describe('RecordService', function() {
     });
 
     describe('authRefresh()', function() {
-        it('Should refresh an authorized record instance', async function() {
+        test('Should refresh an authorized record instance', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-refresh?q1=456',
@@ -285,7 +285,7 @@ describe('RecordService', function() {
     });
 
     describe('requestPasswordReset()', function() {
-        it('Should send a password reset request', async function() {
+        test('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-password-reset?q1=456',
@@ -304,7 +304,7 @@ describe('RecordService', function() {
     });
 
     describe('confirmPasswordReset()', function() {
-        it('Should confirm a password reset request', async function() {
+        test('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-password-reset?q1=456',
@@ -325,7 +325,7 @@ describe('RecordService', function() {
     });
 
     describe('requestVerification()', function() {
-        it('Should send a password reset request', async function() {
+        test('Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-verification?q1=456',
@@ -344,7 +344,7 @@ describe('RecordService', function() {
     });
 
     describe('confirmVerification()', function() {
-        it('Should confirm a password reset request', async function() {
+        test('Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-verification?q1=456',
@@ -363,7 +363,7 @@ describe('RecordService', function() {
     });
 
     describe('requestEmailChange()', function() {
-        it('Should send an email change request', async function() {
+        test('Should send an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-email-change?q1=456',
@@ -382,7 +382,7 @@ describe('RecordService', function() {
     });
 
     describe('confirmEmailChange()', function() {
-        it('Should confirm an email change request', async function() {
+        test('Should confirm an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-email-change?q1=456',
@@ -402,7 +402,7 @@ describe('RecordService', function() {
     });
 
     describe('listExternalAuths()', function() {
-        it('Should send a list external auths request', async function() {
+        test('Should send a list external auths request', async function() {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent('@test_id') + '/external-auths?q1=456',
@@ -422,7 +422,7 @@ describe('RecordService', function() {
     });
 
     describe('unlinkExternalAuth()', function() {
-        it('Should send a unlinkExternalAuth request', async function() {
+        test('Should send a unlinkExternalAuth request', async function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent("@test_id") + "/external-auths/" + encodeURIComponent("@test_provider") + '?q1=456',

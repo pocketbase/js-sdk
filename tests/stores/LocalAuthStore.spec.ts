@@ -1,9 +1,9 @@
-import { assert }     from 'chai';
+import { describe, assert, test } from 'vitest';
 import LocalAuthStore from '@/stores/LocalAuthStore';
 
 describe('LocalAuthStore', function() {
     describe('save()', function() {
-        it('Should store auth data', function() {
+        test('Should store auth data', function() {
             const store = new LocalAuthStore();
 
             store.save('test1', { 'id': 'id1' } as any);
@@ -18,7 +18,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('clear()', function() {
-        it('Should remove all stored auth data', function() {
+        test('Should remove all stored auth data', function() {
             const store = new LocalAuthStore();
 
             store.save('test', { 'id': 'id1' } as any);
@@ -32,7 +32,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('get token()', function() {
-        it('Should extract the stored token value', function() {
+        test('Should extract the stored token value', function() {
             const store = new LocalAuthStore();
 
             assert.equal(store.token, '');
@@ -42,7 +42,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('get model()', function() {
-        it('Should extract the stored model value', function() {
+        test('Should extract the stored model value', function() {
             const store = new LocalAuthStore();
 
             assert.deepEqual(store.model, null);
@@ -52,7 +52,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('get isValid()', function() {
-        it('Should validate the stored token value', function() {
+        test('Should validate the stored token value', function() {
             const store = new LocalAuthStore();
 
             assert.isFalse(store.isValid, 'empty token string (initial)');
@@ -69,7 +69,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('loadFromCookie()', function() {
-        it('Should populate the store with the parsed cookie data', function() {
+        test('Should populate the store with the parsed cookie data', function() {
             const store = new LocalAuthStore();
 
             const data = {
@@ -85,7 +85,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('exportToCookie()', function() {
-        it('Should generate a cookie from the store data (with default options)', function() {
+        test('Should generate a cookie from the store data (with default options)', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
@@ -97,7 +97,7 @@ describe('LocalAuthStore', function() {
             assert.equal(result, "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%7D%7D; Path=/; Expires=Thu, 27 Jun 2030 10:00:00 GMT; HttpOnly; Secure; SameSite=Strict");
         });
 
-        it('Should generate a cookie from the store data (with custom options)', function() {
+        test('Should generate a cookie from the store data (with custom options)', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
@@ -119,7 +119,7 @@ describe('LocalAuthStore', function() {
             assert.equal(result, 'custom_key=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%2C%22name%22%3A%22test%22%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict');
         });
 
-        it('Should strip the model data in the generated cookie if exceed 4096', function() {
+        test('Should strip the model data in the generated cookie if exceed 4096', function() {
             const store = new LocalAuthStore();
             store.save(
                 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE',
@@ -143,7 +143,7 @@ describe('LocalAuthStore', function() {
     });
 
     describe('onChange()', function() {
-        it('Should trigger the onChange() callbacks', function() {
+        test('Should trigger the onChange() callbacks', function() {
             const store = new LocalAuthStore();
 
             let callback1Calls = 0;

@@ -240,20 +240,19 @@ pb.collection('example').getList(2, 20) // cancelled
 pb.collection('example').getList(3, 20) // executed
 ```
 
-To change this behavior, you could make use of 2 special query parameters:
-
-- `$autoCancel ` - set it to `false` to disable auto cancellation for this request
-- `$cancelKey` - set it to a string that will be used as request identifier and based on which pending requests will be matched (default to `HTTP_METHOD + path`, eg. "GET /api/users")
+To change this behavior per request basis, you can adjust the `requestKey: null|string` special query parameter.
+Set it to `null` to unset the default request identifier and to disable auto cancellation for the specific request.
+Or set it to a unique string that will be used as request identifier and based on which pending requests will be matched (default to `HTTP_METHOD + path`, eg. "GET /api/users")
 
 Example:
 
 ```js
-pb.collection('example').getList(1, 20);                           // cancelled
-pb.collection('example').getList(1, 20);                           // executed
-pb.collection('example').getList(1, 20, { '$cancelKey': "test" })  // cancelled
-pb.collection('example').getList(1, 20, { '$cancelKey': "test" })  // executed
-pb.collection('example').getList(1, 20, { '$autoCancel': false }); // executed
-pb.collection('example').getList(1, 20, { '$autoCancel': false })  // executed
+pb.collection('example').getList(1, 20);                        // cancelled
+pb.collection('example').getList(1, 20);                        // executed
+pb.collection('example').getList(1, 20, { requestKey: "test" }) // cancelled
+pb.collection('example').getList(1, 20, { requestKey: "test" }) // executed
+pb.collection('example').getList(1, 20, { requestKey: null })   // executed
+pb.collection('example').getList(1, 20, { requestKey: null })   // executed
 
 // globally disable auto cancellation
 pb.autoCancellation(false);
@@ -263,9 +262,9 @@ pb.collection('example').getList(1, 20); // executed
 pb.collection('example').getList(1, 20); // executed
 ```
 
-**If you want to completelly disable the auto cancellation behavior, you could set `pb.autoCancellation(false)`.**
+**If you want to globally disable the auto cancellation behavior, you could set `pb.autoCancellation(false)`.**
 
-To manually cancel pending requests, you could use `pb.cancelAllRequests()` or `pb.cancelRequest(cancelKey)`.
+To manually cancel pending requests, you could use `pb.cancelAllRequests()` or `pb.cancelRequest(requestKey)`.
 
 
 ### Custom Record types

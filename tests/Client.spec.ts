@@ -1,20 +1,17 @@
-import chai, { assert } from 'chai';
-import chaiAsPromised   from 'chai-as-promised';
-import Client           from '@/Client';
-import LocalAuthStore   from '@/stores/LocalAuthStore';
-import RecordService    from '@/services/RecordService';
-import { FetchMock }    from './mocks';
-
-chai.use(chaiAsPromised);
+import { describe, assert, expect, test, beforeAll, afterAll, afterEach } from 'vitest';
+import Client         from '@/Client';
+import LocalAuthStore from '@/stores/LocalAuthStore';
+import RecordService  from '@/services/RecordService';
+import { FetchMock }  from './mocks';
 
 describe('Client', function() {
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -26,7 +23,7 @@ describe('Client', function() {
     });
 
     describe('constructor()', function() {
-        it('Should create a properly configured http client instance', function() {
+        test('Should create a properly configured http client instance', function() {
             const client = new Client('test_base_url', null, 'test_language');
 
             assert.equal(client.baseUrl, 'test_base_url');
@@ -34,7 +31,7 @@ describe('Client', function() {
             assert.equal(client.lang, 'test_language');
         });
 
-        it('Should load all api resources', async function() {
+        test('Should load all api resources', async function() {
             const client = new Client('test_base_url');
 
             const baseServices = [
@@ -52,7 +49,7 @@ describe('Client', function() {
     });
 
     describe('collection()', function() {
-        it('Should initialize the related collection record service', function() {
+        test('Should initialize the related collection record service', function() {
             const client = new Client('test_base_url');
 
             const service1 = client.collection('test1');
@@ -71,7 +68,7 @@ describe('Client', function() {
     });
 
     describe('buildUrl()', function() {
-        it('Should properly concatenate path to baseUrl', function() {
+        test('Should properly concatenate path to baseUrl', function() {
             // with trailing slash
             const client1 = new Client('test_base_url/');
             assert.equal(client1.buildUrl('test123'), 'test_base_url/test123');
@@ -83,7 +80,7 @@ describe('Client', function() {
             assert.equal(client2.buildUrl('/test123'), 'test_base_url/test123');
         });
 
-        it('Should construct an absolute url if window.location is defined', function() {
+        test('Should construct an absolute url if window.location is defined', function() {
             global.window = {
                 location: {
                     origin:   'https://example.com/',
@@ -138,14 +135,14 @@ describe('Client', function() {
     describe('getFileUrl()', function () {
         const client = new Client('test_base_url');
 
-        it('Should return a formatted url', async function () {
+        test('Should return a formatted url', async function () {
             const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = client.getFileUrl(record, 'demo.png')
 
             assert.deepEqual(result, 'test_base_url/api/files/123/456/demo.png');
         });
 
-        it('Should return a formatted url + query params', async function () {
+        test('Should return a formatted url + query params', async function () {
             const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = client.getFileUrl(record, 'demo=', {'test': 'abc'})
 
@@ -154,7 +151,7 @@ describe('Client', function() {
     });
 
     describe('send()', function() {
-        it('Should build and send http request', async function() {
+        test('Should build and send http request', async function() {
             const client = new Client('test_base_url', null, 'test_language_A');
 
             fetchMock.on({
@@ -192,12 +189,40 @@ describe('Client', function() {
                 replyBody: 'successDelete',
             });
 
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/multipart',
+                additionalMatcher: (_, config: any): boolean => {
+                    // multipart/form-data requests doesn't have explicitly set Content-Type
+                    return !config?.headers?.['Content-Type'];
+                },
+                replyCode: 200,
+                replyBody: 'successMultipart',
+            });
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/multipartAuto',
+                additionalMatcher: (_, config: any): boolean => {
+                    return (
+                        // multipart/form-data requests doesn't have explicitly set Content-Type
+                        !config?.headers?.['Content-Type'] &&
+                        // the body should have been converted to FormData
+                        config.body instanceof FormData
+                    );
+                },
+                replyCode: 200,
+                replyBody: 'successMultipartAuto',
+            });
+
             const testCases = [
                 [client.send('/123', { method: 'GET' }), 'successGet'],
                 [client.send('/123', { method: 'POST' }), 'successPost'],
                 [client.send('/123', { method: 'PUT' }), 'successPut'],
                 [client.send('/123', { method: 'PATCH' }), 'successPatch'],
                 [client.send('/123', { method: 'DELETE' }), 'successDelete'],
+                [client.send('/multipart', { method: 'GET', body: new FormData() }), 'successMultipart'],
+                [client.send('/multipartAuto', { method: 'GET', body: {title: "test", file: new Blob([])} }), 'successMultipartAuto'],
             ];
             for (let testCase of testCases) {
                 const responseData = await testCase[0]
@@ -205,7 +230,7 @@ describe('Client', function() {
             }
         });
 
-        it('Should auto add authorization header if missing', async function() {
+        test('Should auto add authorization header if missing', async function() {
             const client = new Client('test_base_url', null, 'test_language_A');
 
             // none
@@ -246,7 +271,7 @@ describe('Client', function() {
             await client.send('/user', { method: 'GET' });
         });
 
-        it('Should trigger the before hook', async function() {
+        test('Should trigger the before hook', async function() {
             const client = new Client('test_base_url');
             const newUrl = 'test_base_url/new'
 
@@ -272,7 +297,7 @@ describe('Client', function() {
             assert.equal(response, '123');
         });
 
-        it('Should trigger the async before hook', async function() {
+        test('Should trigger the async before hook', async function() {
             const client = new Client('test_base_url');
             const newUrl = 'test_base_url/new'
 
@@ -300,7 +325,7 @@ describe('Client', function() {
             assert.equal(response, '123');
         });
 
-        it('Should trigger the after hook', async function() {
+        test('Should trigger the after hook', async function() {
             const client = new Client('test_base_url');
 
             client.afterSend = function (response, _) {
@@ -330,10 +355,10 @@ describe('Client', function() {
             assert.equal(responseSuccess, '789');
 
             const responseFailure = client.send('/failure', { method: 'GET' });
-            await assert.isRejected(responseFailure, null);
+            await expect(responseFailure).rejects.toThrow();
         });
 
-        it('Should trigger the async after hook', async function() {
+        test('Should trigger the async after hook', async function() {
             const client = new Client('test_base_url');
 
             client.afterSend = async function () {
@@ -353,12 +378,12 @@ describe('Client', function() {
             });
 
             const response = client.send('/async_after', { method: 'GET' });
-            await assert.isRejected(response, "after_err");
+            await expect(response).rejects.toThrow("after_err");
         });
     });
 
     describe('cancelRequest()', function() {
-        it('Should cancel pending request', async function() {
+        test('Should cancel pending request', async function() {
             const client = new Client('test_base_url');
 
             fetchMock.on({
@@ -372,12 +397,12 @@ describe('Client', function() {
 
             client.cancelRequest('testKey');
 
-            await assert.isRejected(response, null);
+            await expect(response).rejects.toThrow();
         });
     });
 
     describe('cancelAllRequests()', function() {
-        it('Should cancel all pending requests', async function() {
+        test('Should cancel all pending requests', async function() {
             const client = new Client('test_base_url');
 
             fetchMock.on({
@@ -399,14 +424,16 @@ describe('Client', function() {
 
             client.cancelAllRequests();
 
-            await assert.isRejected(requestA, null);
-            await assert.isRejected(requestB, null);
+            await expect(requestA).rejects.toThrow();
+            await expect(requestB).rejects.toThrow();
         });
     });
 
     describe('auto cancellation', function() {
-        it('Should disable auto cancellation', async function() {
-            const client = new Client('test_base_url').autoCancellation(false);
+        test('Should disable auto cancellation', async function() {
+            const client = new Client('test_base_url');
+
+            client.autoCancellation(false);
 
             fetchMock.on({
                 method:    'GET',
@@ -418,11 +445,11 @@ describe('Client', function() {
             const requestA = client.send('/123', { method: 'GET' });
             const requestB = client.send('/123', { method: 'GET' });
 
-            await assert.isFulfilled(requestA);
-            await assert.isFulfilled(requestB);
+            await expect(requestA).resolves.toBeDefined();
+            await expect(requestB).resolves.toBeDefined();
         });
 
-        it('Should auto cancel duplicated requests with default key', async function() {
+        test('Should auto cancel duplicated requests with default key', async function() {
             const client = new Client('test_base_url');
 
             fetchMock.on({
@@ -436,12 +463,12 @@ describe('Client', function() {
             const requestB = client.send('/123', { method: 'GET' });
             const requestC = client.send('/123', { method: 'GET' });
 
-            await assert.isRejected(requestA, null);
-            await assert.isRejected(requestB, null);
-            await assert.isFulfilled(requestC);
+            await expect(requestA).rejects.toThrow();
+            await expect(requestB).rejects.toThrow();
+            await expect(requestC).resolves.toBeDefined();
         });
 
-        it('Should auto cancel duplicated requests with custom key', async function() {
+        test('(legacy) Should auto cancel duplicated requests with custom key', async function() {
             const client = new Client('test_base_url');
 
             fetchMock.on({
@@ -454,11 +481,30 @@ describe('Client', function() {
             const requestA = client.send('/123', { method: 'GET', params: { $cancelKey: 'customKey' } });
             const requestB = client.send('/123', { method: 'GET' });
 
-            await assert.isFulfilled(requestA);
-            await assert.isFulfilled(requestB);
+            await expect(requestA).resolves.toBeDefined();
+            await expect(requestB).resolves.toBeDefined();
         });
 
-        it('Should skip auto cancellation', async function() {
+        test('Should auto cancel duplicated requests with custom key', async function() {
+            const client = new Client('test_base_url');
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/123',
+                delay:     5,
+                replyCode: 200,
+            })
+
+            const requestA = client.send('/123', { method: 'GET', requestKey: 'customKey' });
+            const requestB = client.send('/123', { method: 'GET', requestKey: 'customKey' });
+            const requestC = client.send('/123', { method: 'GET' });
+
+            await expect(requestA).rejects.toThrow();
+            await expect(requestB).resolves.toBeDefined();
+            await expect(requestC).resolves.toBeDefined();
+        });
+
+        test('(legacy) Should skip auto cancellation', async function() {
             const client = new Client('test_base_url');
 
             fetchMock.on({
@@ -472,9 +518,28 @@ describe('Client', function() {
             const requestB = client.send('/123', { method: 'GET', params: { $autoCancel: false } });
             const requestC = client.send('/123', { method: 'GET', params: { $autoCancel: false } });
 
-            await assert.isFulfilled(requestA);
-            await assert.isFulfilled(requestB);
-            await assert.isFulfilled(requestC);
+            await expect(requestA).resolves.toBeDefined();
+            await expect(requestB).resolves.toBeDefined();
+            await expect(requestC).resolves.toBeDefined();
+        });
+
+        test('Should skip auto cancellation', async function() {
+            const client = new Client('test_base_url');
+
+            fetchMock.on({
+                method:    'GET',
+                url:       'test_base_url/123',
+                delay:     5,
+                replyCode: 200,
+            })
+
+            const requestA = client.send('/123', { method: 'GET', requestKey: null });
+            const requestB = client.send('/123', { method: 'GET', requestKey: null });
+            const requestC = client.send('/123', { method: 'GET', requestKey: null });
+
+            await expect(requestA).resolves.toBeDefined();
+            await expect(requestB).resolves.toBeDefined();
+            await expect(requestC).resolves.toBeDefined();
         });
     });
 });

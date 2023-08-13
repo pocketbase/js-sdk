@@ -1,6 +1,7 @@
-import BaseCrudService     from '@/services/utils/BaseCrudService';
-import { BaseQueryParams } from '@/services/utils/QueryParams';
-import { AdminModel }      from '@/services/utils/ResponseModels';
+import BaseCrudService from '@/services/utils/BaseCrudService';
+import { AdminModel }  from '@/services/utils/dtos';
+import { CommonOptions } from '@/services/utils/options';
+import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
 
 export interface AdminAuthResponse {
     [key: string]: any;
@@ -27,13 +28,16 @@ export default class AdminService extends BaseCrudService<AdminModel> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = AdminModel>(id: string, bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<T> {
-        return super.update(id, bodyParams, queryParams).then((item) => {
+    update<T = AdminModel>(
+        id: string,
+        bodyParams?: {[key:string]:any}|FormData,
+        options?: CommonOptions,
+    ): Promise<T> {
+        return super.update(id, bodyParams, options).then((item) => {
             // update the store state if the updated item id matches with the stored model
             if (
-                this.client.authStore.model &&
-                typeof this.client.authStore.model?.collectionId === 'undefined' && // is not record auth
-                this.client.authStore.model?.id === item.id
+                this.client.authStore.model?.id === item.id &&
+                typeof this.client.authStore.model?.collectionId === 'undefined' // is not record auth
             ) {
                 this.client.authStore.save(this.client.authStore.token, item);
             }
@@ -48,14 +52,13 @@ export default class AdminService extends BaseCrudService<AdminModel> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, queryParams: BaseQueryParams = {}): Promise<boolean> {
-        return super.delete(id, queryParams).then((success) => {
+    delete(id: string, options?: CommonOptions): Promise<boolean> {
+        return super.delete(id, options).then((success) => {
             // clear the store state if the deleted item id matches with the stored model
             if (
                 success &&
-                this.client.authStore.model &&
-                typeof this.client.authStore.model?.collectionId === 'undefined' && // is not record auth
-                this.client.authStore.model?.id === id
+                this.client.authStore.model?.id === id &&
+                typeof this.client.authStore.model?.collectionId === 'undefined' // is not record auth
             ) {
                 this.client.authStore.clear();
             }
@@ -91,22 +94,37 @@ export default class AdminService extends BaseCrudService<AdminModel> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
+    authWithPassword(email: string, password: string, options?: CommonOptions): Promise<AdminAuthResponse>
+
+    /**
+     * @deprecated
+     * Consider using authWithPassword(email, password, options?).
+     */
+    authWithPassword(email: string, password: string, body?: any, query?: any): Promise<AdminAuthResponse>
+
     authWithPassword(
         email: string,
         password: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
+        bodyOrOptions?: any,
+        query?: any,
     ): Promise<AdminAuthResponse> {
-        bodyParams = Object.assign({
-            'identity': email,
-            'password': password,
-        }, bodyParams);
+        let options: any = {
+            'method': 'POST',
+            'body': {
+                'identity': email,
+                'password': password,
+            },
+        };
 
-        return this.client.send(this.baseCrudPath + '/auth-with-password', {
-            'method':  'POST',
-            'params':  queryParams,
-            'body':    bodyParams,
-        }).then(this.authResponse.bind(this));
+        options = normalizeLegacyOptionsArgs(
+            'This form of authWithPassword(email, pass, body?, query?) is depreacted. Consider replacing it with authWithPassword(email, pass, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCrudPath + '/auth-with-password', options)
+            .then(this.authResponse.bind(this));
     }
 
     /**
@@ -115,53 +133,89 @@ export default class AdminService extends BaseCrudService<AdminModel> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    authRefresh(bodyParams = {}, queryParams: BaseQueryParams = {}): Promise<AdminAuthResponse> {
-        return this.client.send(this.baseCrudPath + '/auth-refresh', {
+    authRefresh(options?: CommonOptions): Promise<AdminAuthResponse>
+
+    /**
+     * @deprecated
+     * Consider using authRefresh(options?).
+     */
+    authRefresh(body?: any, query?: any): Promise<AdminAuthResponse>
+
+    authRefresh(bodyOrOptions?: any, query?: any): Promise<AdminAuthResponse> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(this.authResponse.bind(this));
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of authRefresh(body?, query?) is depreacted. Consider replacing it with authRefresh(options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCrudPath + '/auth-refresh', options)
+            .then(this.authResponse.bind(this));
     }
 
     /**
      * Sends admin password reset request.
      */
-    requestPasswordReset(
-        email: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'email': email,
-        }, bodyParams);
+    requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCrudPath + '/request-password-reset', {
+    /**
+     * @deprecated
+     * Consider using requestPasswordReset(email, options?).
+     */
+    requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
+
+    requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'email': email,
+            },
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of requestPasswordReset(email, body?, query?) is depreacted. Consider replacing it with requestPasswordReset(email, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCrudPath + '/request-password-reset', options)
+            .then(() => true);
     }
 
     /**
      * Confirms admin password reset request.
      */
-    confirmPasswordReset(
-        passwordResetToken: string,
-        password: string,
-        passwordConfirm: string,
-        bodyParams = {},
-        queryParams: BaseQueryParams = {},
-    ): Promise<boolean> {
-        bodyParams = Object.assign({
-            'token':           passwordResetToken,
-            'password':        password,
-            'passwordConfirm': passwordConfirm,
-        }, bodyParams);
+    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>
 
-        return this.client.send(this.baseCrudPath + '/confirm-password-reset', {
+    /**
+     * @deprecated
+     * Consider using confirmPasswordReset(resetToken, password, passwordConfirm, options?).
+     */
+    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, body?: any, query?: any): Promise<boolean>
+
+    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, bodyOrOptions?: any, query?: any): Promise<boolean>{
+        let options: any = {
             'method': 'POST',
-            'params': queryParams,
-            'body':   bodyParams,
-        }).then(() => true);
+            'body': {
+                'token':           resetToken,
+                'password':        password,
+                'passwordConfirm': passwordConfirm,
+            },
+        };
+
+        options = normalizeLegacyOptionsArgs(
+            'This form of confirmPasswordReset(resetToken, password, passwordConfirm, body?, query?) is depreacted. Consider replacing it with confirmPasswordReset(resetToken, password, passwordConfirm, options?).',
+            options,
+            bodyOrOptions,
+            query
+        );
+
+        return this.client.send(this.baseCrudPath + '/confirm-password-reset', options)
+            .then(() => true);
     }
 }

@@ -225,8 +225,8 @@ export default class RealtimeService extends BaseService {
                 'clientId': this.clientId,
                 'subscriptions': this.lastSentTopics,
             },
-            'params': {
-                '$cancelKey': this.getSubscriptionsCancelKey(),
+            'query': {
+                'requestKey': this.getSubscriptionsCancelKey(),
             },
         }).catch((err) => {
             if (err?.isAbort) {

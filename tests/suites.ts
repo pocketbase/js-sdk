@@ -1,4 +1,4 @@
-import { assert }      from 'chai';
+import { describe, assert, test, beforeAll, afterAll } from 'vitest';
 import BaseCrudService from '@/services/utils/BaseCrudService';
 import { FetchMock }   from './mocks';
 
@@ -11,11 +11,11 @@ export function crudServiceTestsSuite<M>(
     describe('BaseCrudServiceTests', function() {
         const fetchMock = new FetchMock();
 
-        before(function () {
+        beforeAll(function () {
             fetchMock.init();
         });
 
-        after(function () {
+        afterAll(function () {
             fetchMock.restore();
         });
 
@@ -162,14 +162,13 @@ export function crudServiceTestsSuite<M>(
         // -----------------------------------------------------------
 
         describe('baseCrudPath()', function() {
-            it('Should corectly return the service base crud path', function(done) {
+            test('Should corectly return the service base crud path', function() {
                 assert.equal(service.baseCrudPath, expectedBasePath);
-                done();
             });
         });
 
         describe('getFullList()', function() {
-            it('items.length == batchSize (aka. empty request stop check)', async function() {
+            test('items.length == batchSize (aka. empty request stop check)', async function() {
                 const result = await service.getFullList({ 'batch': 1, 'q1': 'emptyRequest' });
                 const expected = [
                     service.decode({ 'id': 'item1' }),
@@ -178,7 +177,7 @@ export function crudServiceTestsSuite<M>(
 
                 assert.deepEqual(result, expected);
             });
-            it('items.length < batchSize (aka. no empty request stop check)', async function() {
+            test('items.length < batchSize (aka. no empty request stop check)', async function() {
                 const result = await service.getFullList({ 'batch': 2, 'q1': 'noEmptyRequest' });
                 const expected = [
                     service.decode({ 'id': 'item1' }),
@@ -191,7 +190,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('getList()', function() {
-            it('Should correctly return paginated list result', async function() {
+            test('Should correctly return paginated list result', async function() {
                 const list = await service.getList(2, 1, { 'q1': 'abc' });
                 const expected = [service.decode({ 'id': 'item3' })];
 
@@ -206,7 +205,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('getFirstListItem()', function() {
-            it('Should return single model item by a filter', async function() {
+            test('Should return single model item by a filter', async function() {
                 const result = await service.getFirstListItem("test=123", { 'q1': 'abc' });
                 const expected = service.decode({ 'id': 'item1' });
 
@@ -215,7 +214,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('getOne()', function() {
-            it('Should return single model item by an id', async function() {
+            test('Should return single model item by an id', async function() {
                 const result = await service.getOne(id, { 'q1': 'abc' });
                 const expected = service.decode({ 'id': 'item-one' });
 
@@ -224,7 +223,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('create()', function() {
-            it('Should create new model item', async function() {
+            test('Should create new model item', async function() {
                 const result = await service.create({ 'b1': 123 }, { 'q1': 456 });
                 const expected = service.decode({ 'id': 'item-create' });
 
@@ -233,7 +232,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('update()', function() {
-            it('Should update existing model item', async function() {
+            test('Should update existing model item', async function() {
                 const result = await service.update(id, { 'b1': 123 }, { 'q1': 456 });
                 const expected = service.decode({ 'id': 'item-update' });
 
@@ -242,7 +241,7 @@ export function crudServiceTestsSuite<M>(
         });
 
         describe('delete()', function() {
-            it('Should delete single model item', async function() {
+            test('Should delete single model item', async function() {
                 const result = await service.delete(id, { "q1": 456 });
 
                 assert.isTrue(result);

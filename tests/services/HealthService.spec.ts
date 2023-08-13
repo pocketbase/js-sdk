@@ -1,18 +1,18 @@
-import { assert }    from 'chai';
+import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { FetchMock } from '../mocks';
 import Client        from '@/Client';
 import HealthService from '@/services/HealthService';
-import { FetchMock } from 'tests/mocks';
 
 describe('HealthService', function () {
     const client    = new Client('test_base_url');
     const service   = new HealthService(client);
     const fetchMock = new FetchMock();
 
-    before(function () {
+    beforeAll(function () {
         fetchMock.init();
     });
 
-    after(function () {
+    afterAll(function () {
         fetchMock.restore();
     });
 
@@ -21,7 +21,7 @@ describe('HealthService', function () {
     });
 
     describe('check()', function () {
-        it('Should fetch all app settings', async function () {
+        test('Should fetch all app settings', async function () {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl('/api/health') + '?q1=123',
