@@ -4,7 +4,7 @@ export type RequestMock = {
     method?:    string,
     url?:       string,
     body?:      { [key:string]: any },
-    additionalMatcher?: (url: RequestInfo |URL, config: RequestInit | undefined) => boolean,
+    additionalMatcher?: (url: RequestInfo |URL, config: RequestInit | {[key:string]:any} | undefined) => boolean,
     delay?:     number,
     replyCode?: number,
     replyBody?: any,
@@ -24,7 +24,7 @@ export class FetchMock {
     init() {
         this.originalFetch = global?.fetch;
 
-        global.fetch = (url: RequestInfo | URL, config: RequestInit | undefined) => {
+        global.fetch = (url: RequestInfo | URL, config: RequestInit | {[key:string]:any} | undefined) => {
             for (let mock of this.mocks) {
                 // match url and method
                 if (

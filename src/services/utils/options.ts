@@ -2,7 +2,7 @@ export interface SendOptions extends RequestInit {
     [key: string]: any; // for backward compatibility
 
     // optional custom fetch function to use for sending the request
-    fetch?: (url: RequestInfo | URL, config?: RequestInit | undefined) => Promise<Response>;
+    fetch?: (url: RequestInfo | URL, config?: RequestInit) => Promise<Response>;
 
     // custom headers to send with the requests
     headers?: { [key: string]: string };

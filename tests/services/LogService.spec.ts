@@ -33,11 +33,14 @@ describe('LogService', function () {
             fetchMock.on({
                 method: 'GET',
                 url: 'test_base_url/api/logs/requests?page=2&perPage=1&q1=abc',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
                 replyBody: replyBody,
             });
 
-            const list = await service.getRequestsList(2, 1, { 'q1': 'abc' });
+            const list = await service.getRequestsList(2, 1, { 'q1': 'abc', 'headers': {'x-test': '456'} });
 
             assert.deepEqual(list, replyBody);
         });
@@ -48,11 +51,14 @@ describe('LogService', function () {
             fetchMock.on({
                 method: 'GET',
                 url: 'test_base_url/api/logs/requests/' + encodeURIComponent('test?123') + '?q1=abc',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
                 replyBody: { 'id': 'test123' },
             });
 
-            const result = await service.getRequest('test?123', { 'q1': 'abc' });
+            const result = await service.getRequest('test?123', { 'q1': 'abc', 'headers': {'x-test': '456'} });
 
             assert.deepEqual(result, { 'id': 'test123' } as any);
         });
@@ -63,11 +69,14 @@ describe('LogService', function () {
             fetchMock.on({
                 method: 'GET',
                 url: 'test_base_url/api/logs/requests/stats?q1=abc',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
                 replyBody: [{total: 123, date: '2022-01-01 00:00:00'}],
             });
 
-            const result = await service.getRequestsStats({ 'q1': 'abc' });
+            const result = await service.getRequestsStats({ 'q1': 'abc', 'headers': {'x-test': '456'} });
             const expected = [{total: 123, date: '2022-01-01 00:00:00'}];
 
             assert.deepEqual(result, expected);

@@ -34,6 +34,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': -1,
                 'items': [{ 'id': 'item1' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
         fetchMock.on({
             method: 'GET',
@@ -46,6 +49,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': -1,
                 'items': [{ 'id': 'item2' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
         fetchMock.on({
             method: 'GET',
@@ -57,6 +63,9 @@ export function crudServiceTestsSuite<M>(
                 'totalItems': -1,
                 'totalPages': -1,
                 'items': [],
+            },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
             },
         });
 
@@ -72,6 +81,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': -1,
                 'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
         fetchMock.on({
             method: 'GET',
@@ -83,6 +95,9 @@ export function crudServiceTestsSuite<M>(
                 'totalItems': -1,
                 'totalPages': -1,
                 'items': [{ 'id': 'item3' }],
+            },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
             },
         });
 
@@ -98,6 +113,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': 3,
                 'items': [{ 'id': 'item1' }, { 'id': 'item2' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
         fetchMock.on({
             method: 'GET',
@@ -110,6 +128,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': 3,
                 'items': [{ 'id': 'item3' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // getOne
@@ -118,6 +139,9 @@ export function crudServiceTestsSuite<M>(
             url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent(id) + '?q1=abc',
             replyCode: 200,
             replyBody: { 'id': 'item-one' },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // getFirstListItem
@@ -132,6 +156,9 @@ export function crudServiceTestsSuite<M>(
                 'totalPages': -1,
                 'items': [{ 'id': 'item1' }],
             },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // create
@@ -141,6 +168,9 @@ export function crudServiceTestsSuite<M>(
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-create' },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // update
@@ -150,6 +180,9 @@ export function crudServiceTestsSuite<M>(
             body: { 'b1': 123 },
             replyCode: 200,
             replyBody: { 'id': 'item-update' },
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // delete
@@ -157,6 +190,9 @@ export function crudServiceTestsSuite<M>(
             method: 'DELETE',
             url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent(id) + '?q1=456',
             replyCode: 204,
+            additionalMatcher: (_, config) => {
+                return config?.headers?.['x-test'] === '789';
+            },
         });
 
         // -----------------------------------------------------------
@@ -169,7 +205,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('getFullList()', function() {
             test('items.length == batchSize (aka. empty request stop check)', async function() {
-                const result = await service.getFullList({ 'batch': 1, 'q1': 'emptyRequest' });
+                const result = await service.getFullList({ 'batch': 1, 'q1': 'emptyRequest', 'headers': {'x-test': '789'} });
                 const expected = [
                     service.decode({ 'id': 'item1' }),
                     service.decode({ 'id': 'item2' }),
@@ -178,7 +214,7 @@ export function crudServiceTestsSuite<M>(
                 assert.deepEqual(result, expected);
             });
             test('items.length < batchSize (aka. no empty request stop check)', async function() {
-                const result = await service.getFullList({ 'batch': 2, 'q1': 'noEmptyRequest' });
+                const result = await service.getFullList({ 'batch': 2, 'q1': 'noEmptyRequest', 'headers': {'x-test': '789'} });
                 const expected = [
                     service.decode({ 'id': 'item1' }),
                     service.decode({ 'id': 'item2' }),
@@ -191,7 +227,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('getList()', function() {
             test('Should correctly return paginated list result', async function() {
-                const list = await service.getList(2, 1, { 'q1': 'abc' });
+                const list = await service.getList(2, 1, { 'q1': 'abc', 'headers': {'x-test': '789'} });
                 const expected = [service.decode({ 'id': 'item3' })];
 
                 assert.deepEqual(list, {
@@ -206,7 +242,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('getFirstListItem()', function() {
             test('Should return single model item by a filter', async function() {
-                const result = await service.getFirstListItem("test=123", { 'q1': 'abc' });
+                const result = await service.getFirstListItem("test=123", { 'q1': 'abc', 'headers': {'x-test': '789'} });
                 const expected = service.decode({ 'id': 'item1' });
 
                 assert.deepEqual(result, expected);
@@ -215,7 +251,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('getOne()', function() {
             test('Should return single model item by an id', async function() {
-                const result = await service.getOne(id, { 'q1': 'abc' });
+                const result = await service.getOne(id, { 'q1': 'abc', 'headers': {'x-test': '789'} });
                 const expected = service.decode({ 'id': 'item-one' });
 
                 assert.deepEqual(result, expected);
@@ -224,7 +260,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('create()', function() {
             test('Should create new model item', async function() {
-                const result = await service.create({ 'b1': 123 }, { 'q1': 456 });
+                const result = await service.create({ 'b1': 123 }, { 'q1': 456, 'headers': {'x-test': '789'} });
                 const expected = service.decode({ 'id': 'item-create' });
 
                 assert.deepEqual(result, expected);
@@ -233,7 +269,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('update()', function() {
             test('Should update existing model item', async function() {
-                const result = await service.update(id, { 'b1': 123 }, { 'q1': 456 });
+                const result = await service.update(id, { 'b1': 123 }, { 'q1': 456, 'headers': {'x-test': '789'} });
                 const expected = service.decode({ 'id': 'item-update' });
 
                 assert.deepEqual(result, expected);
@@ -242,7 +278,7 @@ export function crudServiceTestsSuite<M>(
 
         describe('delete()', function() {
             test('Should delete single model item', async function() {
-                const result = await service.delete(id, { "q1": 456 });
+                const result = await service.delete(id, { "q1": 456, 'headers': {'x-test': '789'} });
 
                 assert.isTrue(result);
             });

@@ -30,11 +30,14 @@ describe('BackupService', function () {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl('/api/backups') + '?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
                 replyCode: 200,
                 replyBody: replyBody,
             });
 
-            const result = await service.getFullList({ 'q1': 123 });
+            const result = await service.getFullList({ 'q1': 123, headers: {'x-test': '123'} });
 
             assert.deepEqual(result, replyBody);
         });
@@ -44,14 +47,17 @@ describe('BackupService', function () {
     describe('create()', function () {
         test('Should initialize a backup create', async function () {
             fetchMock.on({
-                method:    'POST',
-                url:       service.client.buildUrl('/api/backups') + '?q1=123',
-                body:      { 'name': "@test" },
+                method: 'POST',
+                url:    service.client.buildUrl('/api/backups') + '?q1=123',
+                body:   { 'name': "@test" },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.create("@test", { 'q1': 123 });
+            const result = await service.create("@test", { 'q1': 123, headers: {'x-test': '123'} });
 
             assert.deepEqual(result, true);
         });
@@ -60,13 +66,16 @@ describe('BackupService', function () {
     describe('delete()', function () {
         test('Should delete a single backup', async function () {
             fetchMock.on({
-                method:    'DELETE',
-                url:       service.client.buildUrl('/api/backups') + '/%40test?q1=123',
+                method: 'DELETE',
+                url: service.client.buildUrl('/api/backups') + '/%40test?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.delete("@test", { 'q1': 123 });
+            const result = await service.delete("@test", { 'q1': 123, headers: {'x-test': '123'} });
 
             assert.deepEqual(result, true);
         });
@@ -75,13 +84,16 @@ describe('BackupService', function () {
     describe('restore()', function () {
         test('Should initialize a backup restore', async function () {
             fetchMock.on({
-                method:    'POST',
-                url:       service.client.buildUrl('/api/backups') + '/%40test/restore?q1=123',
+                method: 'POST',
+                url: service.client.buildUrl('/api/backups') + '/%40test/restore?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.restore("@test", { 'q1': 123 });
+            const result = await service.restore("@test", { 'q1': 123, headers: {'x-test': '123'} });
 
             assert.deepEqual(result, true);
         });

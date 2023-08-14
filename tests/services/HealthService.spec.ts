@@ -25,11 +25,14 @@ describe('HealthService', function () {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl('/api/health') + '?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
                 replyBody: { code: 200, message: 'test', data: {} },
             });
 
-            const result = await service.check({ 'q1': 123 });
+            const result = await service.check({ 'q1': 123, 'headers': {'x-test': '456'} });
 
             assert.deepEqual(result, { code: 200, message: 'test', data: {} });
         });

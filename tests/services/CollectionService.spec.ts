@@ -29,16 +29,22 @@ describe('CollectionService', function() {
         test('Should send a bulk import collections request', async function () {
             fetchMock.on({
                 method: 'PUT',
-                url: service.client.buildUrl('/api/collections/import'),
+                url: service.client.buildUrl('/api/collections/import?q1=456'),
                 body: {
                     'collections': [{'id': 'id1'},{'id': 'id2'}],
                     'deleteMissing': true,
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
                 },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<CollectionModel>, true);
+            const result = await service.import([{'id': 'id1'},{'id': 'id2'}] as Array<CollectionModel>, true, {
+                'q1': 456,
+                'headers': {'x-test': '123'}
+            });
 
             assert.deepEqual(result, true);
         });

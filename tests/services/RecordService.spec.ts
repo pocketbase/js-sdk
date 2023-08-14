@@ -178,18 +178,21 @@ describe('RecordService', function() {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-methods?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
                 replyBody: expectedBody,
             });
 
-            const result = await service.listAuthMethods({ 'q1': 123 });
+            const result = await service.listAuthMethods({ 'q1': 123, 'headers': {'x-test': '456'} });
 
             assert.deepEqual(result, expectedBody);
         });
     });
 
     describe('authWithPassword()', function() {
-        test('Should authenticate a record by its username/email and password', async function() {
+        test('(legacy) Should authenticate a record by its username/email and password', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-password?q1=456',
@@ -209,10 +212,33 @@ describe('RecordService', function() {
 
             authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
         });
+
+        test('Should authenticate a record by its username/email and password', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-password?q1=456',
+                body: {
+                    'identity': 'test@example.com',
+                    'password': '123456',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_auth',
+                    'record': { 'id': 'id_auth' },
+                },
+            });
+
+            const result = await service.authWithPassword('test@example.com', '123456', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
+        });
     });
 
     describe('authWithOAuth2Code()', function() {
-        test('Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
+        test('(legacy) Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
@@ -235,10 +261,39 @@ describe('RecordService', function() {
 
             authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
         });
+
+        test('Should authenticate with OAuth2 a record by an OAuth2 code', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
+                body: {
+                    'provider':     'test',
+                    'code':         'c123',
+                    'codeVerifier': 'v123',
+                    'redirectUrl':  'http://example.com',
+                    'createData':   {'test': 1},
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_auth',
+                    'record': { 'id': 'id_auth' },
+                },
+            });
+
+            const result = await service.authWithOAuth2Code('test', 'c123', 'v123', 'http://example.com', {'test': 1}, {
+                'q1': 456,
+                'headers': {'x-test': '789'},
+            });
+
+            authResponseCheck(result, 'token_auth', { 'id': 'id_auth' } as any);
+        });
     });
 
     describe('authWithOAuth2()', function() {
-        test('Should authenticate with OAuth2 a record using the legacy function overload', async function() {
+        test('(legacy) Should authenticate with OAuth2 a record using the legacy function overload', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-with-oauth2?q1=456',
@@ -266,7 +321,7 @@ describe('RecordService', function() {
     });
 
     describe('authRefresh()', function() {
-        test('Should refresh an authorized record instance', async function() {
+        test('(legacy) Should refresh an authorized record instance', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/auth-refresh?q1=456',
@@ -282,10 +337,29 @@ describe('RecordService', function() {
 
             authResponseCheck(result, 'token_refresh', { 'id': 'id_refresh' } as any);
         });
+
+        test('Should refresh an authorized record instance', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/auth-refresh?q1=456',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_refresh',
+                    'record': { 'id': 'id_refresh' },
+                },
+            });
+
+            const result = await service.authRefresh({ 'q1': 456, 'headers': {'x-test': '789'} });
+
+            authResponseCheck(result, 'token_refresh', { 'id': 'id_refresh' } as any);
+        });
     });
 
     describe('requestPasswordReset()', function() {
-        test('Should send a password reset request', async function() {
+        test('(legacy) Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-password-reset?q1=456',
@@ -301,10 +375,29 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should send a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/request-password-reset?q1=456',
+                body: {
+                    'email': 'test@example.com',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.requestPasswordReset('test@example.com', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('confirmPasswordReset()', function() {
-        test('Should confirm a password reset request', async function() {
+        test('(legacy) Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-password-reset?q1=456',
@@ -322,10 +415,31 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should confirm a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-password-reset?q1=456',
+                body: {
+                    'token': 'test',
+                    'password': '123',
+                    'passwordConfirm': '456',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.confirmPasswordReset('test', '123', '456', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('requestVerification()', function() {
-        test('Should send a password reset request', async function() {
+        test('(legacy) Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-verification?q1=456',
@@ -341,10 +455,29 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should send a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/request-verification?q1=456',
+                body: {
+                    'email': 'test@example.com',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.requestVerification('test@example.com', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('confirmVerification()', function() {
-        test('Should confirm a password reset request', async function() {
+        test('(legacy) Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-verification?q1=456',
@@ -360,10 +493,29 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should confirm a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-verification?q1=456',
+                body: {
+                    'token': 'test',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.confirmVerification('test', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('requestEmailChange()', function() {
-        test('Should send an email change request', async function() {
+        test('(legacy) Should send an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/request-email-change?q1=456',
@@ -379,10 +531,29 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should send an email change request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/request-email-change?q1=456',
+                body: {
+                    'newEmail': 'test@example.com',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.requestEmailChange('test@example.com', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('confirmEmailChange()', function() {
-        test('Should confirm an email change request', async function() {
+        test('(legacy) Should confirm an email change request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-email-change?q1=456',
@@ -399,6 +570,26 @@ describe('RecordService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should confirm an email change request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl(service.baseCollectionPath) + '/confirm-email-change?q1=456',
+                body: {
+                    'token': 'test',
+                    'password': '1234',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.confirmEmailChange('test', '1234', { 'q1': 456, 'headers': {'x-test': '789'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('listExternalAuths()', function() {
@@ -406,6 +597,9 @@ describe('RecordService', function() {
             fetchMock.on({
                 method: 'GET',
                 url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent('@test_id') + '/external-auths?q1=456',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
                 replyCode: 200,
                 replyBody: [
                     { id: '1', provider: 'google' },
@@ -413,7 +607,7 @@ describe('RecordService', function() {
                 ],
             });
 
-            const result = await service.listExternalAuths('@test_id', { 'q1': 456 });
+            const result = await service.listExternalAuths('@test_id', { 'q1': 456, 'headers': {'x-test': '789'} });
 
             assert.equal(result.length, 2);
             assert.equal(result[0].provider, 'google');
@@ -426,11 +620,14 @@ describe('RecordService', function() {
             fetchMock.on({
                 method: 'DELETE',
                 url: service.client.buildUrl(service.baseCrudPath) + '/' + encodeURIComponent("@test_id") + "/external-auths/" + encodeURIComponent("@test_provider") + '?q1=456',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '789';
+                },
                 replyCode: 204,
                 replyBody: true,
             });
 
-            const result = await service.unlinkExternalAuth('@test_id', '@test_provider', { 'q1': 456 });
+            const result = await service.unlinkExternalAuth('@test_id', '@test_provider', { 'q1': 456, 'headers': {'x-test': '789'} });
 
             assert.isTrue(result);
         });

@@ -41,13 +41,16 @@ describe('FileService', function () {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/files/token')+ '?q1=123',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '456';
+                },
                 replyCode: 200,
-                replyBody: {token: "456"},
+                replyBody: {token: "789"},
             });
 
-            const result = await service.getToken({ 'q1': 123 });
+            const result = await service.getToken({ 'q1': 123, 'headers': {'x-test': '456'} });
 
-            assert.deepEqual(result, "456");
+            assert.deepEqual(result, "789");
         });
     });
 });

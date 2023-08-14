@@ -271,6 +271,23 @@ describe('Client', function() {
             await client.send('/user', { method: 'GET' });
         });
 
+        test('Should use a custom fetch function', async function() {
+            const client = new Client('test_base_url');
+
+            let called = 0;
+
+            await client.send('/old?q1=123', {
+                q1: 123,
+                method: 'GET',
+                fetch: async (): Promise<Response> => {
+                    called++;
+                    return {} as any;
+                }
+            });
+
+            assert.equal(called, 1);
+        });
+
         test('Should trigger the before hook', async function() {
             const client = new Client('test_base_url');
             const newUrl = 'test_base_url/new'

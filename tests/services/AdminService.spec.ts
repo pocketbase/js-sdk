@@ -108,7 +108,7 @@ describe('AdminService', function() {
     });
 
     describe('authWithPassword()', function() {
-        test('Should auth an admin by its email and password', async function() {
+        test('(legacy) Should auth an admin by its email and password', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/auth-with-password') + '?q1=456',
@@ -128,10 +128,36 @@ describe('AdminService', function() {
 
             authResponseCheck(result, 'token_authorize', service.decode({ 'id': 'id_authorize' }));
         });
+
+        test('Should auth an admin by its email and password', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/admins/auth-with-password') + '?q1=456',
+                body: {
+                    'identity': 'test@example.com',
+                    'password': '123456',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_authorize',
+                    'admin': { 'id': 'id_authorize' },
+                },
+            });
+
+            const result = await service.authWithPassword('test@example.com', '123456', {
+                'q1':      456,
+                'headers': {'x-test': '123'},
+            });
+
+            authResponseCheck(result, 'token_authorize', service.decode({ 'id': 'id_authorize' }));
+        });
     });
 
     describe('authRefresh()', function() {
-        test('Should refresh an authorized admin instance', async function() {
+        test('(legacy) Should refresh an authorized admin instance', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/auth-refresh') + '?q1=456',
@@ -147,10 +173,29 @@ describe('AdminService', function() {
 
             authResponseCheck(result, 'token_refresh', service.decode({ 'id': 'id_refresh' }));
         });
+
+        test('Should refresh an authorized admin instance', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/admins/auth-refresh') + '?q1=456',
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
+                replyCode: 200,
+                replyBody: {
+                    'token': 'token_refresh',
+                    'admin': { 'id': 'id_refresh' },
+                },
+            });
+
+            const result = await service.authRefresh({ 'q1': 456, 'headers': {'x-test': '123'} });
+
+            authResponseCheck(result, 'token_refresh', service.decode({ 'id': 'id_refresh' }));
+        });
     });
 
     describe('requestPasswordReset()', function() {
-        test('Should send a password reset request', async function() {
+        test('(legacy) Should send a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/request-password-reset') + '?q1=456',
@@ -166,10 +211,29 @@ describe('AdminService', function() {
 
             assert.isTrue(result);
         });
+
+        test('Should send a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/admins/request-password-reset') + '?q1=456',
+                body: {
+                    'email': 'test@example.com',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.requestPasswordReset('test@example.com', { 'q1': 456, 'headers': {'x-test': '123'} });
+
+            assert.isTrue(result);
+        });
     });
 
     describe('confirmPasswordReset()', function() {
-        test('Should confirm a password reset request', async function() {
+        test('(legacy) Should confirm a password reset request', async function() {
             fetchMock.on({
                 method: 'POST',
                 url: service.client.buildUrl('/api/admins/confirm-password-reset') + '?q1=456',
@@ -184,6 +248,30 @@ describe('AdminService', function() {
             });
 
             const result = await service.confirmPasswordReset('test', '123', '456', { 'b1': 123 }, { 'q1': 456 });
+
+            assert.isTrue(result);
+        });
+
+        test('Should confirm a password reset request', async function() {
+            fetchMock.on({
+                method: 'POST',
+                url: service.client.buildUrl('/api/admins/confirm-password-reset') + '?q1=456',
+                body: {
+                    'token': 'test',
+                    'password': '123',
+                    'passwordConfirm': '456',
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.confirmPasswordReset('test', '123', '456', {
+                'q1': 456,
+                'headers': {'x-test': '123'}
+            });
 
             assert.isTrue(result);
         });
