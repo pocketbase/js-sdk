@@ -1,3 +1,112 @@
+## 0.17.0-rc1
+
+- To simplify file uploads, we now allow sending the `multipart/form-data` request body also as plain object if at least one of the object props has `File` or `Blob` value.
+    ```js
+    // the standard way to create multipart/form-data body
+    const data = new FormData();
+    data.set("title", "lorem ipsum...")
+    data.set("document", new File(...))
+
+    // this is the same as above
+    // (it will be converted behind the scenes to FormData)
+    const data = {
+      "title":    "lorem ipsum...",
+      "document": new File(...),
+    };
+
+    await pb.collection("example").create(data);
+    ```
+
+- Added new `pb.authStore.isAdmin` and `pb.authStore.isAuthRecord` helpers to check the type of the current auth state.
+
+- The default `LocalAuthStore` now listen to the browser [storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event),
+  so that we can sync automatically the `pb.authStore` state between multiple tabs.
+
+- Added new helper `AsyncAuthStore` class that can be used to integrate with any 3rd party async storage implementation (_usually this is needed when working with React Native_):
+    ```js
+    import AsyncStorage from "@react-native-async-storage/async-storage";
+    import PocketBase, { AsyncAuthStore } from "pocketbase";
+
+    const store = new AsyncAuthStore({
+        save:    async (serialized) => AsyncStorage.setItem("pb_auth", serialized),
+        initial: await AsyncStorage.getItem("pb_auth"),
+    });
+
+    const pb = new PocketBase("https://example.com", store)
+    ```
+
+- ⚠️ All API actions now return plain object (POJO) as response, aka. the custom class wrapping was removed and you no longer need to manually call `structuredClone(response)` when using with SSR frameworks.
+
+    This could be a breaking change if you use the below classes (_and respectively their helper methods like `$isNew`, `$load()`, etc._) since they were replaced with plain TS interfaces:
+    ```ts
+    class BaseModel    -> interface BaseModel
+    class Admin        -> interface AdminModel
+    class Record       -> interface RecordModel
+    class LogRequest   -> interface LogRequestModel
+    class ExternalAuth -> interface ExternalAuthModel
+    class Collection   -> interface CollectionModel
+    class SchemaField  -> interface SchemaField
+    class ListResult   -> interface ListResult
+    ```
+
+    _Side-note:_ If you use somewhere in your code the `Record` and `Admin` classes to determine the type of your `pb.authStore.model`,
+    you can safely replace it with the new `pb.authStore.isAdmin` and `pb.authStore.isAuthRecord` getters.
+
+- ⚠️ Added support for per-request `fetch` options, including also specifying completely custom `fetch` implementation.
+
+    In addition to the default [`fetch` options](https://developer.mozilla.org/en-US/docs/Web/API/fetch#options), the following configurable fields are supported:
+
+    ```ts
+    interface SendOptions extends RequestInit {
+        // any other custom key will be merged with the query parameters
+        // for backward compatibility and to minimize the verbosity
+        [key: string]: any;
+
+        // optional custom fetch function to use for sending the request
+        fetch?: (url: RequestInfo | URL, config?: RequestInit) => Promise<Response>;
+
+        // custom headers to send with the requests
+        headers?: { [key: string]: string };
+
+        // the body of the request (serialized automatically for json requests)
+        body?: any;
+
+        // query params that will be appended to the request url
+        query?: { [key: string]: any };
+
+        // the request identifier that can be used to cancel pending requests
+        requestKey?:  string|null;
+
+        // @deprecated use `requestKey:string` instead
+        $cancelKey?:  string;
+
+        // @deprecated use `requestKey:null` instead
+        $autoCancel?: boolean;
+    }
+    ```
+
+    For most users the above will not be a breaking change since there are available function overloads (_when possible_) to preserve the old behavior, but you can get a warning message in the console to update to the new format.
+    For example:
+    ```js
+    // OLD (should still work but with a warning in the console)
+    await pb.collection("example").authRefresh({}, {
+      "expand": "someRelField",
+    })
+
+    // NEW
+    await pb.collection("example").authRefresh({
+      "expand": "someRelField",
+      // send some additional header
+      "headers": {
+        "X-Custom-Header": "123",
+      },
+      "cache": "no-store" // also usually used by frameworks like Next.js
+    })
+    ```
+
+- Internal refactoring (updated dev dependencies, refactored the tests to use Vitest instead of Mocha, etc.).
+
+
 ## 0.16.0
 
 - Added `skipTotal=1` query parameter by default for the `getFirstListItem()` and `getFullList()` requests.

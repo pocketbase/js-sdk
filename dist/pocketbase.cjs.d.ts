@@ -9,7 +9,7 @@ interface SerializeOptions {
     priority?: string;
     sameSite?: boolean | string;
 }
-interface ResultList<T> {
+interface ListResult<T> {
     page: number;
     perPage: number;
     totalItems: number;
@@ -294,7 +294,7 @@ declare abstract class CrudService<M> extends BaseService {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page?: number, perPage?: number, options?: ListOptions): Promise<ResultList<T>>;
+    getList<T = M>(page?: number, perPage?: number, options?: ListOptions): Promise<ListResult<T>>;
     /**
      * Returns the first found item by the specified filter.
      *
@@ -591,7 +591,7 @@ declare class RecordService extends CrudService<RecordModel> {
     /**
      * @inheritdoc
      */
-    getList<T = RecordModel>(page?: number, perPage?: number, options?: RecordListOptions): Promise<ResultList<T>>;
+    getList<T = RecordModel>(page?: number, perPage?: number, options?: RecordListOptions): Promise<ListResult<T>>;
     /**
      * @inheritdoc
      */
@@ -815,7 +815,7 @@ declare class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page?: number, perPage?: number, options?: ListOptions): Promise<ResultList<LogRequestModel>>;
+    getRequestsList(page?: number, perPage?: number, options?: ListOptions): Promise<ListResult<LogRequestModel>>;
     /**
      * Returns a single logged request by its id.
      */
@@ -1017,13 +1017,6 @@ declare class Client {
      */
     cancelAllRequests(): Client;
     /**
-     * Sends an api http request.
-     */
-    /**
-     * Sends an api http request.
-     */
-    send<T = any>(path: string, options: SendOptions): Promise<T>;
-    /**
      * Legacy alias of `pb.files.getUrl()`.
      */
     /**
@@ -1039,15 +1032,35 @@ declare class Client {
      * Builds a full client url by safely concatenating the provided path.
      */
     buildUrl(path: string): string;
-    // @todo
+    /**
+     * Sends an api http request.
+     */
+    /**
+     * Sends an api http request.
+     */
+    send<T = any>(path: string, options: SendOptions): Promise<T>;
+    /**
+     * Shallow copy the provided object and takes care to initialize
+     * any options required to preserve the backward compatability.
+     *
+     * @param  {SendOptions} options
+     * @return {SendOptions}
+     */
+    /**
+     * Shallow copy the provided object and takes care to initialize
+     * any options required to preserve the backward compatability.
+     *
+     * @param  {SendOptions} options
+     * @return {SendOptions}
+     */
     private initSendOptions;
     /**
      * Converts analyzes the provided body and converts it to FormData
-     * in case a POJO with File/Blob values is used.
+     * in case a plain object with File/Blob values is used.
      */
     /**
      * Converts analyzes the provided body and converts it to FormData
-     * in case a POJO with File/Blob values is used.
+     * in case a plain object with File/Blob values is used.
      */
     private convertToFormDataIfNeeded;
     /**

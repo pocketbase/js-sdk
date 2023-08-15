@@ -1,5 +1,5 @@
 import { BaseService } from '@/services/utils/BaseService';
-import { ResultList, LogRequestModel }  from '@/services/utils/dtos';
+import { ListResult, LogRequestModel }  from '@/services/utils/dtos';
 import {
     CommonOptions,
     ListOptions,
@@ -15,7 +15,7 @@ export class LogService extends BaseService {
     /**
      * Returns paginated logged requests list.
      */
-    getRequestsList(page = 1, perPage = 30, options?: ListOptions): Promise<ResultList<LogRequestModel>> {
+    getRequestsList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogRequestModel>> {
         options = Object.assign({'method': 'GET'}, options);
 
         options.query = Object.assign({

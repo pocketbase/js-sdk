@@ -1,6 +1,6 @@
 import { BaseService }         from '@/services/utils/BaseService';
 import { ClientResponseError } from '@/ClientResponseError';
-import { ResultList }          from '@/services/utils/dtos';
+import { ListResult }          from '@/services/utils/dtos';
 import {
     CommonOptions,
     ListOptions,
@@ -54,7 +54,7 @@ export abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ResultList<T>> {
+    getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<T>> {
         options = Object.assign({
             method: 'GET'
         }, options);
@@ -188,7 +188,7 @@ export abstract class CrudService<M> extends BaseService   {
 
         let request = async (page: number): Promise<Array<any>> => {
             return this.getList(page, batchSize || 500, options).then((list) => {
-                const castedList = (list as any as ResultList<T>);
+                const castedList = (list as any as ListResult<T>);
                 const items      = castedList.items;
 
                 result = result.concat(items);

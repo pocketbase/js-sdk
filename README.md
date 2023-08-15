@@ -8,7 +8,11 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 - [Caveats](#caveats)
     - [File upload](#file-upload)
     - [Error handling](#error-handling)
-    - [AuthStore](#authstore)
+    - [Auth store](#auth-store)
+        - [LocalAuthStore (default)](#localauthstore-default)
+        - [AsyncAuthStore (_usually used with React Native_)](#asyncauthstore)
+        - [Custom auth store](#custom-auth-store)
+        - [Common auth store fields and methods](#common-auth-store-fields-and-methods)
     - [Auto cancellation](#auto-cancellation)
     - [Custom Record types](#custom-record-types)
     - [Send hooks](#send-hooks)
@@ -169,20 +173,63 @@ ClientResponseError {
 }
 ```
 
-### AuthStore
+### Auth store
 
 The SDK keeps track of the authenticated token and auth model for you via the `pb.authStore` instance.
 
+##### LocalAuthStore (default)
+
 The default [`LocalAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/LocalAuthStore.ts) uses the browser's `LocalStorage` if available, otherwise - will fallback to runtime/memory (aka. on page refresh or service restart you'll have to authenticate again).
+
+Conveniently, the default store also takes care to automatically sync the auth store state between multiple tabs.
+
+> _**NB!** Deno also supports `LocalStorage` but keep in mind that, unlike in browsers where the client is the only user, by default Deno `LocalStorage` will be shared by all clients making requests to your server!_
+
+##### AsyncAuthStore
+
+The SDK comes also with a helper [`AsyncAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/AsyncAuthStore.ts) that you can use to integrate with any 3rd party async storage implementation (_usually this is needed when working with React Native_):
+```js
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import PocketBase, { AsyncAuthStore } from 'pocketbase';
+
+const store = new AsyncAuthStore({
+    save:    async (serialized) => AsyncStorage.setItem('pb_auth', serialized),
+    initial: await AsyncStorage.getItem('pb_auth'),
+});
+
+const pb = new PocketBase('http://127.0.0.1:8090', store)
+```
+
+##### Custom auth store
+
+In some situations it could be easier to create your own custom auth store. For this you can extend [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and pass the new custom instance as constructor argument to the client:
+
+```js
+import PocketBase, { BaseAuthStore } from 'pocketbase';
+
+class CustomAuthStore extends BaseAuthStore {
+    save(token, model) {
+        super.save(token, model);
+
+        // your custom business logic...
+    }
+}
+
+const pb = new PocketBase('http://127.0.0.1:8090', new CustomAuthStore());
+```
+
+##### Common auth store fields and methods
 
 The default `pb.authStore` extends [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and has the following public members that you can use:
 
 ```js
 BaseAuthStore {
     // base fields
-    token:   string            // the authenticated token
-    model:   Record|Admin|null // the authenticated Record or Admin model
-    isValid: boolean           // checks if the store has existing and unexpired token
+    model:        RecordModel|AdminModel|null // the authenticated auth record or admin model
+    token:        string // the authenticated token
+    isValid:      boolean // checks if the store has existing and unexpired token
+    isAdmin:      boolean // checks if the store state is for admin
+    isAuthRecord: boolean // checks if the store state is for an auth record
 
     // main methods
     clear()            // "logout" the authenticated Record or Admin
@@ -195,7 +242,7 @@ BaseAuthStore {
 }
 ```
 
-To _"logout"_ an authenticated Record or Admin, you can just call `pb.authStore.clear()`.
+To _"logout"_ an authenticated record or admin you can call `pb.authStore.clear()`.
 
 To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
 ```js
@@ -214,20 +261,6 @@ removeListener1();
 removeListener2();
 ```
 
-If you want to create your own `AuthStore`, you can extend [`BaseAuthStore`](https://github.com/pocketbase/js-sdk/blob/master/src/stores/BaseAuthStore.ts) and pass the new custom instance as constructor argument to the client:
-
-```js
-import PocketBase, { BaseAuthStore } from 'pocketbase';
-
-class CustomAuthStore extends BaseAuthStore {
-    save(token, model) {
-        super.save(token, model);
-        // your custom business logic...
-    }
-}
-
-const pb = new PocketBase('http://127.0.0.1:8090', new CustomAuthStore());
-```
 
 ### Auto cancellation
 
@@ -611,13 +644,13 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 > Each instance method returns the `PocketBase` instance allowing chaining.
 
-| Method                                            | Description                                                                   |
-|:--------------------------------------------------|:------------------------------------------------------------------------------|
-| `pb.send(path, reqConfig = {})`                   | Sends an api http request.                                                    |
-| `pb.autoCancellation(enable)`                     | Globally enable or disable auto cancellation for pending duplicated requests. |
-| `pb.cancelAllRequests()`                          | Cancels all pending requests.                                                 |
-| `pb.cancelRequest(cancelKey)`                     | Cancels single request by its cancellation token key.                         |
-| `pb.buildUrl(path, reqConfig = {})`               | Builds a full client url by safely concatenating the provided path.           |
+| Method                            | Description                                                                   |
+|:----------------------------------|:------------------------------------------------------------------------------|
+| `pb.send(path, sendOptions = {})` | Sends an api http request.                                                    |
+| `pb.autoCancellation(enable)`     | Globally enable or disable auto cancellation for pending duplicated requests. |
+| `pb.cancelAllRequests()`          | Cancels all pending requests.                                                 |
+| `pb.cancelRequest(cancelKey)`     | Cancels single request by its cancellation token key.                         |
+| `pb.buildUrl(path)`               | Builds a full client url by safely concatenating the provided path.           |
 
 
 ### Services
@@ -630,26 +663,26 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns a paginated records list.
-🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, queryParams = {});
+🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, options = {});
 
 // Returns a list with all records batch fetched at once
-// (by default 200 items per request; to change it set the `batch` query param).
-🔓 pb.collection(collectionIdOrName).getFullList(queryParams = {});
+// (by default 200 items per request; to change it set the `batch` param).
+🔓 pb.collection(collectionIdOrName).getFullList(options = {});
 
 // Returns the first found record matching the specified filter.
-🔓 pb.collection(collectionIdOrName).getFirstListItem(filter, queryParams = {});
+🔓 pb.collection(collectionIdOrName).getFirstListItem(filter, options = {});
 
 // Returns a single record by its id.
-🔓 pb.collection(collectionIdOrName).getOne(recordId, queryParams = {});
+🔓 pb.collection(collectionIdOrName).getOne(recordId, options = {});
 
 // Creates (aka. register) a new record.
-🔓 pb.collection(collectionIdOrName).create(bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).create(bodyParams = {}, options = {});
 
 // Updates an existing record by its id.
-🔓 pb.collection(collectionIdOrName).update(recordId, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).update(recordId, bodyParams = {}, options = {});
 
 // Deletes a single record by its id.
-🔓 pb.collection(collectionIdOrName).delete(recordId, queryParams = {});
+🔓 pb.collection(collectionIdOrName).delete(recordId, options = {});
 
 ```
 
@@ -675,43 +708,43 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns all available application auth methods.
-🔓 pb.collection(collectionIdOrName).listAuthMethods(queryParams = {});
+🔓 pb.collection(collectionIdOrName).listAuthMethods(options = {});
 
 // Authenticates a record with their username/email and password.
-🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, options = {});
 
 // Authenticates a record with OAuth2 provider without custom redirects, deeplinks or even page reload.
 🔓 pb.collection(collectionIdOrName).authWithOAuth2(authConfig);
 
 // Authenticates a record with OAuth2 code.
-🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, options = {});
 
 // Refreshes the current authenticated record model and auth token.
-🔐 pb.collection(collectionIdOrName).authRefresh(bodyParams = {}, queryParams = {});
+🔐 pb.collection(collectionIdOrName).authRefresh(bodyParams = {}, options = {});
 
 // Sends a user password reset email.
-🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, options = {});
 
 // Confirms a record password reset request.
-🔓 pb.collection(collectionIdOrName).confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, options = {});
 
 // Sends a record verification email request.
-🔓 pb.collection(collectionIdOrName).requestVerification(email, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).requestVerification(email, options = {});
 
 // Confirms a record email verification request.
-🔓 pb.collection(collectionIdOrName).confirmVerification(verificationToken, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).confirmVerification(verificationToken, options = {});
 
 // Sends a record email change request to the provider email.
-🔐 pb.collection(collectionIdOrName).requestEmailChange(newEmail, bodyParams = {}, queryParams = {});
+🔐 pb.collection(collectionIdOrName).requestEmailChange(newEmail, options = {});
 
 // Confirms record new email address.
-🔓 pb.collection(collectionIdOrName).confirmEmailChange(emailChangeToken, userPassword, bodyParams = {}, queryParams = {});
+🔓 pb.collection(collectionIdOrName).confirmEmailChange(emailChangeToken, userPassword, options = {});
 
 // Lists all linked external auth providers for the specified record.
-🔐 pb.collection(collectionIdOrName).listExternalAuths(recordId, queryParams = {});
+🔐 pb.collection(collectionIdOrName).listExternalAuths(recordId, options = {});
 
 // Unlinks a single external auth provider relation from the specified record.
-🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, queryParams = {});
+🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, options = {});
 ```
 
 ---
@@ -720,10 +753,10 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Builds and returns an absolute record file url for the provided filename.
-🔓 pb.files.getUrl(record, filename, queryParams = {});
+🔓 pb.files.getUrl(record, filename, options = {});
 
 // Requests a new private file access token for the current auth model (admin or record).
-🔐 pb.files.getToken(queryParams = {});
+🔐 pb.files.getToken(options = {});
 ```
 
 ---
@@ -732,38 +765,38 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Authenticates an admin account by its email and password.
-🔓 pb.admins.authWithPassword(email, password, bodyParams = {}, queryParams = {});
+🔓 pb.admins.authWithPassword(email, password, options = {});
 
 // Refreshes the current admin authenticated model and token.
-🔐 pb.admins.authRefresh(bodyParams = {}, queryParams = {});
+🔐 pb.admins.authRefresh(options = {});
 
 // Sends an admin password reset email.
-🔓 pb.admins.requestPasswordReset(email, bodyParams = {}, queryParams = {});
+🔓 pb.admins.requestPasswordReset(email, options = {});
 
 // Confirms an admin password reset request.
-🔓 pb.admins.confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, bodyParams = {}, queryParams = {});
+🔓 pb.admins.confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, options = {});
 
 // Returns a paginated admins list.
-🔐 pb.admins.getList(page = 1, perPage = 30, queryParams = {});
+🔐 pb.admins.getList(page = 1, perPage = 30, options = {});
 
 // Returns a list with all admins batch fetched at once
 // (by default 200 items per request; to change it set the `batch` query param).
-🔐 pb.admins.getFullList(queryParams = {});
+🔐 pb.admins.getFullList(options = {});
 
 // Returns the first found admin matching the specified filter.
-🔐 pb.admins.getFirstListItem(filter, queryParams = {});
+🔐 pb.admins.getFirstListItem(filter, options = {});
 
 // Returns a single admin by their id.
-🔐 pb.admins.getOne(id, queryParams = {});
+🔐 pb.admins.getOne(id, options = {});
 
 // Creates a new admin.
-🔐 pb.admins.create(bodyParams = {}, queryParams = {});
+🔐 pb.admins.create(bodyParams = {}, options = {});
 
 // Updates an existing admin by their id.
-🔐 pb.admins.update(id, bodyParams = {}, queryParams = {});
+🔐 pb.admins.update(id, bodyParams = {}, options = {});
 
 // Deletes a single admin by their id.
-🔐 pb.admins.delete(id, queryParams = {});
+🔐 pb.admins.delete(id, bodyParams = {}, options = {});
 ```
 
 ---
@@ -772,29 +805,29 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns a paginated collections list.
-🔐 pb.collections.getList(page = 1, perPage = 30, queryParams = {});
+🔐 pb.collections.getList(page = 1, perPage = 30, options = {});
 
 // Returns a list with all collections batch fetched at once
 // (by default 200 items per request; to change it set the `batch` query param).
-🔐 pb.collections.getFullList(queryParams = {});
+🔐 pb.collections.getFullList(options = {});
 
 // Returns the first found collection matching the specified filter.
-🔐 pb.collections.getFirstListItem(filter, queryParams = {});
+🔐 pb.collections.getFirstListItem(filter, options = {});
 
 // Returns a single collection by its id.
-🔐 pb.collections.getOne(id, queryParams = {});
+🔐 pb.collections.getOne(id, options = {});
 
 // Creates (aka. register) a new collection.
-🔐 pb.collections.create(bodyParams = {}, queryParams = {});
+🔐 pb.collections.create(bodyParams = {}, options = {});
 
 // Updates an existing collection by its id.
-🔐 pb.collections.update(id, bodyParams = {}, queryParams = {});
+🔐 pb.collections.update(id, bodyParams = {}, options = {});
 
 // Deletes a single collection by its id.
-🔐 pb.collections.delete(id, queryParams = {});
+🔐 pb.collections.delete(id, options = {});
 
 // Imports the provided collections.
-🔐 pb.collections.import(collections, deleteMissing = false, queryParams = {});
+🔐 pb.collections.import(collections, deleteMissing = false, options = {});
 ```
 
 ---
@@ -803,10 +836,10 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns a paginated log requests list.
-🔐 pb.logs.getRequestsList(page = 1, perPage = 30, queryParams = {});
+🔐 pb.logs.getRequestsList(page = 1, perPage = 30, options = {});
 
 // Returns a single log request by its id.
-🔐 pb.logs.getRequest(id, queryParams = {});
+🔐 pb.logs.getRequest(id, options = {});
 ```
 
 ---
@@ -815,19 +848,19 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns a map with all available app settings.
-🔐 pb.settings.getAll(queryParams = {});
+🔐 pb.settings.getAll(options = {});
 
 // Bulk updates app settings.
-🔐 pb.settings.update(bodyParams = {}, queryParams = {});
+🔐 pb.settings.update(bodyParams = {}, options = {});
 
 // Performs a S3 storage connection test.
-🔐 pb.settings.testS3(filesystem = "storage", queryParams = {});
+🔐 pb.settings.testS3(filesystem = "storage", options = {});
 
 // Sends a test email (verification, password-reset, email-change).
-🔐 pb.settings.testEmail(toEmail, template, queryParams = {});
+🔐 pb.settings.testEmail(toEmail, template, options = {});
 
 // Generates a new Apple OAuth2 client secret.
-🔐 pb.settings.generateAppleClientSecret(clientId, teamId, keyId, privateKey, duration, bodyParams = {}, queryParams = {});
+🔐 pb.settings.generateAppleClientSecret(clientId, teamId, keyId, privateKey, duration, options = {});
 ```
 
 ---
@@ -858,16 +891,16 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Returns list with all available backup files.
-🔐 pb.backups.getFullList(queryParams = {});
+🔐 pb.backups.getFullList(options = {});
 
 // Initializes a new backup.
-🔐 pb.backups.create(basename = "", queryParams = {});
+🔐 pb.backups.create(basename = "", options = {});
 
 // Deletes a single backup by its name.
-🔐 pb.backups.delete(key, queryParams = {});
+🔐 pb.backups.delete(key, options = {});
 
 // Initializes an app data restore from an existing backup.
-🔐 pb.backups.restore(key, queryParams = {});
+🔐 pb.backups.restore(key, options = {});
 
 // Builds a download url for a single existing backup using an
 // admin file token and the backup file key.
@@ -880,7 +913,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Checks the health status of the api.
-🔓 pb.health.check(queryParams = {});
+🔓 pb.health.check(options = {});
 ```
 
 

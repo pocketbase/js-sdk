@@ -2,7 +2,7 @@ import Client from '@/Client';
 import { CrudService } from '@/services/utils/CrudService';
 import { UnsubscribeFunc } from '@/services/RealtimeService';
 import { ClientResponseError } from '@/ClientResponseError';
-import { ResultList, RecordModel, ExternalAuthModel } from '@/services/utils/dtos';
+import { ListResult, RecordModel, ExternalAuthModel } from '@/services/utils/dtos';
 import {
     SendOptions,
     CommonOptions,
@@ -198,7 +198,7 @@ export class RecordService extends CrudService<RecordModel> {
     /**
      * @inheritdoc
      */
-    getList<T = RecordModel>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ResultList<T>> {
+    getList<T = RecordModel>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ListResult<T>> {
         return super.getList<T>(page, perPage, options);
     }
 

@@ -12,6 +12,8 @@ export class LocalAuthStore extends BaseAuthStore {
         super();
 
         this.storageKey = storageKey;
+
+        this._bindStorageEvent();
     }
 
     /**
@@ -104,5 +106,24 @@ export class LocalAuthStore extends BaseAuthStore {
 
         // delete from fallback
         delete this.storageFallback[key];
+    }
+
+    /**
+     * Updates the current store state on localStorage change.
+     */
+    private _bindStorageEvent() {
+        if (typeof window === 'undefined' || !window?.localStorage || !window.addEventListener) {
+            return;
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key != this.storageKey) {
+                return;
+            }
+
+            const data = this._storageGet(this.storageKey) || {};
+
+            super.save(data.token || '', data.model || null);
+        });
     }
 }

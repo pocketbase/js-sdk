@@ -1,4 +1,4 @@
-export interface ResultList<T> {
+export interface ListResult<T> {
     page:       number;
     perPage:    number;
     totalItems: number;
