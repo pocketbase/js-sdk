@@ -29,16 +29,7 @@ export class LocalAuthStore extends BaseAuthStore {
     get model(): AuthModel {
         const data = this._storageGet(this.storageKey) || {};
 
-        if (
-            data === null ||
-            typeof data !== 'object' ||
-            data.model === null ||
-            typeof data.model !== 'object'
-        ) {
-            return null;
-        }
-
-        return data.model
+        return data.model || null;
     }
 
     /**

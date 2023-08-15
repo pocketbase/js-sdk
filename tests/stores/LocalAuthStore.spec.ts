@@ -68,6 +68,30 @@ describe('LocalAuthStore', function() {
         });
     });
 
+    describe('get isAdmin()', function() {
+        test('Should checks if the stored token is for admin', function() {
+            const store = new LocalAuthStore();
+
+            assert.isFalse(store.isAdmin, 'empty token (initial)');
+
+            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWRtaW4iLCJleHAiOjE2MjQ3ODgwMDB9.ZYNR7gqmmeu35h8Gf0uR7-jV-b21WIq8APOBLeevnuw');
+
+            assert.isTrue(store.isAdmin, 'admin token');
+        });
+    });
+
+    describe('get isAuthRecord()', function() {
+        test('Should checks if the stored token is for auth record', function() {
+            const store = new LocalAuthStore();
+
+            assert.isFalse(store.isAuthRecord, 'empty token (initial)');
+
+            store.save('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXV0aFJlY29yZCIsImV4cCI6MTYyNDc4ODAwMH0.wuEMjDMF0mV_U80bjUEUfnDM6sL2n9yvy0jnU3XZUE8');
+
+            assert.isTrue(store.isAuthRecord, 'admin token');
+        });
+    });
+
     describe('loadFromCookie()', function() {
         test('Should populate the store with the parsed cookie data', function() {
             const store = new LocalAuthStore();

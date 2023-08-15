@@ -101,6 +101,14 @@ declare abstract class BaseAuthStore {
      */
     get isValid(): boolean;
     /**
+     * Checks whether the current store state is for admin authentication.
+     */
+    get isAdmin(): boolean;
+    /**
+     * Checks whether the current store state is for auth record authentication.
+     */
+    get isAuthRecord(): boolean;
+    /**
      * Saves the provided new token and model data in the auth store.
      */
     save(token: string, model?: AuthModel): void;
@@ -1031,6 +1039,7 @@ declare class Client {
      * Builds a full client url by safely concatenating the provided path.
      */
     buildUrl(path: string): string;
+    // @todo
     private initSendOptions;
     /**
      * Converts analyzes the provided body and converts it to FormData

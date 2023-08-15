@@ -40,6 +40,20 @@ export abstract class BaseAuthStore {
     }
 
     /**
+     * Checks whether the current store state is for admin authentication.
+     */
+    get isAdmin(): boolean {
+        return getTokenPayload(this.token).type === "admin";
+    }
+
+    /**
+     * Checks whether the current store state is for auth record authentication.
+     */
+    get isAuthRecord(): boolean {
+        return getTokenPayload(this.token).type === "authRecord";
+    }
+
+    /**
      * Saves the provided new token and model data in the auth store.
      */
     save(token: string, model?: AuthModel): void {

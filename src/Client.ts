@@ -262,8 +262,8 @@ export default class Client {
 
         // check if Authorization header can be added
         if (
-            // has stored token
-            this.authStore?.token &&
+            // has valid token
+            this.authStore.isValid &&
             // auth header is not explicitly set
             (this.getHeader(options.headers, 'Authorization') === null)
         ) {
@@ -394,10 +394,12 @@ export default class Client {
         return url;
     }
 
+    // @todo
     private initSendOptions(options: SendOptions): SendOptions {
         options = Object.assign({ method: 'GET' } as SendOptions, options)
         options.query = options.query || {};
 
+        // move unknown send options as query parameters
         for (let key in options) {
             if (knownSendOptionsKeys.includes(key)) {
                 continue

@@ -122,6 +122,14 @@ declare abstract class BaseAuthStore {
      */
     get isValid(): boolean;
     /**
+     * Checks whether the current store state is for admin authentication.
+     */
+    get isAdmin(): boolean;
+    /**
+     * Checks whether the current store state is for auth record authentication.
+     */
+    get isAuthRecord(): boolean;
+    /**
      * Saves the provided new token and model data in the auth store.
      */
     save(token: string, model?: AuthModel): void;
@@ -1028,6 +1036,7 @@ declare class Client {
      * Builds a full client url by safely concatenating the provided path.
      */
     buildUrl(path: string): string;
+    // @todo
     private initSendOptions;
     /**
      * Converts analyzes the provided body and converts it to FormData
@@ -1119,6 +1128,64 @@ declare class LocalAuthStore extends BaseAuthStore {
      */
     private _storageRemove;
 }
+type AsyncSaveFunc = (serializedPayload: string) => Promise<void>;
+type AsyncClearFunc = () => Promise<void>;
+/**
+ * AsyncAuthStore is a helper auth store implementation
+ * that could be used with any external async persistent layer
+ * (key-value db, local file, etc.).
+ *
+ * Here is an example with the React Native AsyncStorage package:
+ *
+ * ```
+ * import AsyncStorage from "@react-native-async-storage/async-storage";
+ * import PocketBase, { AsyncAuthStore } from "pocketbase";
+ *
+ * const store = new AsyncAuthStore({
+ *     save:    async (serialized) => AsyncStorage.setItem("pb_auth", serialized),
+ *     initial: await AsyncStorage.getItem("pb_auth"),
+ * });
+ *
+ * const pb = new PocketBase("https://example.com", store)
+ * ```
+ */
+declare class AsyncAuthStore extends BaseAuthStore {
+    private saveFunc;
+    private clearFunc?;
+    private queue;
+    constructor(config: {
+        // The async function that is called every time
+        // when the auth store state needs to be persisted.
+        save: AsyncSaveFunc;
+        /// An *optional* async function that is called every time
+        /// when the auth store needs to be cleared.
+        ///
+        /// If not explicitly set, `saveFunc` with empty data will be used.
+        clear?: AsyncClearFunc;
+        // initial data to load into the store
+        initial?: string;
+    });
+    /**
+     * @inheritdoc
+     */
+    save(token: string, model?: AuthModel): void;
+    /**
+     * @inheritdoc
+     */
+    clear(): void;
+    /**
+     * Initializes the auth store state.
+     */
+    private _loadInitial;
+    /**
+     * Appends an async function to the queue.
+     */
+    private _enqueue;
+    /**
+     * Starts the queue processing.
+     */
+    private _dequeue;
+}
 /**
  * Returns JWT token's payload data.
  */
@@ -1134,4 +1201,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, ResultList, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };
+export { Client as default, BeforeSendResult, ClientResponseError, ResultList, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };

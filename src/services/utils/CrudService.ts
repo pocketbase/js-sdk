@@ -66,15 +66,9 @@ export abstract class CrudService<M> extends BaseService   {
 
         return this.client.send(this.baseCrudPath, options)
             .then((responseData: any) => {
-                const items: Array<T> = [];
-
-                if (responseData?.items) {
-                    responseData.items = responseData.items || [];
-                    for (const item of responseData.items) {
-                        items.push(this.decode<T>(item));
-                    }
-                    responseData.items = items;
-                }
+                responseData.items = responseData.items?.map((item: any) => {
+                    return this.decode<T>(item);
+                }) || [];
 
                 return responseData;
             });

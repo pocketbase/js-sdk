@@ -12,6 +12,7 @@ export * from '@/services/RealtimeService';
 export * from '@/services/RecordService';
 export * from '@/stores/BaseAuthStore';
 export * from '@/stores/LocalAuthStore';
+export * from '@/stores/AsyncAuthStore';
 export * from '@/stores/utils/jwt';
 export * from '@/stores/utils/cookie';
 
