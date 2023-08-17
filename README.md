@@ -387,7 +387,7 @@ import PocketBase from 'pocketbase';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-    event.locals.pb = new PocketBase("http://127.0.0.1:8090");
+    event.locals.pb = new PocketBase('http://127.0.0.1:8090');
 
     // load the store data from the request cookie string
     event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
@@ -431,7 +431,7 @@ For proper `locals.pb` type detection, you can also add `PocketBase` in your you
 
 ```ts
 // src/app.d.ts
-import PocketBase from "pocketbase";
+import PocketBase from 'pocketbase';
 
 declare global {
     declare namespace App {
@@ -452,10 +452,10 @@ To integrate with Astro SSR, you could create the PocketBase client in the [Midd
 // src/middleware/index.ts
 import PocketBase from 'pocketbase';
 
-import { defineMiddleware } from "astro/middleware";
+import { defineMiddleware } from 'astro/middleware';
 
 export const onRequest = defineMiddleware(async ({ locals, request }: any, next: () => any) => {
-    locals.pb = new PocketBase("http://127.0.0.1:8090");
+    locals.pb = new PocketBase('http://127.0.0.1:8090');
 
     // load the store data from the request cookie string
     locals.pb.authStore.loadFromCookie(request.headers.get('cookie') || '');
@@ -517,10 +517,10 @@ import PocketBase from 'pocketbase';
 export default defineNuxtPlugin(async () => {
   const pb = new PocketBase('http://127.0.0.1:8090');
 
-  const cookie = useCookie("pb_auth", {
-    path:     "/",
+  const cookie = useCookie('pb_auth', {
+    path:     '/',
     secure:   true,
-    sameSite: "strict",
+    sameSite: 'strict',
     httpOnly: false, // change to "true" if you want only server-side access
     maxAge:   604800,
   })
