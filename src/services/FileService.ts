@@ -6,13 +6,17 @@ export class FileService extends BaseService {
      * Builds and returns an absolute record file url for the provided filename.
      */
     getUrl(
-        record: Pick<{[key:string]:any}, "id" | "collectionId" | "collectionName">,
+        record: Pick<{[key:string]:any}, 'id' | 'collectionId' | 'collectionName'>,
         filename: string,
         queryParams: FileOptions = {}
     ): string {
+        if (!filename || !record?.id) {
+            return '';
+        }
+
         const parts = [];
-        parts.push("api")
-        parts.push("files")
+        parts.push('api')
+        parts.push('files')
         parts.push(encodeURIComponent(record.collectionId || record.collectionName))
         parts.push(encodeURIComponent(record.id))
         parts.push(encodeURIComponent(filename))
@@ -27,7 +31,7 @@ export class FileService extends BaseService {
 
             const params = new URLSearchParams(queryParams);
 
-            result += (result.includes("?") ? "&" : "?") + params;
+            result += (result.includes('?') ? '&' : '?') + params;
         }
 
         return result

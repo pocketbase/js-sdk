@@ -21,6 +21,20 @@ describe('FileService', function () {
     });
 
     describe('getFileUrl()', function () {
+        test('Should return empty string (missing record id)', async function () {
+            const record = {'id': '', 'collectionId': '123', collectionName: '789'};
+            const result = service.getUrl(record, 'demo.png')
+
+            assert.deepEqual(result, '');
+        });
+
+        test('Should return empty string (missing filename)', async function () {
+            const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
+            const result = service.getUrl(record, '')
+
+            assert.deepEqual(result, '');
+        });
+
         test('Should return a formatted url', async function () {
             const record = {'id': '456', 'collectionId': '123', collectionName: '789'};
             const result = service.getUrl(record, 'demo.png')

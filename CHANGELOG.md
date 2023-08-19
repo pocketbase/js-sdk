@@ -35,6 +35,8 @@
     const pb = new PocketBase("https://example.com", store)
     ```
 
+- `pb.files.getUrl()` now returns empty string in case an empty filename is passed.
+
 - ⚠️ All API actions now return plain object (POJO) as response, aka. the custom class wrapping was removed and you no longer need to manually call `structuredClone(response)` when using with SSR frameworks.
 
     This could be a breaking change if you use the below classes (_and respectively their helper methods like `$isNew`, `$load()`, etc._) since they were replaced with plain TS interfaces:
