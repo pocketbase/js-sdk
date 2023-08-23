@@ -410,6 +410,8 @@ export default class Client {
         if (this.enableAutoCancellation && options.requestKey !== null) {
             const requestKey = options.requestKey || ((options.method || 'GET') + path);
 
+            delete options.requestKey;
+
             // cancel previous pending requests
             this.cancelRequest(requestKey);
 
