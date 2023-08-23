@@ -812,7 +812,6 @@ declare class RecordService extends CrudService<RecordModel> {
     //
     // note: for details behind some of the decode/encode parsing check https://unixpapa.com/js/querystring.html
     private _replaceQueryParams;
-    private _defaultUrlCallback;
 }
 declare class CollectionService extends CrudService<CollectionModel> {
     /**

@@ -1,6 +1,6 @@
 import Client from '@/Client';
 import { CrudService } from '@/services/utils/CrudService';
-import { UnsubscribeFunc } from '@/services/RealtimeService';
+import { RealtimeService, UnsubscribeFunc } from '@/services/RealtimeService';
 import { ClientResponseError } from '@/ClientResponseError';
 import { ListResult, RecordModel, ExternalAuthModel } from '@/services/utils/dtos';
 import {
@@ -484,15 +484,29 @@ export class RecordService extends CrudService<RecordModel> {
 
         const redirectUrl = this.client.buildUrl('/api/oauth2-redirect');
 
+        // initialize a one-off realtime service
+        const realtime = new RealtimeService(this.client);
+
+        // open a new popup window in case config.urlCallback is not set
+        //
+        // note: it is opened before the async call due to Safari restrictions
+        // (see https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061)
+        let eagerDefaultPopup: Window|null = null;
+        if (!config.urlCallback) {
+            eagerDefaultPopup = openBrowserPopup(undefined);
+        }
+
+        function cleanup() {
+            eagerDefaultPopup?.close();
+            realtime.unsubscribe();
+        }
+
         return new Promise(async (resolve, reject) => {
             try {
-                // initialize a one-off @oauth2 realtime subscription
-                const unsubscribe = await this.client.realtime.subscribe('@oauth2', async (e) => {
-                    const oldState = this.client.realtime.clientId;
+                await realtime.subscribe('@oauth2', async (e) => {
+                    const oldState = realtime.clientId;
 
                     try {
-                        unsubscribe();
-
                         if (!e.state || oldState !== e.state) {
                             throw new Error("State parameters don't match.");
                         }
@@ -517,10 +531,12 @@ export class RecordService extends CrudService<RecordModel> {
                     } catch (err) {
                         reject(new ClientResponseError(err));
                     }
+
+                    cleanup();
                 });
 
                 const replacements: {[key: string]: any} = {
-                    "state": this.client.realtime.clientId,
+                    "state": realtime.clientId,
                 }
                 if (config.scopes?.length) {
                     replacements["scope"] = config.scopes.join(" ");
@@ -528,8 +544,19 @@ export class RecordService extends CrudService<RecordModel> {
 
                 const url = this._replaceQueryParams(provider.authUrl + redirectUrl, replacements);
 
-                await (config.urlCallback ? config.urlCallback(url) : this._defaultUrlCallback(url));
+                let urlCallback = config.urlCallback || function (url: string) {
+                    if (eagerDefaultPopup) {
+                       eagerDefaultPopup.location.href = url;
+                    } else {
+                        // it could have been blocked due to its empty initial url,
+                        // try again...
+                        eagerDefaultPopup = openBrowserPopup(url);
+                    }
+                }
+
+                await urlCallback(url);
             } catch (err) {
+                cleanup();
                 reject(new ClientResponseError(err));
             }
         });
@@ -846,29 +873,31 @@ export class RecordService extends CrudService<RecordModel> {
 
         return query != "" ? (urlPath + "?" + query) : urlPath;
     }
+}
 
-    private _defaultUrlCallback(url: string) {
-        if (typeof window === "undefined" || !window?.open) {
-            throw new ClientResponseError(new Error(`Not in a browser context - please pass a custom urlCallback function.`));
-        }
-
-        let width  = 1024;
-        let height = 768;
-
-        let windowWidth  = window.innerWidth;
-        let windowHeight = window.innerHeight;
-
-        // normalize window size
-        width  = width > windowWidth ? windowWidth : width;
-        height = height > windowHeight ? windowHeight : height;
-
-        let left = (windowWidth / 2) - (width / 2);
-        let top  = (windowHeight / 2) - (height / 2);
-
-        window.open(
-            url,
-            "oauth2-popup",
-            'width='+width+',height='+height+',top='+top+',left='+left+',resizable,menubar=no'
-        );
+function openBrowserPopup(url?: string): Window|null {
+    if (typeof window === "undefined" || !window?.open) {
+        throw new ClientResponseError(new Error(`Not in a browser context - please pass a custom urlCallback function.`));
     }
+
+    let width  = 1024;
+    let height = 768;
+
+    let windowWidth  = window.innerWidth;
+    let windowHeight = window.innerHeight;
+
+    // normalize window size
+    width  = width > windowWidth ? windowWidth : width;
+    height = height > windowHeight ? windowHeight : height;
+
+    let left = (windowWidth / 2) - (width / 2);
+    let top  = (windowHeight / 2) - (height / 2);
+
+    // note: we don't use the noopener and noreferrer attributes since
+    // for some reason browser blocks such windows then url is undefined/blank
+    return window.open(
+        url,
+        'popup_window',
+        'width='+width+',height='+height+',top='+top+',left='+left+',resizable,menubar=no'
+    );
 }
