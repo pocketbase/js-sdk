@@ -232,7 +232,7 @@ BaseAuthStore {
     isAuthRecord: boolean // checks if the store state is for an auth record
 
     // main methods
-    clear()            // "logout" the authenticated Record or Admin
+    clear()            // "logout" the authenticated record or admin model
     save(token, model) // update the store with the new auth data
     onChange(callback, fireImmediately = false) // register a callback that will be called on store change
 

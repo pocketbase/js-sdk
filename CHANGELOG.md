@@ -1,4 +1,4 @@
-## 0.17.0-rc1
+## 0.17.0
 
 - To simplify file uploads, we now allow sending the `multipart/form-data` request body also as plain object if at least one of the object props has `File` or `Blob` value.
     ```js
@@ -105,6 +105,8 @@
       "cache": "no-store" // also usually used by frameworks like Next.js
     })
     ```
+
+- Eagerly open the default OAuth2 signin popup in case no custom `urlCallback` is provided as a workaround for Safari.
 
 - Internal refactoring (updated dev dependencies, refactored the tests to use Vitest instead of Mocha, etc.).
 
