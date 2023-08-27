@@ -1,3 +1,8 @@
+## 0.17.1
+
+- Fixed typo in the deprecation console.warn messages ([#235](https://github.com/pocketbase/js-sdk/pull/235); thanks @heloineto).
+
+
 ## 0.17.0
 
 - To simplify file uploads, we now allow sending the `multipart/form-data` request body also as plain object if at least one of the object props has `File` or `Blob` value.
