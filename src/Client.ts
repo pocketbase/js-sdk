@@ -442,7 +442,10 @@ export default class Client {
         const form = new FormData();
 
         for (let key in body) {
-            form.append(key, body[key]);
+            const values = Array.isArray(body[key]) ? body[key] : [body[key]];
+            for (let val of values) {
+                form.append(key, val);
+            }
         }
 
         return form;

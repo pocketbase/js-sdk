@@ -193,7 +193,7 @@ describe('Client', function() {
                 method:    'GET',
                 url:       'test_base_url/multipart',
                 additionalMatcher: (_, config: any): boolean => {
-                    // multipart/form-data requests doesn't have explicitly set Content-Type
+                        // multipart/form-data requests shouldn't have explicitly set Content-Type
                     return !config?.headers?.['Content-Type'];
                 },
                 replyCode: 200,
@@ -204,12 +204,23 @@ describe('Client', function() {
                 method:    'GET',
                 url:       'test_base_url/multipartAuto',
                 additionalMatcher: (_, config: any): boolean => {
-                    return (
-                        // multipart/form-data requests doesn't have explicitly set Content-Type
-                        !config?.headers?.['Content-Type'] &&
+                    if (
+                        // multipart/form-data requests shouldn't have explicitly set Content-Type
+                        config?.headers?.['Content-Type'] ||
                         // the body should have been converted to FormData
-                        config.body instanceof FormData
-                    );
+                        !(config.body instanceof FormData)
+                    ) {
+                        return false;
+                    }
+
+                    // check FormData transformation
+                    assert.deepEqual(config.body.getAll('title'), ['test']);
+                    assert.deepEqual(config.body.getAll('roles'), ['a', 'b']);
+                    assert.equal(config.body.getAll('files').length, 2);
+                    assert.equal(config.body.getAll('files')[0].size, 2);
+                    assert.equal(config.body.getAll('files')[1].size, 1);
+
+                    return true;
                 },
                 replyCode: 200,
                 replyBody: 'successMultipartAuto',
@@ -222,7 +233,11 @@ describe('Client', function() {
                 [client.send('/123', { method: 'PATCH' }), 'successPatch'],
                 [client.send('/123', { method: 'DELETE' }), 'successDelete'],
                 [client.send('/multipart', { method: 'GET', body: new FormData() }), 'successMultipart'],
-                [client.send('/multipartAuto', { method: 'GET', body: {title: "test", file: new Blob([])} }), 'successMultipartAuto'],
+                [client.send('/multipartAuto', { method: 'GET', body: {
+                    title: "test",
+                    roles: ["a", "b"],
+                    files: [new Blob(['11']), new Blob(['2'])]},
+                }), 'successMultipartAuto'],
             ];
             for (let testCase of testCases) {
                 const responseData = await testCase[0]

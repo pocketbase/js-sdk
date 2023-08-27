@@ -1,3 +1,8 @@
+## 0.17.2
+
+- Fixed mulitple File/Blob array values not transformed properly to their FormData equivalent when an object syntax is used.
+
+
 ## 0.17.1
 
 - Fixed typo in the deprecation console.warn messages ([#235](https://github.com/pocketbase/js-sdk/pull/235); thanks @heloineto).
