@@ -109,37 +109,25 @@ const adminData = await pb.admins.authWithPassword('test@example.com', '123456')
 PocketBase Web API supports file upload via `multipart/form-data` requests,
 which means that to upload a file it is enough to provide either a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) instance OR plain object with `File`/`Blob` prop values.
 
-Below is a simple browser example of uploading multiple files together with some other regular fields using a `FormData` as body:
+- Using `FormData` as body:
+    ```js
+    // the standard way to create multipart/form-data body
+    const data = new FormData();
+    data.set("title", "lorem ipsum...")
+    data.set("document", new File(...))
 
-```html
-<input type="file" id="fileInput" />
-```
-```js
-import PocketBase from 'pocketbase';
+    await pb.collection("example").create(data);
+    ```
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+- Using plain object as body _(this is the same as above and it will be converted to `FormData` behind the scenes)_:
+    ```js
+    const data = {
+      "title":    "lorem ipsum...",
+      "document": new File(...),
+    };
 
-...
-
-const formData = new FormData();
-
-const fileInput = document.getElementById('fileInput');
-
-// listen to file input changes and add the selected files to the form data
-fileInput.addEventListener('change', function () {
-    for (let file of fileInput.files) {
-        formData.append('documents', file);
-    }
-});
-
-// set some other regular text field value
-formData.append('title', 'Hello world!');
-
-...
-
-// upload and create new record
-const createdRecord = await pb.collection('example').create(formData);
-```
+    await pb.collection("example").create(data);
+    ```
 
 ### Error handling
 
