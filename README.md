@@ -113,20 +113,20 @@ which means that to upload a file it is enough to provide either a [`FormData`](
     ```js
     // the standard way to create multipart/form-data body
     const data = new FormData();
-    data.set("title", "lorem ipsum...")
-    data.set("document", new File(...))
+    data.set('title', 'lorem ipsum...')
+    data.set('document', new File(...))
 
-    await pb.collection("example").create(data);
+    await pb.collection('example').create(data);
     ```
 
 - Using plain object as body _(this is the same as above and it will be converted to `FormData` behind the scenes)_:
     ```js
     const data = {
-      "title":    "lorem ipsum...",
-      "document": new File(...),
+      'title':    'lorem ipsum...',
+      'document': new File(...),
     };
 
-    await pb.collection("example").create(data);
+    await pb.collection('example').create(data);
     ```
 
 ### Error handling
