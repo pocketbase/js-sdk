@@ -107,9 +107,9 @@ const adminData = await pb.admins.authWithPassword('test@example.com', '123456')
 ### File upload
 
 PocketBase Web API supports file upload via `multipart/form-data` requests,
-which means that to upload a file it is enough to provide a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) object as body.
+which means that to upload a file it is enough to provide either a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) instance OR plain object with `File`/`Blob` prop values.
 
-Here is a simple browser example of uploading multiple files together with some other regular fields:
+Below is a simple browser example of uploading multiple files together with some other regular fields using a `FormData` as body:
 
 ```html
 <input type="file" id="fileInput" />
