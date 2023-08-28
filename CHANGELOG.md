@@ -1,3 +1,8 @@
+## 0.17.3-WIP
+
+- Loosen the type check when calling `pb.files.getUrl(user, filename)` to allow passing the `pb.authStore.model` without type assertion.
+
+
 ## 0.17.2
 
 - Fixed mulitple File/Blob array values not transformed properly to their FormData equivalent when an object syntax is used.

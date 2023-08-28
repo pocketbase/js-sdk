@@ -841,9 +841,9 @@ declare class FileService extends BaseService {
     /**
      * Builds and returns an absolute record file url for the provided filename.
      */
-    getUrl(record: Pick<{
+    getUrl(record: {
         [key: string]: any;
-    }, "id" | "collectionId" | "collectionName">, filename: string, queryParams?: FileOptions): string;
+    }, filename: string, queryParams?: FileOptions): string;
     /**
      * Requests a new private file access token for the current auth model (admin or record).
      */
