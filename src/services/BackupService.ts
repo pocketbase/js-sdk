@@ -35,7 +35,7 @@ export class BackupService extends BaseService {
     }
 
     /**
-     * Uploads a new backup file.
+     * Uploads an existing backup file.
      *
      * Example:
      *

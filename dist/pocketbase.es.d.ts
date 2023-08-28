@@ -885,7 +885,7 @@ declare class BackupService extends BaseService {
      */
     create(basename: string, options?: CommonOptions): Promise<boolean>;
     /**
-     * Uploads a new backup file.
+     * Uploads an existing backup file.
      *
      * Example:
      *

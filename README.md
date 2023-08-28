@@ -945,6 +945,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Initializes a new backup.
 🔐 pb.backups.create(basename = "", options = {});
 
+// Upload an existing app data backup.
+🔐 pb.backups.upload({ file: File/Blob }, options = {});
+
 // Deletes a single backup by its name.
 🔐 pb.backups.delete(key, options = {});
 

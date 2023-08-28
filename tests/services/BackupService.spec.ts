@@ -43,7 +43,6 @@ describe('BackupService', function () {
         });
     });
 
-
     describe('create()', function () {
         test('Should initialize a backup create', async function () {
             fetchMock.on({
@@ -62,6 +61,26 @@ describe('BackupService', function () {
             assert.deepEqual(result, true);
         });
     });
+
+    describe('upload()', function () {
+        test('Should upload a backup', async function () {
+            fetchMock.on({
+                method: 'POST',
+                url:    service.client.buildUrl('/api/backups/upload') + '?q1=123',
+                body:   {"file": "123"},
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.['x-test'] === '123';
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.upload({"file": "123"}, { 'q1': 123, headers: {'x-test': '123'} });
+
+            assert.deepEqual(result, true);
+        });
+    });
+
 
     describe('delete()', function () {
         test('Should delete a single backup', async function () {
