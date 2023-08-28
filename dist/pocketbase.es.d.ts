@@ -885,6 +885,20 @@ declare class BackupService extends BaseService {
      */
     create(basename: string, options?: CommonOptions): Promise<boolean>;
     /**
+     * Uploads a new backup file.
+     *
+     * Example:
+     *
+     * ```js
+     * await pb.backups.upload({
+     *     file: new Blob([...]),
+     * });
+     * ```
+     */
+    upload(bodyParams: {
+        [key: string]: any;
+    } | FormData, options?: CommonOptions): Promise<boolean>;
+    /**
      * Deletes a single backup file.
      */
     delete(key: string, options?: CommonOptions): Promise<boolean>;

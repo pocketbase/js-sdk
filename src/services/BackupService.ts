@@ -35,6 +35,27 @@ export class BackupService extends BaseService {
     }
 
     /**
+     * Uploads a new backup file.
+     *
+     * Example:
+     *
+     * ```js
+     * await pb.backups.upload({
+     *     file: new Blob([...]),
+     * });
+     * ```
+     */
+    upload(bodyParams: {[key:string]:any}|FormData, options?: CommonOptions): Promise<boolean> {
+        options = Object.assign({
+            'method': 'POST',
+            'body':   bodyParams,
+        }, options);
+
+        return this.client.send('/api/backups/upload', options)
+            .then(() => true);
+    }
+
+    /**
      * Deletes a single backup file.
      */
     delete(key: string, options?: CommonOptions): Promise<boolean> {
