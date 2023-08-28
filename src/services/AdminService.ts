@@ -117,7 +117,7 @@ export class AdminService extends CrudService<AdminModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authWithPassword(email, pass, body?, query?) is depreacted. Consider replacing it with authWithPassword(email, pass, options?).',
+            'This form of authWithPassword(email, pass, body?, query?) is deprecated. Consider replacing it with authWithPassword(email, pass, options?).',
             options,
             bodyOrOptions,
             query
@@ -147,7 +147,7 @@ export class AdminService extends CrudService<AdminModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authRefresh(body?, query?) is depreacted. Consider replacing it with authRefresh(options?).',
+            'This form of authRefresh(body?, query?) is deprecated. Consider replacing it with authRefresh(options?).',
             options,
             bodyOrOptions,
             query
@@ -177,7 +177,7 @@ export class AdminService extends CrudService<AdminModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestPasswordReset(email, body?, query?) is depreacted. Consider replacing it with requestPasswordReset(email, options?).',
+            'This form of requestPasswordReset(email, body?, query?) is deprecated. Consider replacing it with requestPasswordReset(email, options?).',
             options,
             bodyOrOptions,
             query
@@ -209,7 +209,7 @@ export class AdminService extends CrudService<AdminModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmPasswordReset(resetToken, password, passwordConfirm, body?, query?) is depreacted. Consider replacing it with confirmPasswordReset(resetToken, password, passwordConfirm, options?).',
+            'This form of confirmPasswordReset(resetToken, password, passwordConfirm, body?, query?) is deprecated. Consider replacing it with confirmPasswordReset(resetToken, password, passwordConfirm, options?).',
             options,
             bodyOrOptions,
             query

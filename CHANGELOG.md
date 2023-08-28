@@ -1,4 +1,19 @@
-## 0.17.0-rc1
+## 0.18.0-rc
+
+- Added `pb.backups.upload(data)` action (_available with PocketBase v0.18.0_).
+
+
+## 0.17.2
+
+- Fixed mulitple File/Blob array values not transformed properly to their FormData equivalent when an object syntax is used.
+
+
+## 0.17.1
+
+- Fixed typo in the deprecation console.warn messages ([#235](https://github.com/pocketbase/js-sdk/pull/235); thanks @heloineto).
+
+
+## 0.17.0
 
 - To simplify file uploads, we now allow sending the `multipart/form-data` request body also as plain object if at least one of the object props has `File` or `Blob` value.
     ```js
@@ -105,6 +120,8 @@
       "cache": "no-store" // also usually used by frameworks like Next.js
     })
     ```
+
+- Eagerly open the default OAuth2 signin popup in case no custom `urlCallback` is provided as a workaround for Safari.
 
 - Internal refactoring (updated dev dependencies, refactored the tests to use Vitest instead of Mocha, etc.).
 

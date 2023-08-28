@@ -1,6 +1,7 @@
 src
 tests
-rollup.config.js
+rollup.config.mjs
+vite.config.ts
 tsconfig.json
 tsconfig-test.json
 

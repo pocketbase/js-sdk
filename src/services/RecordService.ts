@@ -334,7 +334,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authWithPassword(usernameOrEmail, pass, body?, query?) is depreacted. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).',
+            'This form of authWithPassword(usernameOrEmail, pass, body?, query?) is deprecated. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).',
             options,
             bodyOrOptions,
             query
@@ -399,7 +399,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is depreacted. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).',
+            'This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is deprecated. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).',
             options,
             bodyOrOptions,
             query
@@ -582,7 +582,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authRefresh(body?, query?) is depreacted. Consider replacing it with authRefresh(options?).',
+            'This form of authRefresh(body?, query?) is deprecated. Consider replacing it with authRefresh(options?).',
             options,
             bodyOrOptions,
             query
@@ -612,7 +612,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestPasswordReset(email, body?, query?) is depreacted. Consider replacing it with requestPasswordReset(email, options?).',
+            'This form of requestPasswordReset(email, body?, query?) is deprecated. Consider replacing it with requestPasswordReset(email, options?).',
             options,
             bodyOrOptions,
             query
@@ -660,7 +660,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmPasswordReset(token, password, passwordConfirm, body?, query?) is depreacted. Consider replacing it with confirmPasswordReset(token, password, passwordConfirm, options?).',
+            'This form of confirmPasswordReset(token, password, passwordConfirm, body?, query?) is deprecated. Consider replacing it with confirmPasswordReset(token, password, passwordConfirm, options?).',
             options,
             bodyOrOptions,
             query
@@ -690,7 +690,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestVerification(email, body?, query?) is depreacted. Consider replacing it with requestVerification(email, options?).',
+            'This form of requestVerification(email, body?, query?) is deprecated. Consider replacing it with requestVerification(email, options?).',
             options,
             bodyOrOptions,
             query
@@ -720,7 +720,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmVerification(token, body?, query?) is depreacted. Consider replacing it with confirmVerification(token, options?).',
+            'This form of confirmVerification(token, body?, query?) is deprecated. Consider replacing it with confirmVerification(token, options?).',
             options,
             bodyOrOptions,
             query
@@ -750,7 +750,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestEmailChange(newEmail, body?, query?) is depreacted. Consider replacing it with requestEmailChange(newEmail, options?).',
+            'This form of requestEmailChange(newEmail, body?, query?) is deprecated. Consider replacing it with requestEmailChange(newEmail, options?).',
             options,
             bodyOrOptions,
             query
@@ -782,7 +782,7 @@ export class RecordService extends CrudService<RecordModel> {
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmEmailChange(token, password, body?, query?) is depreacted. Consider replacing it with confirmEmailChange(token, password, options?).',
+            'This form of confirmEmailChange(token, password, body?, query?) is deprecated. Consider replacing it with confirmEmailChange(token, password, options?).',
             options,
             bodyOrOptions,
             query
