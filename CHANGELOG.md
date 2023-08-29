@@ -1,4 +1,4 @@
-## 0.17.3-WIP
+## 0.17.3
 
 - Loosen the type check when calling `pb.files.getUrl(user, filename)` to allow passing the `pb.authStore.model` without type assertion.
 
