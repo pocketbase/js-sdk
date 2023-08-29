@@ -1035,9 +1035,9 @@ declare class Client {
     /**
      * Legacy alias of `pb.files.getUrl()`.
      */
-    getFileUrl(record: Pick<{
+    getFileUrl(record: {
         [key: string]: any;
-    }, 'id' | 'collectionId' | 'collectionName'>, filename: string, queryParams?: FileOptions): string;
+    }, filename: string, queryParams?: FileOptions): string;
     /**
      * Builds a full client url by safely concatenating the provided path.
      */

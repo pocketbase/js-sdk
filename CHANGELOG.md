@@ -3,7 +3,7 @@
 - Added `pb.backups.upload(data)` action (_available with PocketBase v0.18.0_).
 
 
-## 0.17.3-WIP
+## 0.17.3
 
 - Loosen the type check when calling `pb.files.getUrl(user, filename)` to allow passing the `pb.authStore.model` without type assertion.
 
