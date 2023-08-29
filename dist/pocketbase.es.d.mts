@@ -30,76 +30,9 @@ interface SerializeOptions {
  * ```
  */
 declare function cookieSerialize(name: string, val: string, options?: SerializeOptions): string;
-interface ListResult<T> {
-    page: number;
-    perPage: number;
-    totalItems: number;
-    totalPages: number;
-    items: Array<T>;
-}
-interface BaseModel {
+type AuthModel = {
     [key: string]: any;
-    id: string;
-    created: string;
-    updated: string;
-}
-interface AdminModel extends BaseModel {
-    avatar: number;
-    email: string;
-}
-interface SchemaField {
-    id: string;
-    name: string;
-    type: string;
-    system: boolean;
-    required: boolean;
-    options: {
-        [key: string]: any;
-    };
-}
-interface CollectionModel extends BaseModel {
-    name: string;
-    type: string;
-    schema: Array<SchemaField>;
-    indexes: Array<string>;
-    system: boolean;
-    listRule?: string;
-    viewRule?: string;
-    createRule?: string;
-    updateRule?: string;
-    deleteRule?: string;
-    options: {
-        [key: string]: any;
-    };
-}
-interface ExternalAuthModel extends BaseModel {
-    recordId: string;
-    collectionId: string;
-    provider: string;
-    providerId: string;
-}
-interface LogRequestModel extends BaseModel {
-    url: string;
-    method: string;
-    status: number;
-    auth: string;
-    remoteIp: string;
-    userIp: string;
-    referer: string;
-    userAgent: string;
-    meta: {
-        [key: string]: any;
-    };
-}
-interface RecordModel extends BaseModel {
-    [key: string]: any;
-    collectionId: string;
-    collectionName: string;
-    expand?: {
-        [key: string]: any;
-    };
-}
-type AuthModel = RecordModel | AdminModel | null;
+} | null;
 type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
 /**
  * Base AuthStore class that is intended to be extended by all other
@@ -287,6 +220,75 @@ declare class SettingsService extends BaseService {
      * Generates a new Apple OAuth2 client secret.
      */
     generateAppleClientSecret(clientId: string, teamId: string, keyId: string, privateKey: string, duration: number, options?: CommonOptions): Promise<appleClientSecret>;
+}
+interface ListResult<T> {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
+    items: Array<T>;
+}
+interface BaseModel {
+    [key: string]: any;
+    id: string;
+    created: string;
+    updated: string;
+}
+interface AdminModel extends BaseModel {
+    avatar: number;
+    email: string;
+}
+interface SchemaField {
+    id: string;
+    name: string;
+    type: string;
+    system: boolean;
+    required: boolean;
+    options: {
+        [key: string]: any;
+    };
+}
+interface CollectionModel extends BaseModel {
+    name: string;
+    type: string;
+    schema: Array<SchemaField>;
+    indexes: Array<string>;
+    system: boolean;
+    listRule?: string;
+    viewRule?: string;
+    createRule?: string;
+    updateRule?: string;
+    deleteRule?: string;
+    options: {
+        [key: string]: any;
+    };
+}
+interface ExternalAuthModel extends BaseModel {
+    recordId: string;
+    collectionId: string;
+    provider: string;
+    providerId: string;
+}
+interface LogRequestModel extends BaseModel {
+    url: string;
+    method: string;
+    status: number;
+    auth: string;
+    remoteIp: string;
+    userIp: string;
+    referer: string;
+    userAgent: string;
+    meta: {
+        [key: string]: any;
+    };
+}
+interface RecordModel extends BaseModel {
+    [key: string]: any;
+    collectionId: string;
+    collectionName: string;
+    expand?: {
+        [key: string]: any;
+    };
 }
 declare abstract class CrudService<M> extends BaseService {
     /**

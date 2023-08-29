@@ -1,8 +1,7 @@
 import { cookieParse, cookieSerialize, SerializeOptions } from '@/stores/utils/cookie';
 import { isTokenExpired, getTokenPayload } from '@/stores/utils/jwt';
-import { RecordModel, AdminModel }  from '@/services/utils/dtos';
 
-export type AuthModel = RecordModel|AdminModel|null;
+export type AuthModel = { [key: string]: any }|null;
 
 export type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
 
