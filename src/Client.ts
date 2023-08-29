@@ -223,7 +223,7 @@ export default class Client {
      * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(
-        record: Pick<{[key:string]:any}, 'id' | 'collectionId' | 'collectionName'>,
+        record: {[key:string]:any},
         filename: string,
         queryParams: FileOptions = {}
     ): string {
