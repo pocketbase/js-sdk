@@ -130,30 +130,46 @@ declare abstract class BaseService {
 }
 interface SendOptions extends RequestInit {
     [key: string]: any; // for backward compatibility
-    // optional custom fetch function to use for sending the request
+    /**
+     * Optional custom fetch function to use for sending the request.
+     */
     fetch?: (url: RequestInfo | URL, config?: RequestInit) => Promise<Response>;
-    // custom headers to send with the requests
+    /**
+     * Custom headers to send with the requests.
+     */
     headers?: {
         [key: string]: string;
     };
-    // the body of the request (serialized automatically for json requests)
+    /**
+     * The body of the request (serialized automatically for json requests).
+     */
     body?: any;
-    // query params that will be appended to the request url
+    /**
+     * Query params that will be appended to the request url.
+     */
     query?: {
         [key: string]: any;
     };
-    // @deprecated use `query` instead
-    //
-    // for backward-compatibility `params` values are merged with `query`,
-    // but this option may get removed in the final v1 release
+    /**
+     * @deprecated use `query` instead
+     *
+     * for backward-compatibility `params` values are merged with `query`,
+     * but this option may get removed in the final v1 release
+     */
     params?: {
         [key: string]: any;
     };
-    // the request identifier that can be used to cancel pending requests
+    /**
+     * The request identifier that can be used to cancel pending requests.
+     */
     requestKey?: string | null;
-    // @deprecated use `requestKey:string` instead
+    /**
+     * @deprecated use `requestKey:string` instead
+     */
     $cancelKey?: string;
-    // @deprecated use `requestKey:null` instead
+    /**
+     * @deprecated use `requestKey:null` instead
+     */
     $autoCancel?: boolean;
 }
 interface CommonOptions extends SendOptions {
@@ -182,6 +198,22 @@ interface LogStatsOptions extends CommonOptions {
 interface FileOptions extends CommonOptions {
     thumb?: string;
     download?: boolean;
+}
+interface AuthOptions extends CommonOptions {
+    /**
+     * If autoRefreshThreshold is set it will take care to auto refresh
+     * when necessary the auth data before each request to ensure that
+     * the auth state is always valid.
+     *
+     * The value must be in seconds, aka. the amount of seconds
+     * that will be subtracted from the current token `exp` claim in order
+     * to determine whether it is going to expire within the specified time threshold.
+     *
+     * For example, if you want to auto refresh the token if it is
+     * going to expire in the next 30mins (or already has expired),
+     * it can be set to `1800`
+     */
+    autoRefreshThreshold?: number;
 }
 interface appleClientSecret {
     secret: string;
@@ -403,7 +435,7 @@ declare class AdminService extends CrudService<AdminModel> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    authWithPassword(email: string, password: string, options?: CommonOptions): Promise<AdminAuthResponse>;
+    authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>;
     /**
      * @deprecated
      * Consider using authWithPassword(email, password, options?).
@@ -510,14 +542,20 @@ declare class RealtimeService extends BaseService {
     private disconnect;
 }
 interface RecordAuthResponse<T = RecordModel> {
-    // The signed PocketBase auth record.
+    /**
+     * The signed PocketBase auth record.
+     */
     record: T;
-    // The PocketBase record auth token.
-    //
-    // If you are looking for the OAuth2 access and refresh tokens
-    // they are available under the `meta.accessToken` and `meta.refreshToken` props.
+    /**
+     * The PocketBase record auth token.
+     *
+     * If you are looking for the OAuth2 access and refresh tokens
+     * they are available under the `meta.accessToken` and `meta.refreshToken` props.
+     */
     token: string;
-    // Auth meta data usually filled when OAuth2 is used.
+    /**
+     * Auth meta data usually filled when OAuth2 is used.
+     */
     meta?: {
         [key: string]: any;
     };
@@ -1226,4 +1264,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };
+export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };

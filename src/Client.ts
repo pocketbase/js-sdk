@@ -273,15 +273,6 @@ export default class Client {
         // build url + path
         let url = this.buildUrl(path);
 
-        // serialize the query parameters
-        if (typeof options.query !== 'undefined') {
-            const query = this.serializeQueryParams(options.query)
-            if (query) {
-                url += (url.includes('?') ? '&' : '?') + query;
-            }
-            delete options.query;
-        }
-
         if (this.beforeSend) {
             const result = Object.assign({}, await this.beforeSend(url, options));
             if (typeof result.url !== 'undefined' || typeof result.options !== 'undefined') {
@@ -292,6 +283,15 @@ export default class Client {
                 options = result as SendOptions;
                 console?.warn && console.warn('Deprecated format of beforeSend return: please use `return { url, options }`, instead of `return options`.');
             }
+        }
+
+        // serialize the query parameters
+        if (typeof options.query !== 'undefined') {
+            const query = this.serializeQueryParams(options.query)
+            if (query) {
+                url += (url.includes('?') ? '&' : '?') + query;
+            }
+            delete options.query;
         }
 
         // ensures that the json body is serialized

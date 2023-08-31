@@ -16,6 +16,5 @@ export function normalizeLegacyOptionsArgs(legacyWarn: string, baseOptions: Send
         return baseOptions;
     }
 
-    baseOptions = Object.assign(baseOptions, bodyOrOptions);
-    return baseOptions;
+    return Object.assign(baseOptions, bodyOrOptions);
 }

@@ -10,6 +10,11 @@ export type RequestMock = {
     replyBody?: any,
 }
 
+export function dummyJWT(payload = {}) {
+    const buf = Buffer.from(JSON.stringify(payload));
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + buf.toString('base64') + '.test';
+}
+
 export class FetchMock {
     private originalFetch?: Function
     private mocks: Array<RequestMock> = [];

@@ -1,31 +1,47 @@
 export interface SendOptions extends RequestInit {
     [key: string]: any; // for backward compatibility
 
-    // optional custom fetch function to use for sending the request
+    /**
+     * Optional custom fetch function to use for sending the request.
+     */
     fetch?: (url: RequestInfo | URL, config?: RequestInit) => Promise<Response>;
 
-    // custom headers to send with the requests
+    /**
+     * Custom headers to send with the requests.
+     */
     headers?: { [key: string]: string };
 
-    // the body of the request (serialized automatically for json requests)
+    /**
+     * The body of the request (serialized automatically for json requests).
+     */
     body?: any;
 
-    // query params that will be appended to the request url
+    /**
+     * Query params that will be appended to the request url.
+     */
     query?: { [key: string]: any };
 
-    // @deprecated use `query` instead
-    //
-    // for backward-compatibility `params` values are merged with `query`,
-    // but this option may get removed in the final v1 release
+    /**
+     * @deprecated use `query` instead
+     *
+     * for backward-compatibility `params` values are merged with `query`,
+     * but this option may get removed in the final v1 release
+     */
     params?: { [key: string]: any };
 
-    // the request identifier that can be used to cancel pending requests
+    /**
+     * The request identifier that can be used to cancel pending requests.
+     */
     requestKey?:  string|null;
 
-    // @deprecated use `requestKey:string` instead
+    /**
+     * @deprecated use `requestKey:string` instead
+     */
     $cancelKey?:  string;
 
-    // @deprecated use `requestKey:null` instead
+    /**
+     * @deprecated use `requestKey:null` instead
+     */
     $autoCancel?: boolean;
 }
 
@@ -62,4 +78,21 @@ export interface LogStatsOptions extends CommonOptions {
 export interface FileOptions extends CommonOptions {
     thumb?: string;
     download?: boolean;
+}
+
+export interface AuthOptions extends CommonOptions {
+    /**
+     * If autoRefreshThreshold is set it will take care to auto refresh
+     * when necessary the auth data before each request to ensure that
+     * the auth state is always valid.
+     *
+     * The value must be in seconds, aka. the amount of seconds
+     * that will be subtracted from the current token `exp` claim in order
+     * to determine whether it is going to expire within the specified time threshold.
+     *
+     * For example, if you want to auto refresh the token if it is
+     * going to expire in the next 30mins (or already has expired),
+     * it can be set to `1800`
+     */
+    autoRefreshThreshold?: number;
 }

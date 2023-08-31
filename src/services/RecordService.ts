@@ -13,16 +13,22 @@ import {
 import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
 
 export interface RecordAuthResponse<T = RecordModel> {
-    // The signed PocketBase auth record.
+    /**
+     * The signed PocketBase auth record.
+     */
     record: T;
 
-    // The PocketBase record auth token.
-    //
-    // If you are looking for the OAuth2 access and refresh tokens
-    // they are available under the `meta.accessToken` and `meta.refreshToken` props.
+    /**
+     * The PocketBase record auth token.
+     *
+     * If you are looking for the OAuth2 access and refresh tokens
+     * they are available under the `meta.accessToken` and `meta.refreshToken` props.
+     */
     token: string;
 
-    // Auth meta data usually filled when OAuth2 is used.
+    /**
+     * Auth meta data usually filled when OAuth2 is used.
+     */
     meta?: {[key: string]: any};
 }
 

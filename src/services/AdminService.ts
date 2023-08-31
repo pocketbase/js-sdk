@@ -1,7 +1,8 @@
-import { CrudService }                from '@/services/utils/CrudService';
-import { AdminModel }                 from '@/services/utils/dtos';
-import { CommonOptions }              from '@/services/utils/options';
-import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
+import { CrudService }                           from '@/services/utils/CrudService';
+import { AdminModel }                            from '@/services/utils/dtos';
+import { AuthOptions, CommonOptions }            from '@/services/utils/options';
+import { normalizeLegacyOptionsArgs }            from '@/services/utils/legacy';
+import { registerAutoRefresh, resetAutoRefresh } from '@/services/utils/refresh';
 
 export interface AdminAuthResponse {
     [key: string]: any;
@@ -94,7 +95,7 @@ export class AdminService extends CrudService<AdminModel> {
      *
      * On success this method automatically updates the client's AuthStore data.
      */
-    authWithPassword(email: string, password: string, options?: CommonOptions): Promise<AdminAuthResponse>
+    authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>
 
     /**
      * @deprecated
@@ -102,7 +103,7 @@ export class AdminService extends CrudService<AdminModel> {
      */
     authWithPassword(email: string, password: string, body?: any, query?: any): Promise<AdminAuthResponse>
 
-    authWithPassword(
+    async authWithPassword(
         email: string,
         password: string,
         bodyOrOptions?: any,
@@ -123,8 +124,28 @@ export class AdminService extends CrudService<AdminModel> {
             query
         );
 
-        return this.client.send(this.baseCrudPath + '/auth-with-password', options)
-            .then(this.authResponse.bind(this));
+        const autoRefreshThreshold = options.autoRefreshThreshold;
+        delete options.autoRefreshThreshold;
+
+        // not from auto refresh reauthentication
+        if (!options.autoRefresh) {
+            resetAutoRefresh(this.client);
+        }
+
+        let authData = await this.client.send(this.baseCrudPath + '/auth-with-password', options);
+
+        authData = this.authResponse(authData);
+
+        if (autoRefreshThreshold) {
+            registerAutoRefresh(
+                this.client,
+                autoRefreshThreshold,
+                () => this.authRefresh({autoRefresh: true}),
+                () => this.authWithPassword(email, password, Object.assign({autoRefresh: true}, options)),
+            );
+        }
+
+        return authData;
     }
 
     /**
