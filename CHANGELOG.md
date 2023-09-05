@@ -1,9 +1,9 @@
-## 0.18.0-rc2
+## 0.18.0
 
 - Added `pb.backups.upload(data)` action (_available with PocketBase v0.18.0_).
 
-- (@todo more detailed docs) Added option to auto refresh or reauthenticate when authenticed as admin.
-  This was added as an alternative to fixed Admin API keys.
+- Added _experimental_ `autoRefreshThreshold` option to auto refresh (or reauthenticate) the AuthStore when authenticated as admin.
+    _This could be used as an alternative to fixed Admin API keys._
     ```js
     await pb.admins.authWithPassword("test@example.com", "1234567890", {
       // This will trigger auto refresh or auto reauthentication in case
