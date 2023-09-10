@@ -62,8 +62,6 @@ export interface LogRequestModel extends BaseModel {
 }
 
 export interface RecordModel extends BaseModel {
-    [key: string]: any
-
     collectionId:   string;
     collectionName: string;
     expand?:        {[key: string]: any};

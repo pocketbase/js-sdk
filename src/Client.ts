@@ -442,6 +442,7 @@ export default class Client {
         const form = new FormData();
 
         for (let key in body) {
+            // @todo consider adding a note that `json` array values should be serialized!
             const values = Array.isArray(body[key]) ? body[key] : [body[key]];
             for (let val of values) {
                 form.append(key, val);
