@@ -315,7 +315,6 @@ interface LogRequestModel extends BaseModel {
     };
 }
 interface RecordModel extends BaseModel {
-    [key: string]: any;
     collectionId: string;
     collectionName: string;
     expand?: {

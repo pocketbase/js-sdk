@@ -220,14 +220,12 @@ export class RealtimeService extends BaseService {
         this.lastSentTopics = this.getNonEmptySubscriptionTopics();
 
         return this.client.send('/api/realtime', {
-            'method': 'POST',
-            'body': {
+            method: 'POST',
+            body: {
                 'clientId': this.clientId,
                 'subscriptions': this.lastSentTopics,
             },
-            'query': {
-                'requestKey': this.getSubscriptionsCancelKey(),
-            },
+            requestKey: this.getSubscriptionsCancelKey(),
         }).catch((err) => {
             if (err?.isAbort) {
                 return; // silently ignore aborted pending requests

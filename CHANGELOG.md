@@ -1,3 +1,8 @@
+## 0.18.1
+
+- Fixed realtime subscriptions auto cancellation to use the proper `requestKey` param.
+
+
 ## 0.18.0
 
 - Added `pb.backups.upload(data)` action (_available with PocketBase v0.18.0_).
