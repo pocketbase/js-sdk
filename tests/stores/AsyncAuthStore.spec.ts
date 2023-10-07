@@ -21,7 +21,7 @@ describe('AsyncAuthStore', function() {
             await expect(callsPromise).resolves.toStrictEqual([]);
         });
 
-        test('load initial', async function() {
+        test('load initial from string', async function() {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
@@ -31,8 +31,26 @@ describe('AsyncAuthStore', function() {
                 initial: `{"token": "test", "model": {"id": "id1"}}`
             });
 
+            const callsPromise = new Promise((resolve, _) => {
+                setTimeout(() => resolve(calls), 0);
+            });
+            await expect(callsPromise).resolves.toStrictEqual([
+                `{"token":"test","model":{"id":"id1"}}`,
+            ]);
+
             assert.equal(store.token, 'test');
             assert.deepEqual(store.model, {'id': 'id1'} as any);
+        });
+
+        test('load initial from Promise<string>', async function() {
+            let calls: any = [];
+
+            const store = new AsyncAuthStore({
+                save: async (payload) => {
+                    calls.push(payload);
+                },
+                initial: Promise.resolve(`{"token": "test", "model": {"id": "id1"}}`)
+            });
 
             const callsPromise = new Promise((resolve, _) => {
                 setTimeout(() => resolve(calls), 0);
@@ -40,6 +58,30 @@ describe('AsyncAuthStore', function() {
             await expect(callsPromise).resolves.toStrictEqual([
                 `{"token":"test","model":{"id":"id1"}}`,
             ]);
+
+            assert.equal(store.token, 'test');
+            assert.deepEqual(store.model, {'id': 'id1'} as any);
+        });
+
+        test('load initial from Promise<object>', async function() {
+            let calls: any = [];
+
+            const store = new AsyncAuthStore({
+                save: async (payload) => {
+                    calls.push(payload);
+                },
+                initial: Promise.resolve({"token": "test", "model": {"id": "id1"}})
+            });
+
+            const callsPromise = new Promise((resolve, _) => {
+                setTimeout(() => resolve(calls), 0);
+            });
+            await expect(callsPromise).resolves.toStrictEqual([
+                `{"token":"test","model":{"id":"id1"}}`,
+            ]);
+
+            assert.equal(store.token, 'test');
+            assert.deepEqual(store.model, {'id': 'id1'} as any);
         });
     });
 

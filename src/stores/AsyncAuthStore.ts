@@ -19,7 +19,7 @@ type queueFunc = () => Promise<void>;
  *
  * const store = new AsyncAuthStore({
  *     save:    async (serialized) => AsyncStorage.setItem("pb_auth", serialized),
- *     initial: await AsyncStorage.getItem("pb_auth"),
+ *     initial: AsyncStorage.getItem("pb_auth"),
  * });
  *
  * const pb = new PocketBase("https://example.com", store)
@@ -41,15 +41,15 @@ export class AsyncAuthStore extends BaseAuthStore {
         /// If not explicitly set, `saveFunc` with empty data will be used.
         clear?: AsyncClearFunc,
 
-        // initial data to load into the store
-        initial?: string,
+        // An *optional* initial data to load into the store.
+        initial?: string|Promise<any>,
     }) {
         super();
 
         this.saveFunc = config.save;
         this.clearFunc = config.clear;
 
-        this._loadInitial(config.initial);
+        this._enqueue(() => this._loadInitial(config.initial));
     }
 
     /**
@@ -81,19 +81,23 @@ export class AsyncAuthStore extends BaseAuthStore {
         }
     }
 
-
     /**
      * Initializes the auth store state.
      */
-    private _loadInitial(payload?: string) {
-        if (!payload) {
-            return; // nothing to load
-        }
-
+    private async _loadInitial(payload?: string|Promise<any>) {
         try {
-            const parsed = JSON.parse(payload) || {};
+            payload = payload ? await payload : null;
 
-            this.save(parsed.token || "", parsed.model || null);
+            if (payload) {
+                let parsed;
+                if (typeof payload === 'string') {
+                    parsed = JSON.parse(payload) || {};
+                } else if (typeof payload === 'object') {
+                    parsed = payload;
+                }
+
+                this.save(parsed.token || "", parsed.model || null);
+            }
         } catch (_) {}
     }
 

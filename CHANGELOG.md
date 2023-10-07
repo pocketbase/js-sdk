@@ -1,3 +1,8 @@
+## 0.18.2
+
+- Added support for assigning a `Promise` as `AsyncAuthStore` initial value ([#249](https://github.com/pocketbase/js-sdk/issues/249)).
+
+
 ## 0.18.1
 
 - Fixed realtime subscriptions auto cancellation to use the proper `requestKey` param.
@@ -64,7 +69,7 @@
 
     const store = new AsyncAuthStore({
         save:    async (serialized) => AsyncStorage.setItem("pb_auth", serialized),
-        initial: await AsyncStorage.getItem("pb_auth"),
+        initial: AsyncStorage.getItem("pb_auth"),
     });
 
     const pb = new PocketBase("https://example.com", store)
