@@ -86,7 +86,7 @@ export class AsyncAuthStore extends BaseAuthStore {
      */
     private async _loadInitial(payload?: string|Promise<any>) {
         try {
-            payload = payload ? await payload : null;
+            payload = await payload;
 
             if (payload) {
                 let parsed;
