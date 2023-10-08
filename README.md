@@ -317,15 +317,17 @@ For example:
 
 ```js
 pb.collection('example').getList(1, 20, {
-    expand:          "someRel",
-    otherQueryParam: "123",
+    expand:          'someRel',
+    otherQueryParam: '123',
 
     // custom headers
-    headers: { "X-Token": "456" },
+    headers: {
+        'X-Custom-Header': 'example',
+    },
 
     // custom fetch options
     keepalive: false,
-    cache: "no-store",
+    cache:     'no-store',
 
     // or custom fetch implementation
     fetch: async (url, config) => { ... },
