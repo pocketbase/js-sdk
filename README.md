@@ -15,6 +15,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
         - [Common auth store fields and methods](#common-auth-store-fields-and-methods)
     - [Auto cancellation](#auto-cancellation)
     - [Custom Record types](#custom-record-types)
+    - [Custom request options](#custom-request-options)
     - [Send hooks](#send-hooks)
     - [SSR integration](#ssr-integration)
     - [Security](#security)
@@ -303,9 +304,40 @@ pb.collection('tasks').getList<Task>(1, 20) // -> results in Promise<ListResult<
 pb.collection('tasks').getOne<Task>("RECORD_ID")  // -> results in Promise<Task>
 ```
 
+
+### Custom request options
+
+All API services accept an optional `options` argument (usually the last one and of type [`SendOptions`](https://github.com/pocketbase/js-sdk/blob/master/src/services/utils/options.ts)), that can be used to provide:
+
+- custom headers for a single request
+- custom fetch options
+- or even your own `fetch` implementation
+
+For example:
+
+```js
+pb.collection('example').getList(1, 20, {
+    expand:          "someRel",
+    otherQueryParam: "123",
+
+    // custom headers
+    headers: { "X-Token": "456" },
+
+    // custom fetch options
+    keepalive: false,
+    cache: "no-store",
+
+    // or custom fetch implementation
+    fetch: async (url, config) => { ... },
+})
+```
+
+_Note that for backward compatability and to minimize the verbosity, any "unknown" top-level field will be treated as query parameter._
+
+
 ### Send hooks
 
-Sometimes you may want to modify the request data or to customize the response.
+Sometimes you may want to modify the request data globally or to customize the response.
 
 To accomplish this, the SDK provides 2 function hooks:
 

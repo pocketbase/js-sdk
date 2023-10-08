@@ -1,5 +1,8 @@
 export interface SendOptions extends RequestInit {
-    [key: string]: any; // for backward compatibility
+    // for backward compatibility and to minimize the verbosity,
+    // any top-level field that doesn't exist in RequestInit or the
+    // fields below will be treated as query parameter.
+    [key: string]: any;
 
     /**
      * Optional custom fetch function to use for sending the request.
@@ -17,7 +20,7 @@ export interface SendOptions extends RequestInit {
     body?: any;
 
     /**
-     * Query params that will be appended to the request url.
+     * Query parameters that will be appended to the request url.
      */
     query?: { [key: string]: any };
 
