@@ -1,3 +1,37 @@
+## 0.18.3
+
+- Added optional generic support for the `RecordService` ([#251](https://github.com/pocketbase/js-sdk/issues/251)).
+    This should allow specifying a single TypeScript definition for the client, eg. using type assertion:
+    ```ts
+    interface Task {
+      id:   string;
+      name: string;
+    }
+
+    interface Post {
+      id:     string;
+      title:  string;
+      active: boolean;
+    }
+
+    interface TypedPocketBase extends PocketBase {
+      collection(idOrName: string): RecordService // default fallback for any other collection
+      collection(idOrName: 'tasks'): RecordService<Task>
+      collection(idOrName: 'posts'): RecordService<Post>
+    }
+
+    ...
+
+    const pb = new PocketBase("http://127.0.0.1:8090") as TypedPocketBase;
+
+    // the same as pb.collection('tasks').getOne<Task>("RECORD_ID")
+    await pb.collection('tasks').getOne("RECORD_ID") // -> results in Task
+
+    // the same as pb.collection('posts').getOne<Post>("RECORD_ID")
+    await pb.collection('posts').getOne("RECORD_ID") // -> results in Post
+    ```
+
+
 ## 0.18.2
 
 - Added support for assigning a `Promise` as `AsyncAuthStore` initial value ([#249](https://github.com/pocketbase/js-sdk/issues/249)).

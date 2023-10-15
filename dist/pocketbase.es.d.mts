@@ -129,7 +129,10 @@ declare abstract class BaseService {
     constructor(client: Client);
 }
 interface SendOptions extends RequestInit {
-    [key: string]: any; // for backward compatibility
+    // for backward compatibility and to minimize the verbosity,
+    // any top-level field that doesn't exist in RequestInit or the
+    // fields below will be treated as query parameter.
+    [key: string]: any;
     /**
      * Optional custom fetch function to use for sending the request.
      */
@@ -145,7 +148,7 @@ interface SendOptions extends RequestInit {
      */
     body?: any;
     /**
-     * Query params that will be appended to the request url.
+     * Query parameters that will be appended to the request url.
      */
     query?: {
         [key: string]: any;
@@ -591,7 +594,7 @@ interface OAuth2AuthConfig extends SendOptions {
     // optional query params to send with the PocketBase auth request (eg. fields, expand, etc.)
     query?: RecordOptions;
 }
-declare class RecordService extends CrudService<RecordModel> {
+declare class RecordService<M = RecordModel> extends CrudService<M> {
     readonly collectionIdOrName: string;
     constructor(client: Client, collectionIdOrName: string);
     /**
@@ -610,11 +613,11 @@ declare class RecordService extends CrudService<RecordModel> {
      *
      * Subscribe to the realtime changes of a single record in the collection.
      */
-    subscribeOne<T = RecordModel>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribeOne<T = M>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
      */
-    subscribe<T = RecordModel>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribe<T = M>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
      *
@@ -628,7 +631,7 @@ declare class RecordService extends CrudService<RecordModel> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    subscribe<T = RecordModel>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscriptions of the specified topic
      * ("*" or record id).
@@ -643,27 +646,27 @@ declare class RecordService extends CrudService<RecordModel> {
     /**
      * @inheritdoc
      */
-    getFullList<T = RecordModel>(options?: RecordFullListOptions): Promise<Array<T>>;
+    getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>;
     /**
      * @inheritdoc
      */
-    getFullList<T = RecordModel>(batch?: number, options?: RecordListOptions): Promise<Array<T>>;
+    getFullList<T = M>(batch?: number, options?: RecordListOptions): Promise<Array<T>>;
     /**
      * @inheritdoc
      */
-    getList<T = RecordModel>(page?: number, perPage?: number, options?: RecordListOptions): Promise<ListResult<T>>;
+    getList<T = M>(page?: number, perPage?: number, options?: RecordListOptions): Promise<ListResult<T>>;
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = RecordModel>(filter: string, options?: RecordListOptions): Promise<T>;
+    getFirstListItem<T = M>(filter: string, options?: RecordListOptions): Promise<T>;
     /**
      * @inheritdoc
      */
-    getOne<T = RecordModel>(id: string, options?: RecordOptions): Promise<T>;
+    getOne<T = M>(id: string, options?: RecordOptions): Promise<T>;
     /**
      * @inheritdoc
      */
-    create<T = RecordModel>(bodyParams?: {
+    create<T = M>(bodyParams?: {
         [key: string]: any;
     } | FormData, options?: RecordOptions): Promise<T>;
     /**
@@ -672,7 +675,7 @@ declare class RecordService extends CrudService<RecordModel> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = RecordModel>(id: string, bodyParams?: {
+    update<T = M>(id: string, bodyParams?: {
         [key: string]: any;
     } | FormData, options?: RecordOptions): Promise<T>;
     /**
@@ -688,7 +691,7 @@ declare class RecordService extends CrudService<RecordModel> {
     /**
      * Prepare successful collection authorization response.
      */
-    protected authResponse<T = RecordModel>(responseData: any): RecordAuthResponse<T>;
+    protected authResponse<T = M>(responseData: any): RecordAuthResponse<T>;
     /**
      * Returns all available collection auth methods.
      */
@@ -701,12 +704,12 @@ declare class RecordService extends CrudService<RecordModel> {
      * - the authentication token
      * - the authenticated record model
      */
-    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
+    authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
      * @deprecated
      * Consider using authWithPassword(usernameOrEmail, password, options?).
      */
-    authWithPassword<T = RecordModel>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>;
+    authWithPassword<T = M>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
      * Authenticate a single auth collection record with OAuth2 code.
      *
@@ -718,14 +721,14 @@ declare class RecordService extends CrudService<RecordModel> {
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
      */
-    authWithOAuth2Code<T = RecordModel>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
         [key: string]: any;
     }, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
      * @deprecated
      * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createdData, options?).
      */
-    authWithOAuth2Code<T = RecordModel>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
         [key: string]: any;
     }, body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
@@ -734,7 +737,7 @@ declare class RecordService extends CrudService<RecordModel> {
      * Please use `authWithOAuth2Code()` OR its simplified realtime version
      * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
      */
-    authWithOAuth2<T = RecordModel>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
         [key: string]: any;
     }, bodyParams?: {
         [key: string]: any;
@@ -770,19 +773,19 @@ declare class RecordService extends CrudService<RecordModel> {
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
      */
-    authWithOAuth2<T = RecordModel>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
+    authWithOAuth2<T = M>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
     /**
      * Refreshes the current authenticated record instance and
      * returns a new token and record data.
      *
      * On success this method also automatically updates the client's AuthStore.
      */
-    authRefresh<T = RecordModel>(options?: RecordOptions): Promise<RecordAuthResponse<T>>;
+    authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
      * @deprecated
      * Consider using authRefresh(options?).
      */
-    authRefresh<T = RecordModel>(body?: any, query?: any): Promise<RecordAuthResponse<T>>;
+    authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
      * Sends auth record password reset request.
      */
@@ -1061,7 +1064,7 @@ declare class Client {
      * @param  {string} idOrName
      * @return {RecordService}
      */
-    collection(idOrName: string): RecordService;
+    collection<M = RecordModel>(idOrName: string): RecordService<M>;
     /**
      * Globally enable or disable auto cancellation for pending duplicated requests.
      */

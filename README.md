@@ -14,7 +14,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
         - [Custom auth store](#custom-auth-store)
         - [Common auth store fields and methods](#common-auth-store-fields-and-methods)
     - [Auto cancellation](#auto-cancellation)
-    - [Custom Record types](#custom-record-types)
+    - [Specify TypeScript definitions](#specify-typescript-definitions)
     - [Custom request options](#custom-request-options)
     - [Send hooks](#send-hooks)
     - [SSR integration](#ssr-integration)
@@ -289,7 +289,7 @@ pb.collection('example').getList(1, 20); // executed
 To manually cancel pending requests, you could use `pb.cancelAllRequests()` or `pb.cancelRequest(requestKey)`.
 
 
-### Custom Record types
+### Specify TypeScript definitions
 
 You could specify custom TypeScript definitions for your Record models using generics:
 
@@ -302,6 +302,34 @@ interface Task {
 
 pb.collection('tasks').getList<Task>(1, 20) // -> results in Promise<ListResult<Task>>
 pb.collection('tasks').getOne<Task>("RECORD_ID")  // -> results in Promise<Task>
+```
+
+Alternatively, if you don't want to type the generic argument every time you can define a global PocketBase type using type assertion:
+
+```ts
+interface Task {
+  id:   string;
+  name: string;
+}
+
+interface Post {
+  id:     string;
+  title:  string;
+  active: boolean;
+}
+
+interface TypedPocketBase extends PocketBase {
+  collection(idOrName: string): RecordService // default fallback for any other collection
+  collection(idOrName: 'tasks'): RecordService<Task>
+  collection(idOrName: 'posts'): RecordService<Post>
+}
+
+...
+
+const pb = new PocketBase("http://127.0.0.1:8090") as TypedPocketBase;
+
+pb.collection('tasks').getOne("RECORD_ID") // -> results in Promise<Task>
+pb.collection('posts').getOne("RECORD_ID") // -> results in Promise<Post>
 ```
 
 

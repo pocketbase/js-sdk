@@ -11,6 +11,7 @@ import { HealthService }            from '@/services/HealthService';
 import { FileService }              from '@/services/FileService';
 import { BackupService }            from '@/services/BackupService';
 import { SendOptions, FileOptions } from '@/services/utils/options';
+import { RecordModel }              from '@/services/utils/dtos';
 
 // list of known SendOptions keys (everything else is treated as query param)
 const knownSendOptionsKeys = [
@@ -177,7 +178,7 @@ export default class Client {
      * @param  {string} idOrName
      * @return {RecordService}
      */
-    collection(idOrName: string): RecordService {
+    collection<M = RecordModel>(idOrName: string): RecordService<M> {
         if (!this.recordServices[idOrName]) {
             this.recordServices[idOrName] = new RecordService(this, idOrName);
         }
