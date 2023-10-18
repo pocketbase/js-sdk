@@ -6,6 +6,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Caveats](#caveats)
+    - [Binding filter parameters](#binding-filter-parameters)
     - [File upload](#file-upload)
     - [Error handling](#error-handling)
     - [Auth store](#auth-store)
@@ -104,6 +105,29 @@ const adminData = await pb.admins.authWithPassword('test@example.com', '123456')
 
 
 ## Caveats
+
+### Binding filter parameters
+
+The SDK comes with a helper `pb.filter(expr, params)` method to generate a filter string with placeholder parameters (`{:paramName}`) populated from an object.
+
+**This method is also recommended when using the SDK in Node/Deno/Bun server-side list queries and accepting untrusted user input as `filter` string arguments, because it will take care to properly escape the generated string expression, avoiding eventual string injection attacks** (_on the client-side this is not much of an issue_).
+
+```js
+const record = await pb.collection("example").getList(1, 20, {
+  // the same as: "title ~ 'te\\'st' && (totalA = 123 || totalB = 123)"
+  filter: pb.filter("title ~ {:title} && (totalA = {:num} || totalB = {:num})", { title: "te'st", num: 123 })
+})
+```
+
+The supported placeholder parameter values are:
+
+- `string` (_single quotes will be autoescaped_)
+- `number`
+- `boolean`
+- `Date` object (_will be stringified into the format expected by PocketBase_)
+- `null`
+- anything else is converted to a string using `JSON.stringify()`
+
 
 ### File upload
 
@@ -741,6 +765,9 @@ This is out of the scope of the SDK, but you could find more resources about CSP
 
 - https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
 - https://content-security-policy.com
+
+
+**Depending on how and where you use the JS SDK, it is also recommended to use the helper `pb.filter(expr, params)` when constructing filter strings with untrested user input to avoid eventual string injection attacks (see [Binding filter parameters](#binding-filter-parameters)).**
 
 
 ## Definitions

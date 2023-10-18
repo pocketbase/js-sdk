@@ -150,6 +150,52 @@ describe('Client', function() {
         });
     });
 
+    describe('filter()', function() {
+        test('filter expression without params', function() {
+            const client = new Client('test_base_url', null, 'test_language_A');
+            const raw = 'a > {:test1} && b = {:test2} || c = {:test2}';
+
+            assert.equal(client.filter(raw), raw)
+        });
+
+        test('filter expression with params that does not match the placeholders', function() {
+            const client = new Client('test_base_url', null, 'test_language_A');
+            const result = client.filter('a > {:test1} && b = {:test2} || c = {:test2}', { test2: 'hello' });
+
+            assert.equal(result, "a > {:test1} && b = 'hello' || c = 'hello'")
+        });
+
+        test('filter expression with all placeholder types', function() {
+            const client = new Client('test_base_url', null, 'test_language_A');
+
+            const params = {
+                test1:  "a'b'c'",
+                test2:  null,
+                test3:  true,
+                test4:  false,
+                test5:  123,
+                test6:  -123.45,
+                test7:  123.45,
+                test8:  new Date('2023-10-18 10:11:12'),
+                test9:  [1, 2, 3, "test'123"],
+                test10: {a: "test'123"},
+            }
+
+            let raw = '';
+            for (let key in params) {
+                if (raw) {
+                    raw += " || ";
+                }
+                raw += `${key}={:${key}}`;
+            }
+
+            assert.equal(
+                client.filter(raw, params),
+                `test1='a\\'b\\'c\\'' || test2=null || test3=true || test4=false || test5=123 || test6=-123.45 || test7=123.45 || test8='2023-10-18 07:11:12.000Z' || test9='[1,2,3,"test\\'123"]' || test10='{"a":"test\\'123"}'`
+            )
+        });
+    });
+
     describe('send()', function() {
         test('Should build and send http request', async function() {
             const client = new Client('test_base_url', null, 'test_language_A');

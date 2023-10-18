@@ -1078,6 +1078,30 @@ declare class Client {
      */
     cancelAllRequests(): Client;
     /**
+     * Constructs a properly escaped filter expression.
+     *
+     * Placeholder parameters should be added using the `{:paramName}` notation.
+     *
+     * - `string` (_single quotes will be autoescaped_)
+     * - `number`
+     * - `boolean`
+     * - `Date` object (_will be stringified into the format expected by PocketBase_)
+     * - `null`
+     * - anything else is converted to a string using `JSON.stringify()`
+     *
+     * Example:
+     *
+     * ```js
+     * pb.collection("example").getFirstListItem(pb.filter(
+     *    'title ~ {:title} && created >= {:created}',
+     *    { title: "example", created: new Date()}
+     * ))
+     * ```
+     */
+    filter(raw: string, params?: {
+        [key: string]: any;
+    }): string;
+    /**
      * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(record: {

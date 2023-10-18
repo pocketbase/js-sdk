@@ -221,6 +221,57 @@ export default class Client {
     }
 
     /**
+     * Constructs a properly escaped filter expression.
+     *
+     * Placeholder parameters should be added using the `{:paramName}` notation.
+     *
+     * - `string` (_single quotes will be autoescaped_)
+     * - `number`
+     * - `boolean`
+     * - `Date` object (_will be stringified into the format expected by PocketBase_)
+     * - `null`
+     * - anything else is converted to a string using `JSON.stringify()`
+     *
+     * Example:
+     *
+     * ```js
+     * pb.collection("example").getFirstListItem(pb.filter(
+     *    'title ~ {:title} && created >= {:created}',
+     *    { title: "example", created: new Date()}
+     * ))
+     * ```
+     */
+    filter(raw: string, params?: {[key:string]:any}): string {
+        if (!params) {
+            return raw;
+        }
+
+        for (let key in params) {
+            let val = params[key];
+            switch (typeof val) {
+                case 'boolean':
+                case 'number':
+                    val = '' + val;
+                    break;
+                case 'string':
+                    val = "'" + val.replace(/'/g, "\\'") + "'";
+                    break;
+                default:
+                    if (val === null) {
+                        val = "null";
+                    } else if (val instanceof Date) {
+                        val = "'" + val.toISOString().replace('T', ' ') + "'";
+                    } else {
+                        val = "'" + JSON.stringify(val).replace(/'/g, "\\'") + "'";
+                    }
+            }
+            raw = raw.replaceAll("{:" + key + "}", val)
+        }
+
+        return raw;
+    }
+
+    /**
      * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(

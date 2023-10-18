@@ -1,3 +1,24 @@
+## 0.19.0
+
+- Added `pb.filter(rawExpr, params?)` helper to constructs a filter string with binded placeholder parameters.
+
+    ```js
+    const record = await pb.collection("example").getList(1, 20, {
+      // the same as: "title ~ 'te\\'st' && (totalA = 123 || totalB = 123)"
+      filter: pb.filter("title ~ {:title} && (totalA = {:num} || totalB = {:num})", { title: "te'st", num: 123 })
+    })
+    ```
+
+    The supported placeholder parameter values are:
+
+    - `string` (_single quotes will be autoescaped_)
+    - `number`
+    - `boolean`
+    - `Date` object (_will be stringified into the format expected by PocketBase_)
+    - `null`
+    - anything else is converted to a string using `JSON.stringify()`
+
+
 ## 0.18.3
 
 - Added optional generic support for the `RecordService` ([#251](https://github.com/pocketbase/js-sdk/issues/251)).
