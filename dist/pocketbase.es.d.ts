@@ -1078,16 +1078,18 @@ declare class Client {
      */
     cancelAllRequests(): Client;
     /**
-     * Constructs a properly escaped filter expression.
+     * Constructs a filter expression with placeholders populated from a parameters object.
      *
-     * Placeholder parameters should be added using the `{:paramName}` notation.
+     * Placeholder parameters are defined with the `{:paramName}` notation.
      *
-     * - `string` (_single quotes will be autoescaped_)
+     * The following parameter values are supported:
+     *
+     * - `string` (_single quotes are autoescaped_)
      * - `number`
      * - `boolean`
-     * - `Date` object (_will be stringified into the format expected by PocketBase_)
+     * - `Date` object (_stringified into the PocketBase datetime format_)
      * - `null`
-     * - anything else is converted to a string using `JSON.stringify()`
+     * - everything else is converted to a string using `JSON.stringify()`
      *
      * Example:
      *

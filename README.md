@@ -113,7 +113,7 @@ The SDK comes with a helper `pb.filter(expr, params)` method to generate a filte
 **This method is also recommended when using the SDK in Node/Deno/Bun server-side list queries and accepting untrusted user input as `filter` string arguments, because it will take care to properly escape the generated string expression, avoiding eventual string injection attacks** (_on the client-side this is not much of an issue_).
 
 ```js
-const record = await pb.collection("example").getList(1, 20, {
+const records = await pb.collection("example").getList(1, 20, {
   // the same as: "title ~ 'te\\'st' && (totalA = 123 || totalB = 123)"
   filter: pb.filter("title ~ {:title} && (totalA = {:num} || totalB = {:num})", { title: "te'st", num: 123 })
 })
@@ -121,12 +121,12 @@ const record = await pb.collection("example").getList(1, 20, {
 
 The supported placeholder parameter values are:
 
-- `string` (_single quotes will be autoescaped_)
+- `string` (_single quotes are autoescaped_)
 - `number`
 - `boolean`
 - `Date` object (_will be stringified into the format expected by PocketBase_)
 - `null`
-- anything else is converted to a string using `JSON.stringify()`
+- everything else is converted to a string using `JSON.stringify()`
 
 
 ### File upload

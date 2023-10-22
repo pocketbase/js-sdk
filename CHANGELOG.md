@@ -1,6 +1,6 @@
 ## 0.19.0
 
-- Added `pb.filter(rawExpr, params?)` helper to constructs a filter string with binded placeholder parameters.
+- Added `pb.filter(rawExpr, params?)` helper to construct a filter string with placeholder parameters populated from an object.
 
     ```js
     const record = await pb.collection("example").getList(1, 20, {
