@@ -1,10 +1,13 @@
-import { BaseService }         from '@/services/utils/BaseService';
-import { ClientResponseError } from '@/ClientResponseError';
+import { ClientResponseError }                      from '@/ClientResponseError';
+import { BaseService }                              from '@/services/utils/BaseService';
+import { SendOptions, normalizeUnknownQueryParams } from '@/services/utils/options';
 
 interface promiseCallbacks {
     resolve: Function
     reject: Function
 }
+
+type Subscriptions = { [key: string]: Array<EventListener> };
 
 export type UnsubscribeFunc = () => Promise<void>;
 
@@ -12,8 +15,8 @@ export class RealtimeService extends BaseService {
     clientId: string = "";
 
     private eventSource: EventSource | null = null;
-    private subscriptions: { [key: string]: Array<EventListener> } = {};
-    private lastSentTopics: Array<string> = [];
+    private subscriptions: Subscriptions = {};
+    private lastSentSubscriptions: Array<string> = [];
     private connectTimeoutId: any;
     private maxConnectTimeout: number = 15000;
     private reconnectTimeoutId: any;
@@ -39,9 +42,22 @@ export class RealtimeService extends BaseService {
      * If the SSE connection is not started yet,
      * this method will also initialize it.
      */
-    async subscribe(topic: string, callback: (data: any) => void): Promise<UnsubscribeFunc> {
+    async subscribe(
+        topic: string,
+        callback: (data: any) => void,
+        options?: SendOptions,
+    ): Promise<UnsubscribeFunc> {
         if (!topic) {
             throw new Error('topic must be set.')
+        }
+
+        let key = topic;
+
+        // serialize and append the topic options (if any)
+        if (options) {
+            normalizeUnknownQueryParams(options)
+            const serialized = "options=" + encodeURIComponent(JSON.stringify({ query: options.query, headers: options.headers }));
+            key += (key.includes("?") ? "&" : "?") + serialized;
         }
 
         const listener = function (e: Event) {
@@ -56,20 +72,20 @@ export class RealtimeService extends BaseService {
         };
 
         // store the listener
-        if (!this.subscriptions[topic]) {
-            this.subscriptions[topic] = [];
+        if (!this.subscriptions[key]) {
+            this.subscriptions[key] = [];
         }
-        this.subscriptions[topic].push(listener);
+        this.subscriptions[key].push(listener);
 
         if (!this.isConnected) {
             // initialize sse connection
             await this.connect();
-        } else if (this.subscriptions[topic].length === 1) {
-            // send the updated subscriptions (if it is the first for the topic)
+        } else if (this.subscriptions[key].length === 1) {
+            // send the updated subscriptions (if it is the first for the key)
             await this.submitSubscriptions();
         } else {
             // only register the listener
-            this.eventSource?.addEventListener(topic, listener);
+            this.eventSource?.addEventListener(key, listener);
         }
 
         return async (): Promise<void> => {
@@ -89,26 +105,35 @@ export class RealtimeService extends BaseService {
      * unsubscribe operation there are no active subscriptions left.
      */
     async unsubscribe(topic?: string): Promise<void> {
-        if (!this.hasSubscriptionListeners(topic)) {
-            return; // already unsubscribed
-        }
+        let needToSubmit = false;
 
         if (!topic) {
             // remove all subscriptions
             this.subscriptions = {};
         } else {
-            // remove all topic listeners
-            for (let listener of this.subscriptions[topic]) {
-                this.eventSource?.removeEventListener(topic, listener);
+            // remove all listeners related to the topic
+            const subs = this.getSubscriptionsByTopic(topic)
+            for (let key in subs) {
+                if (!this.hasSubscriptionListeners(key)) {
+                    continue; // already unsubscribed
+                }
+
+                for (let listener of this.subscriptions[key]) {
+                    this.eventSource?.removeEventListener(key, listener);
+                }
+                delete this.subscriptions[key];
+
+                // mark for subscriptions change submit if there are no other listeners
+                if (!needToSubmit) {
+                    needToSubmit = true;
+                }
             }
-            delete this.subscriptions[topic];
         }
 
         if (!this.hasSubscriptionListeners()) {
             // no other active subscriptions -> close the sse connection
             this.disconnect();
-        } else if (!this.hasSubscriptionListeners(topic)) {
-            // submit subscriptions change if there are no other active subscriptions related to the topic
+        } else if (needToSubmit) {
             await this.submitSubscriptions();
         }
     }
@@ -121,18 +146,19 @@ export class RealtimeService extends BaseService {
      * The related sse connection will be autoclosed if after the
      * unsubscribe operation there are no active subscriptions left.
      */
-    async unsubscribeByPrefix(topicPrefix: string): Promise<void> {
+    async unsubscribeByPrefix(keyPrefix: string): Promise<void> {
         let hasAtleastOneTopic = false;
-        for (let topic in this.subscriptions) {
-            if (!topic.startsWith(topicPrefix)) {
+        for (let key in this.subscriptions) {
+            // "?" so that it can be used as end delimiter for the prefix
+            if (!(key + "?").startsWith(keyPrefix)) {
                 continue;
             }
 
             hasAtleastOneTopic = true;
-            for (let listener of this.subscriptions[topic]) {
-                this.eventSource?.removeEventListener(topic, listener);
+            for (let listener of this.subscriptions[key]) {
+                this.eventSource?.removeEventListener(key, listener);
             }
-            delete this.subscriptions[topic];
+            delete this.subscriptions[key];
         }
 
         if (!hasAtleastOneTopic) {
@@ -158,50 +184,59 @@ export class RealtimeService extends BaseService {
      * unsubscribe operation there are no active subscriptions left.
      */
     async unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void> {
-        if (!Array.isArray(this.subscriptions[topic]) || !this.subscriptions[topic].length) {
-            return; // already unsubscribed
-        }
+        let needToSubmit = false;
 
-        let exist = false;
-        for (let i = this.subscriptions[topic].length - 1; i >= 0; i--) {
-            if (this.subscriptions[topic][i] !== listener) {
+        const subs = this.getSubscriptionsByTopic(topic)
+        for (let key in subs) {
+            if (!Array.isArray(this.subscriptions[key]) || !this.subscriptions[key].length) {
+                continue; // already unsubscribed
+            }
+
+            let exist = false;
+            for (let i = this.subscriptions[key].length - 1; i >= 0; i--) {
+                if (this.subscriptions[key][i] !== listener) {
+                    continue;
+                }
+
+                exist = true;                         // has at least one matching listener
+                delete this.subscriptions[key][i];    // removes the function reference
+                this.subscriptions[key].splice(i, 1); // reindex the array
+                this.eventSource?.removeEventListener(key, listener);
+            }
+            if (!exist) {
                 continue;
             }
 
-            exist = true;                           // has at least one matching listener
-            delete this.subscriptions[topic][i];    // removes the function reference
-            this.subscriptions[topic].splice(i, 1); // reindex the array
-            this.eventSource?.removeEventListener(topic, listener);
-        }
-        if (!exist) {
-            return;
-        }
+            // remove the key from the subscriptions list if there are no other listeners
+            if (!this.subscriptions[key].length) {
+                delete this.subscriptions[key];
+            }
 
-        // remove the topic from the subscriptions list if there are no other listeners
-        if (!this.subscriptions[topic].length) {
-            delete this.subscriptions[topic];
+            // mark for subscriptions change submit if there are no other listeners
+            if (!needToSubmit && !this.hasSubscriptionListeners(key)) {
+                needToSubmit = true;
+            }
         }
 
         if (!this.hasSubscriptionListeners()) {
             // no other active subscriptions -> close the sse connection
             this.disconnect();
-        } else if (!this.hasSubscriptionListeners(topic)) {
-            // submit subscriptions change if there are no other active subscriptions related to the topic
+        } else if (needToSubmit) {
             await this.submitSubscriptions();
         }
     }
 
-    private hasSubscriptionListeners(topicToCheck?: string): boolean {
+    private hasSubscriptionListeners(keyToCheck?: string): boolean {
         this.subscriptions = this.subscriptions || {};
 
-        // check the specified topic
-        if (topicToCheck) {
-            return !!this.subscriptions[topicToCheck]?.length;
+        // check the specified key
+        if (keyToCheck) {
+            return !!this.subscriptions[keyToCheck]?.length;
         }
 
-        // check for at least one non-empty topic
-        for (let topic in this.subscriptions) {
-            if (!!this.subscriptions[topic]?.length) {
+        // check for at least one non-empty subscription
+        for (let key in this.subscriptions) {
+            if (!!this.subscriptions[key]?.length) {
                 return true
             }
         }
@@ -217,13 +252,13 @@ export class RealtimeService extends BaseService {
         // optimistic update
         this.addAllSubscriptionListeners();
 
-        this.lastSentTopics = this.getNonEmptySubscriptionTopics();
+        this.lastSentSubscriptions = this.getNonEmptySubscriptionKeys();
 
         return this.client.send('/api/realtime', {
             method: 'POST',
             body: {
                 'clientId': this.clientId,
-                'subscriptions': this.lastSentTopics,
+                'subscriptions': this.lastSentSubscriptions,
             },
             requestKey: this.getSubscriptionsCancelKey(),
         }).catch((err) => {
@@ -238,12 +273,27 @@ export class RealtimeService extends BaseService {
         return "realtime_" + this.clientId;
     }
 
-    private getNonEmptySubscriptionTopics(): Array<string> {
+    private getSubscriptionsByTopic(topic: string): Subscriptions {
+        const result: Subscriptions = {};
+
+        // "?" so that it can be used as end delimiter for the topic
+        topic = topic.includes("?") ? topic : (topic + "?");
+
+        for (let key in this.subscriptions) {
+            if ((key + "?").startsWith(topic)) {
+                result[key] = this.subscriptions[key];
+            }
+        }
+
+        return result;
+    }
+
+    private getNonEmptySubscriptionKeys(): Array<string> {
         const result : Array<string> = [];
 
-        for (let topic in this.subscriptions) {
-            if (this.subscriptions[topic].length) {
-                result.push(topic);
+        for (let key in this.subscriptions) {
+            if (this.subscriptions[key].length) {
+                result.push(key);
             }
         }
 
@@ -257,9 +307,9 @@ export class RealtimeService extends BaseService {
 
         this.removeAllSubscriptionListeners();
 
-        for (let topic in this.subscriptions) {
-            for (let listener of this.subscriptions[topic]) {
-                this.eventSource.addEventListener(topic, listener);
+        for (let key in this.subscriptions) {
+            for (let listener of this.subscriptions[key]) {
+                this.eventSource.addEventListener(key, listener);
             }
         }
     }
@@ -269,9 +319,9 @@ export class RealtimeService extends BaseService {
             return;
         }
 
-        for (let topic in this.subscriptions) {
-            for (let listener of this.subscriptions[topic]) {
-                this.eventSource.removeEventListener(topic, listener);
+        for (let key in this.subscriptions) {
+            for (let listener of this.subscriptions[key]) {
+                this.eventSource.removeEventListener(key, listener);
             }
         }
     }
@@ -344,13 +394,13 @@ export class RealtimeService extends BaseService {
     }
 
     private hasUnsentSubscriptions(): boolean {
-        const latestTopics = this.getNonEmptySubscriptionTopics();
-        if (latestTopics.length != this.lastSentTopics.length) {
+        const latestTopics = this.getNonEmptySubscriptionKeys();
+        if (latestTopics.length != this.lastSentSubscriptions.length) {
             return true;
         }
 
         for (const t of latestTopics) {
-            if (!this.lastSentTopics.includes(t)) {
+            if (!this.lastSentSubscriptions.includes(t)) {
                 return true;
             }
         }

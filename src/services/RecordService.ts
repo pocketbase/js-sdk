@@ -99,21 +99,6 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     // ---------------------------------------------------------------
 
     /**
-     * @deprecated Use subscribe(recordId, callback) instead.
-     *
-     * Subscribe to the realtime changes of a single record in the collection.
-     */
-    async subscribeOne<T = M>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc> {
-        console.warn("PocketBase: subscribeOne(recordId, callback) is deprecated. Please replace it with subscribe(recordId, callback).");
-        return this.client.realtime.subscribe(this.collectionIdOrName + "/" + recordId, callback);
-    }
-
-    /**
-     * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
-     */
-    async subscribe<T = M>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
-
-    /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
      *
      * If `topic` is the wildcard "*", then this method will subscribe to
@@ -126,31 +111,20 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    async subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>
-
     async subscribe<T = M>(
-        topicOrCallback: string|((data: RecordSubscription<T>) => void),
-        callback?: (data: RecordSubscription<T>) => void
+        topic: string,
+        callback: (data: RecordSubscription<T>) => void,
+        options?: SendOptions,
     ): Promise<UnsubscribeFunc> {
-        if (typeof topicOrCallback === 'function') {
-            console.warn("PocketBase: subscribe(callback) is deprecated. Please replace it with subscribe('*', callback).");
-            return this.client.realtime.subscribe(this.collectionIdOrName, topicOrCallback);
+        if (!topic) {
+            throw new Error("Missing topic.");
         }
 
         if (!callback) {
             throw new Error("Missing subscription callback.");
         }
 
-        if (topicOrCallback === "") {
-            throw new Error("Missing topic.");
-        }
-
-        let topic = this.collectionIdOrName;
-        if (topicOrCallback !== "*") {
-            topic += ('/' + topicOrCallback);
-        }
-
-        return this.client.realtime.subscribe(topic, callback)
+        return this.client.realtime.subscribe(this.collectionIdOrName + "/" + topic, callback, options);
     }
 
     /**
@@ -161,12 +135,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * all subscriptions associated to the current collection.
      */
     async unsubscribe(topic?: string): Promise<void> {
-        // unsubscribe wildcard topic
-        if (topic === "*") {
-            return this.client.realtime.unsubscribe(this.collectionIdOrName);
-        }
-
-        // unsubscribe recordId topic
+        // unsubscribe from the specified topic
         if (topic) {
             return this.client.realtime.unsubscribe(this.collectionIdOrName + "/" + topic);
         }

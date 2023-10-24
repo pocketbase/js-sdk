@@ -833,7 +833,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 //
 // You can use the returned UnsubscribeFunc to remove a single registered subscription.
 // If you want to remove all subscriptions related to the topic use unsubscribe(topic).
-🔓 pb.collection(collectionIdOrName).subscribe(topic, callback);
+🔓 pb.collection(collectionIdOrName).subscribe(topic, callback, options = {});
 
 // Unsubscribe from all registered subscriptions to the specified topic ("*" or recordId).
 // If topic is not set, then it will remove all registered collection subscriptions.
@@ -1011,7 +1011,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Initialize the realtime connection (if not already) and register the subscription listener.
-🔓 pb.realtime.subscribe(topic, callback);
+🔓 pb.realtime.subscribe(topic, callback, options = {});
 
 // Unsubscribe from all subscription listeners with the specified topic.
 🔓 pb.realtime.unsubscribe(topic?);

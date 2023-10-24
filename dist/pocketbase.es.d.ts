@@ -218,6 +218,8 @@ interface AuthOptions extends CommonOptions {
      */
     autoRefreshThreshold?: number;
 }
+// modifies in place the provided options by moving unknown send options as query parameters.
+declare function normalizeUnknownQueryParams(options?: SendOptions): void;
 interface appleClientSecret {
     secret: string;
 }
@@ -479,7 +481,7 @@ declare class RealtimeService extends BaseService {
     clientId: string;
     private eventSource;
     private subscriptions;
-    private lastSentTopics;
+    private lastSentSubscriptions;
     private connectTimeoutId;
     private maxConnectTimeout;
     private reconnectTimeoutId;
@@ -499,7 +501,7 @@ declare class RealtimeService extends BaseService {
      * If the SSE connection is not started yet,
      * this method will also initialize it.
      */
-    subscribe(topic: string, callback: (data: any) => void): Promise<UnsubscribeFunc>;
+    subscribe(topic: string, callback: (data: any) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscription listeners with the specified topic.
      *
@@ -520,7 +522,7 @@ declare class RealtimeService extends BaseService {
      * The related sse connection will be autoclosed if after the
      * unsubscribe operation there are no active subscriptions left.
      */
-    unsubscribeByPrefix(topicPrefix: string): Promise<void>;
+    unsubscribeByPrefix(keyPrefix: string): Promise<void>;
     /**
      * Unsubscribe from all subscriptions matching the specified topic and listener function.
      *
@@ -534,7 +536,8 @@ declare class RealtimeService extends BaseService {
     private hasSubscriptionListeners;
     private submitSubscriptions;
     private getSubscriptionsCancelKey;
-    private getNonEmptySubscriptionTopics;
+    private getSubscriptionsByTopic;
+    private getNonEmptySubscriptionKeys;
     private addAllSubscriptionListeners;
     private removeAllSubscriptionListeners;
     private connect;
@@ -609,16 +612,6 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     // Realtime handlers
     // ---------------------------------------------------------------
     /**
-     * @deprecated Use subscribe(recordId, callback) instead.
-     *
-     * Subscribe to the realtime changes of a single record in the collection.
-     */
-    subscribeOne<T = M>(recordId: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
-    /**
-     * @deprecated This form of subscribe is deprecated. Please use `subscribe("*", callback)`.
-     */
-    subscribe<T = M>(callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
-    /**
      * Subscribe to realtime changes to the specified topic ("*" or record id).
      *
      * If `topic` is the wildcard "*", then this method will subscribe to
@@ -631,7 +624,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void): Promise<UnsubscribeFunc>;
+    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscriptions of the specified topic
      * ("*" or record id).
@@ -1292,4 +1285,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };
+export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };

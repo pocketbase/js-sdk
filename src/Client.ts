@@ -1,42 +1,17 @@
-import { ClientResponseError }      from '@/ClientResponseError';
-import { BaseAuthStore }            from '@/stores/BaseAuthStore';
-import { LocalAuthStore }           from '@/stores/LocalAuthStore';
-import { SettingsService }          from '@/services/SettingsService';
-import { AdminService }             from '@/services/AdminService';
-import { RecordService }            from '@/services/RecordService';
-import { CollectionService }        from '@/services/CollectionService';
-import { LogService }               from '@/services/LogService';
-import { RealtimeService }          from '@/services/RealtimeService';
-import { HealthService }            from '@/services/HealthService';
-import { FileService }              from '@/services/FileService';
-import { BackupService }            from '@/services/BackupService';
-import { SendOptions, FileOptions } from '@/services/utils/options';
-import { RecordModel }              from '@/services/utils/dtos';
-
-// list of known SendOptions keys (everything else is treated as query param)
-const knownSendOptionsKeys = [
-    'requestKey',
-    '$cancelKey',
-    '$autoCancel',
-    'fetch',
-    'headers',
-    'body',
-    'query',
-    'params',
-    // ---,
-    'cache',
-    'credentials',
-    'headers',
-    'integrity',
-    'keepalive',
-    'method',
-    'mode',
-    'redirect',
-    'referrer',
-    'referrerPolicy',
-    'signal',
-    'window',
-];
+import { ClientResponseError } from '@/ClientResponseError';
+import { BaseAuthStore }       from '@/stores/BaseAuthStore';
+import { LocalAuthStore }      from '@/stores/LocalAuthStore';
+import { SettingsService }     from '@/services/SettingsService';
+import { AdminService }        from '@/services/AdminService';
+import { RecordService }       from '@/services/RecordService';
+import { CollectionService }   from '@/services/CollectionService';
+import { LogService }          from '@/services/LogService';
+import { RealtimeService }     from '@/services/RealtimeService';
+import { HealthService }       from '@/services/HealthService';
+import { FileService }         from '@/services/FileService';
+import { BackupService }       from '@/services/BackupService';
+import { RecordModel }         from '@/services/utils/dtos';
+import { SendOptions, FileOptions, normalizeUnknownQueryParams } from '@/services/utils/options';
 
 export interface BeforeSendResult {
     [key:     string]: any, // for backward compatibility
@@ -398,20 +373,12 @@ export default class Client {
      */
     private initSendOptions(path: string, options: SendOptions): SendOptions {
         options = Object.assign({ method: 'GET' } as SendOptions, options)
-        options.query = options.query || {};
 
         // auto convert the body to FormData, if needed
         options.body = this.convertToFormDataIfNeeded(options.body);
 
         // move unknown send options as query parameters
-        for (let key in options) {
-            if (knownSendOptionsKeys.includes(key)) {
-                continue
-            }
-
-            options.query[key] = options[key];
-            delete (options[key]);
-        }
+        normalizeUnknownQueryParams(options);
 
         // requestKey normalizations for backward-compatibility
         // ---
