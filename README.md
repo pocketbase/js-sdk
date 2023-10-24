@@ -858,7 +858,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, options = {});
 
 // Refreshes the current authenticated record model and auth token.
-🔐 pb.collection(collectionIdOrName).authRefresh(bodyParams = {}, options = {});
+🔐 pb.collection(collectionIdOrName).authRefresh(options = {});
 
 // Sends a user password reset email.
 🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, options = {});
@@ -934,7 +934,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔐 pb.admins.update(id, bodyParams = {}, options = {});
 
 // Deletes a single admin by their id.
-🔐 pb.admins.delete(id, bodyParams = {}, options = {});
+🔐 pb.admins.delete(id, options = {});
 ```
 
 ---
