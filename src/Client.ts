@@ -220,6 +220,42 @@ export default class Client {
         return this;
     }
 
+    private escapeValue(val: unknown): string {
+        switch (typeof val) {
+            case 'boolean':
+            case 'number':
+                return '' + val;
+            case 'string':
+                return "'" + val.replace(/'/g, "\\'") + "'";
+        }
+        if (val === null) {
+            return "null";
+        } 
+        if (val instanceof Date) {
+            return "'" + val.toISOString().replace('T', ' ') + "'";
+        }
+        return "'" + JSON.stringify(val).replace(/'/g, "\\'") + "'";
+    }
+
+    private filterString(raw: string, params?: {[key:string]:unknown}): string {
+        if (!params) {
+            return raw;
+        }
+        for (let key in params) {
+            let val = this.escapeValue(params[key]);
+            raw = raw.replaceAll("{:" + key + "}", val)
+        }
+        return raw;
+    }
+
+    private filterTag(raw: TemplateStringsArray, ...params: unknown[]): string {
+        let str = raw[0];
+        for (let i = 0; i < params.length; i++) {
+          str += this.escapeValue(params[i]) + raw[i + 1];
+        }
+        return str;
+    }
+
     /**
      * Constructs a properly escaped filter expression.
      *
@@ -241,34 +277,10 @@ export default class Client {
      * ))
      * ```
      */
-    filter(raw: string, params?: {[key:string]:any}): string {
-        if (!params) {
-            return raw;
-        }
-
-        for (let key in params) {
-            let val = params[key];
-            switch (typeof val) {
-                case 'boolean':
-                case 'number':
-                    val = '' + val;
-                    break;
-                case 'string':
-                    val = "'" + val.replace(/'/g, "\\'") + "'";
-                    break;
-                default:
-                    if (val === null) {
-                        val = "null";
-                    } else if (val instanceof Date) {
-                        val = "'" + val.toISOString().replace('T', ' ') + "'";
-                    } else {
-                        val = "'" + JSON.stringify(val).replace(/'/g, "\\'") + "'";
-                    }
-            }
-            raw = raw.replaceAll("{:" + key + "}", val)
-        }
-
-        return raw;
+    filter(raw: string, params?: {[key:string]:unknown}): string;
+    filter(raw: TemplateStringsArray, ...params: unknown[]): string;
+    filter(raw: string | TemplateStringsArray, ...params: unknown[]): string {
+        return typeof raw === "string" ? this.filterString(raw, params[0] as {[key:string]:unknown}) :this.filterTag(raw, ...params);
     }
 
     /**
