@@ -973,11 +973,14 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 ##### LogService
 
 ```js
-// Returns a paginated log requests list.
-🔐 pb.logs.getRequestsList(page = 1, perPage = 30, options = {});
+// Returns a paginated logs list.
+🔐 pb.logs.getList(page = 1, perPage = 30, options = {});
 
-// Returns a single log request by its id.
-🔐 pb.logs.getRequest(id, options = {});
+// Returns a single log by its id.
+🔐 pb.logs.getOne(id, options = {});
+
+// Returns logs statistics.
+🔐 pb.logs.getStats(options = {});
 ```
 
 ---

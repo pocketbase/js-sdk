@@ -20,7 +20,7 @@ describe('LogService', function () {
         fetchMock.clearMocks();
     });
 
-    describe('getRequestsList()', function() {
+    describe('getList()', function() {
         test('Should correctly return paginated list result', async function() {
             const replyBody = {
                 'page': 2,
@@ -32,7 +32,7 @@ describe('LogService', function () {
 
             fetchMock.on({
                 method: 'GET',
-                url: 'test_base_url/api/logs/requests?page=2&perPage=1&q1=abc',
+                url: 'test_base_url/api/logs?page=2&perPage=1&q1=abc',
                 additionalMatcher: (_, config) => {
                     return config?.headers?.['x-test'] === '456';
                 },
@@ -40,17 +40,17 @@ describe('LogService', function () {
                 replyBody: replyBody,
             });
 
-            const list = await service.getRequestsList(2, 1, { 'q1': 'abc', 'headers': {'x-test': '456'} });
+            const list = await service.getList(2, 1, { 'q1': 'abc', 'headers': {'x-test': '456'} });
 
             assert.deepEqual(list, replyBody);
         });
     });
 
-    describe('getRequest()', function() {
-        test('Should return single request log', async function() {
+    describe('getOne()', function() {
+        test('Should return single log', async function() {
             fetchMock.on({
                 method: 'GET',
-                url: 'test_base_url/api/logs/requests/' + encodeURIComponent('test?123') + '?q1=abc',
+                url: 'test_base_url/api/logs/' + encodeURIComponent('test?123') + '?q1=abc',
                 additionalMatcher: (_, config) => {
                     return config?.headers?.['x-test'] === '456';
                 },
@@ -58,17 +58,17 @@ describe('LogService', function () {
                 replyBody: { 'id': 'test123' },
             });
 
-            const result = await service.getRequest('test?123', { 'q1': 'abc', 'headers': {'x-test': '456'} });
+            const result = await service.getOne('test?123', { 'q1': 'abc', 'headers': {'x-test': '456'} });
 
             assert.deepEqual(result, { 'id': 'test123' } as any);
         });
     });
 
-    describe('getRequestsStats()', function() {
+    describe('getStats()', function() {
         test('Should return array with date grouped logs', async function() {
             fetchMock.on({
                 method: 'GET',
-                url: 'test_base_url/api/logs/requests/stats?q1=abc',
+                url: 'test_base_url/api/logs/stats?q1=abc',
                 additionalMatcher: (_, config) => {
                     return config?.headers?.['x-test'] === '456';
                 },
@@ -76,7 +76,7 @@ describe('LogService', function () {
                 replyBody: [{total: 123, date: '2022-01-01 00:00:00'}],
             });
 
-            const result = await service.getRequestsStats({ 'q1': 'abc', 'headers': {'x-test': '456'} });
+            const result = await service.getStats({ 'q1': 'abc', 'headers': {'x-test': '456'} });
             const expected = [{total: 123, date: '2022-01-01 00:00:00'}];
 
             assert.deepEqual(result, expected);

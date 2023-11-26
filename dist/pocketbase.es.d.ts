@@ -281,6 +281,7 @@ interface SchemaField {
     type: string;
     system: boolean;
     required: boolean;
+    presentable: boolean;
     options: {
         [key: string]: any;
     };
@@ -306,16 +307,10 @@ interface ExternalAuthModel extends BaseModel {
     provider: string;
     providerId: string;
 }
-interface LogRequestModel extends BaseModel {
-    url: string;
-    method: string;
-    status: number;
-    auth: string;
-    remoteIp: string;
-    userIp: string;
-    referer: string;
-    userAgent: string;
-    meta: {
+interface LogModel extends BaseModel {
+    level: string;
+    message: string;
+    data: {
         [key: string]: any;
     };
 }
@@ -868,17 +863,17 @@ interface HourlyStats {
 }
 declare class LogService extends BaseService {
     /**
-     * Returns paginated logged requests list.
+     * Returns paginated logs list.
      */
-    getRequestsList(page?: number, perPage?: number, options?: ListOptions): Promise<ListResult<LogRequestModel>>;
+    getList(page?: number, perPage?: number, options?: ListOptions): Promise<ListResult<LogModel>>;
     /**
-     * Returns a single logged request by its id.
+     * Returns a single log by its id.
      */
-    getRequest(id: string, options?: CommonOptions): Promise<LogRequestModel>;
+    getOne(id: string, options?: CommonOptions): Promise<LogModel>;
     /**
-     * Returns request logs statistics.
+     * Returns logs statistics.
      */
-    getRequestsStats(options?: LogStatsOptions): Promise<Array<HourlyStats>>;
+    getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>>;
 }
 interface HealthCheckResponse {
     code: number;
@@ -1285,4 +1280,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogRequestModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };
+export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };

@@ -1,5 +1,5 @@
 import { BaseService } from '@/services/utils/BaseService';
-import { ListResult, LogRequestModel }  from '@/services/utils/dtos';
+import { ListResult, LogModel }  from '@/services/utils/dtos';
 import {
     CommonOptions,
     ListOptions,
@@ -13,9 +13,9 @@ export interface HourlyStats {
 
 export class LogService extends BaseService {
     /**
-     * Returns paginated logged requests list.
+     * Returns paginated logs list.
      */
-    getRequestsList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogRequestModel>> {
+    getList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogModel>> {
         options = Object.assign({'method': 'GET'}, options);
 
         options.query = Object.assign({
@@ -23,28 +23,28 @@ export class LogService extends BaseService {
             'perPage': perPage,
         }, options.query);
 
-        return this.client.send('/api/logs/requests', options);
+        return this.client.send('/api/logs', options);
     }
 
     /**
-     * Returns a single logged request by its id.
+     * Returns a single log by its id.
      */
-    getRequest(id: string, options?: CommonOptions): Promise<LogRequestModel> {
+    getOne(id: string, options?: CommonOptions): Promise<LogModel> {
         options = Object.assign({
             'method': 'GET',
         }, options);
 
-        return this.client.send('/api/logs/requests/' + encodeURIComponent(id), options);
+        return this.client.send('/api/logs/' + encodeURIComponent(id), options);
     }
 
     /**
-     * Returns request logs statistics.
+     * Returns logs statistics.
      */
-    getRequestsStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
+    getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
         options = Object.assign({
             'method': 'GET',
         }, options);
 
-        return this.client.send('/api/logs/requests/stats', options);
+        return this.client.send('/api/logs/stats', options);
     }
 }

@@ -20,12 +20,13 @@ export interface AdminModel extends BaseModel {
 }
 
 export interface SchemaField {
-    id:       string;
-    name:     string;
-    type:     string;
-    system:   boolean;
-    required: boolean;
-    options:  { [key: string]: any };
+    id:          string;
+    name:        string;
+    type:        string;
+    system:      boolean;
+    required:    boolean;
+    presentable: boolean;
+    options:     { [key: string]: any };
 }
 
 export interface CollectionModel extends BaseModel {
@@ -49,16 +50,10 @@ export interface ExternalAuthModel extends BaseModel {
     providerId:   string;
 }
 
-export interface LogRequestModel extends BaseModel {
-    url:       string;
-    method:    string;
-    status:    number;
-    auth:      string;
-    remoteIp:  string;
-    userIp:    string;
-    referer:   string;
-    userAgent: string;
-    meta:      { [key: string]: any };
+export interface LogModel extends BaseModel {
+    level:   string;
+    message: string;
+    data:    { [key: string]: any };
 }
 
 export interface RecordModel extends BaseModel {

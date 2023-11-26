@@ -1,12 +1,19 @@
-## 0.20.0-rc
+## 0.20.0-WIP
 
-- Added experimental `expand`, `filter`, `fields`, custom query and headers parameters support for the realtime subscriptions.
+- Added `expand`, `filter`, `fields`, custom query and headers parameters support for the realtime subscriptions.
     ```js
     pb.collection("example").subscribe("*", (e) => {
       ...
     }, { filter: "someField > 10" });
     ```
-    _This works only with PocketBase v0.20.0-rc._
+    _This works only with PocketBase v0.20.0+._
+
+- Changes to the logs service methods in relation to the logs generalization in PocketBase v0.20.0+:
+  ```js
+  pb.logs.getRequestsList(...)  -> pb.logs.getList(...)
+  pb.logs.getRequest(...)       -> pb.logs.getOne(...)
+  pb.logs.getRequestsStats(...) -> pb.logs.getStats(...)
+  ```
 
 
 ## 0.19.0
