@@ -562,11 +562,12 @@ interface RecordAuthResponse<T = RecordModel> {
 }
 interface AuthProviderInfo {
     name: string;
+    displayName: string;
     state: string;
+    authUrl: string;
     codeVerifier: string;
     codeChallenge: string;
     codeChallengeMethod: string;
-    authUrl: string;
 }
 interface AuthMethodsList {
     usernamePassword: boolean;

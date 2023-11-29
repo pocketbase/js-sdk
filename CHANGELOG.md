@@ -9,12 +9,11 @@
     _This works only with PocketBase v0.20.0+._
 
 - Changes to the logs service methods in relation to the logs generalization in PocketBase v0.20.0+:
-  ```js
-  pb.logs.getRequestsList(...)  -> pb.logs.getList(...)
-  pb.logs.getRequest(...)       -> pb.logs.getOne(...)
-  pb.logs.getRequestsStats(...) -> pb.logs.getStats(...)
-  ```
-
+    ```js
+    pb.logs.getRequestsList(...)  -> pb.logs.getList(...)
+    pb.logs.getRequest(...)       -> pb.logs.getOne(...)
+    pb.logs.getRequestsStats(...) -> pb.logs.getStats(...)
+    ```
 
 ## 0.19.0
 

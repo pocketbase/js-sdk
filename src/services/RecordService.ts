@@ -34,11 +34,12 @@ export interface RecordAuthResponse<T = RecordModel> {
 
 export interface AuthProviderInfo {
     name:                string;
+    displayName:         string;
     state:               string;
+    authUrl:             string;
     codeVerifier:        string;
     codeChallenge:       string;
     codeChallengeMethod: string;
-    authUrl:             string;
 }
 
 export interface AuthMethodsList {
