@@ -572,6 +572,7 @@ interface AuthProviderInfo {
 interface AuthMethodsList {
     usernamePassword: boolean;
     emailPassword: boolean;
+    onlyVerified: boolean;
     authProviders: Array<AuthProviderInfo>;
 }
 interface RecordSubscription<T = RecordModel> {
