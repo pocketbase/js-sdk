@@ -45,6 +45,7 @@ export interface AuthProviderInfo {
 export interface AuthMethodsList {
     usernamePassword: boolean;
     emailPassword:    boolean;
+    onlyVerified:     boolean;
     authProviders:    Array<AuthProviderInfo>;
 }
 

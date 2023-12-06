@@ -15,6 +15,13 @@
     pb.logs.getRequestsStats(...) -> pb.logs.getStats(...)
     ```
 
+- Added missing `SchemaField.presentable` field.
+
+- Added new `AuthProviderInfo.displayName` string field.
+
+- Added new `AuthMethodsList.onlyVerified` bool field.
+
+
 ## 0.19.0
 
 - Added `pb.filter(rawExpr, params?)` helper to construct a filter string with placeholder parameters populated from an object.
