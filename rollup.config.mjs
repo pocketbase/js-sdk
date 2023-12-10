@@ -7,6 +7,9 @@ function basePlugins() {
     return [
         ts(),
 
+        // @todo before v1, test if feasible and consider removing the minification for the npm builds
+        // (https://github.com/pocketbase/js-sdk/issues/261)
+        //
         // minify if we're building for production
         // (aka. npm run build instead of npm run dev)
         isProduction && terser({

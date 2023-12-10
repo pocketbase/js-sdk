@@ -1,4 +1,4 @@
-## 0.20.0-WIP
+## 0.20.0
 
 - Added `expand`, `filter`, `fields`, custom query and headers parameters support for the realtime subscriptions.
     ```js

@@ -1,5 +1,5 @@
 {
-    "version": "0.20.0-rc3",
+    "version": "0.20.0",
     "name": "pocketbase",
     "description": "PocketBase JavaScript SDK",
     "author": "Gani Georgiev",
