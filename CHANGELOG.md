@@ -1,3 +1,12 @@
+## 0.20.1
+
+- Propagate the `PB_CONNECT` event to allow listening to the realtime connect/reconnect events.
+    ```js
+    pb.realtime.subscribe("PB_CONNECT", (e) => {
+      console.log(e.clientId);
+    })
+    ```
+
 ## 0.20.0
 
 - Added `expand`, `filter`, `fields`, custom query and headers parameters support for the realtime subscriptions.

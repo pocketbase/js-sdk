@@ -360,12 +360,11 @@ export class RealtimeService extends BaseService {
             this.connectErrorHandler(new Error("Failed to establish realtime connection."));
         };
 
-        this.eventSource.addEventListener('PB_CONNECT', (e) => {
+        this.eventSource.addEventListener("PB_CONNECT", (e) => {
             const msgEvent = (e as MessageEvent);
             this.clientId = msgEvent?.lastEventId;
 
-            this.submitSubscriptions()
-            .then(async () => {
+            this.submitSubscriptions().then(async () => {
                 let retries = 3;
                 while (this.hasUnsentSubscriptions() && retries > 0) {
                     retries--;
@@ -386,6 +385,14 @@ export class RealtimeService extends BaseService {
                 this.reconnectAttempts = 0;
                 clearTimeout(this.reconnectTimeoutId);
                 clearTimeout(this.connectTimeoutId);
+
+                // propagate the PB_CONNECT event
+                const connectSubs = this.getSubscriptionsByTopic("PB_CONNECT");
+                for (let key in connectSubs) {
+                    for (let listener of connectSubs[key]) {
+                        listener(e);
+                    }
+                }
             }).catch((err) => {
                 this.clientId = "";
                 this.connectErrorHandler(err);

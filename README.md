@@ -1014,6 +1014,8 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ```js
 // Initialize the realtime connection (if not already) and register the subscription listener.
+//
+// You can subscribe to the `PB_CONNECT` event if you want to listen to the realtime connection connect/reconnect events.
 🔓 pb.realtime.subscribe(topic, callback, options = {});
 
 // Unsubscribe from all subscription listeners with the specified topic.
