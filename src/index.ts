@@ -16,4 +16,5 @@ export * from '@/stores/AsyncAuthStore';
 export * from '@/stores/utils/jwt';
 export * from '@/stores/utils/cookie';
 
+export { Client }
 export default Client;
