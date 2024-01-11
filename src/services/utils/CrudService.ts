@@ -25,6 +25,8 @@ export abstract class CrudService<M> extends BaseService   {
      * (by default 500 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
     async getFullList<T = M>(options?: FullListOptions): Promise<Array<T>>
 
@@ -53,6 +55,8 @@ export abstract class CrudService<M> extends BaseService   {
      * Returns paginated items list.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
     async getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<T>> {
         options = Object.assign({
@@ -84,6 +88,8 @@ export abstract class CrudService<M> extends BaseService   {
      *
      * For consistency with `getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
+     *
+     * @throws {ClientResponseError}
      */
     async getFirstListItem<T = M>(filter: string, options?: CommonOptions): Promise<T> {
         options = Object.assign({
