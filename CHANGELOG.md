@@ -1,3 +1,10 @@
+## 0.20.2
+
+- Throw 404 error for `getOne("")` when invoked with empty id ([#271](https://github.com/pocketbase/js-sdk/issues/271)).
+
+- Added `@throw {ClientResponseError}` jsdoc annotation to the regular request methods ([#262](https://github.com/pocketbase/js-sdk/issues/262)).
+
+
 ## 0.20.1
 
 - Propagate the `PB_CONNECT` event to allow listening to the realtime connect/reconnect events.
