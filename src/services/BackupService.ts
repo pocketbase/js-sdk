@@ -10,8 +10,10 @@ export interface BackupFileInfo {
 export class BackupService extends BaseService {
     /**
      * Returns list with all available backup files.
+     *
+     * @throws {ClientResponseError}
      */
-    getFullList(options?: CommonOptions): Promise<Array<BackupFileInfo>> {
+    async getFullList(options?: CommonOptions): Promise<Array<BackupFileInfo>> {
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -21,8 +23,10 @@ export class BackupService extends BaseService {
 
     /**
      * Initializes a new backup.
+     *
+     * @throws {ClientResponseError}
      */
-    create(basename: string, options?: CommonOptions): Promise<boolean> {
+    async create(basename: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'POST',
             'body':   {
@@ -44,8 +48,10 @@ export class BackupService extends BaseService {
      *     file: new Blob([...]),
      * });
      * ```
+     *
+     * @throws {ClientResponseError}
      */
-    upload(bodyParams: {[key:string]:any}|FormData, options?: CommonOptions): Promise<boolean> {
+    async upload(bodyParams: {[key:string]:any}|FormData, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'POST',
             'body':   bodyParams,
@@ -57,8 +63,10 @@ export class BackupService extends BaseService {
 
     /**
      * Deletes a single backup file.
+     *
+     * @throws {ClientResponseError}
      */
-    delete(key: string, options?: CommonOptions): Promise<boolean> {
+    async delete(key: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'DELETE',
         }, options);
@@ -69,8 +77,10 @@ export class BackupService extends BaseService {
 
     /**
      * Initializes an app data restore from an existing backup.
+     *
+     * @throws {ClientResponseError}
      */
-    restore(key: string, options?: CommonOptions): Promise<boolean> {
+    async restore(key: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'POST',
         }, options);

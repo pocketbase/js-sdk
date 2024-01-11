@@ -8,8 +8,10 @@ interface appleClientSecret {
 export class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
+     *
+     * @throws {ClientResponseError}
      */
-    getAll(options?: CommonOptions): Promise<{[key: string]:any}> {
+    async getAll(options?: CommonOptions): Promise<{[key: string]:any}> {
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -19,8 +21,10 @@ export class SettingsService extends BaseService {
 
     /**
      * Bulk updates app settings.
+     *
+     * @throws {ClientResponseError}
      */
-    update(
+    async update(
         bodyParams?: {[key:string]:any}|FormData,
         options?: CommonOptions,
     ): Promise<{[key: string]:any}> {
@@ -36,8 +40,10 @@ export class SettingsService extends BaseService {
      * Performs a S3 filesystem connection test.
      *
      * The currently supported `filesystem` are "storage" and "backups".
+     *
+     * @throws {ClientResponseError}
      */
-    testS3(filesystem: string = "storage", options?: CommonOptions): Promise<boolean> {
+    async testS3(filesystem: string = "storage", options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'POST',
             'body': {
@@ -56,8 +62,10 @@ export class SettingsService extends BaseService {
      * - verification
      * - password-reset
      * - email-change
+     *
+     * @throws {ClientResponseError}
      */
-    testEmail(toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean> {
+    async testEmail(toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'POST',
             'body': {
@@ -72,8 +80,10 @@ export class SettingsService extends BaseService {
 
     /**
      * Generates a new Apple OAuth2 client secret.
+     *
+     * @throws {ClientResponseError}
      */
-    generateAppleClientSecret(
+    async generateAppleClientSecret(
         clientId: string,
         teamId: string,
         keyId: string,

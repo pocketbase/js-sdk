@@ -152,17 +152,17 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>
+    async getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = M>(batch?: number, options?: RecordListOptions): Promise<Array<T>>
+    async getFullList<T = M>(batch?: number, options?: RecordListOptions): Promise<Array<T>>
 
     /**
      * @inheritdoc
      */
-    getFullList<T = M>(batchOrOptions?: number|RecordFullListOptions, options?: RecordListOptions): Promise<Array<T>> {
+    async getFullList<T = M>(batchOrOptions?: number|RecordFullListOptions, options?: RecordListOptions): Promise<Array<T>> {
         if (typeof batchOrOptions == "number") {
             return super.getFullList<T>(batchOrOptions, options);
         }
@@ -175,28 +175,28 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    getList<T = M>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ListResult<T>> {
+    async getList<T = M>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ListResult<T>> {
         return super.getList<T>(page, perPage, options);
     }
 
     /**
      * @inheritdoc
      */
-    getFirstListItem<T = M>(filter: string, options?: RecordListOptions): Promise<T> {
+    async getFirstListItem<T = M>(filter: string, options?: RecordListOptions): Promise<T> {
         return super.getFirstListItem<T>(filter, options);
     }
 
     /**
      * @inheritdoc
      */
-    getOne<T = M>(id: string, options?: RecordOptions): Promise<T> {
+    async getOne<T = M>(id: string, options?: RecordOptions): Promise<T> {
         return super.getOne<T>(id, options);
     }
 
     /**
      * @inheritdoc
      */
-    create<T = M>(bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+    async create<T = M>(bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
         return super.create<T>(bodyParams, options);
     }
 
@@ -206,7 +206,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = M>(id: string, bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+    async update<T = M>(id: string, bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
         return super.update<RecordModel>(id, bodyParams, options).then((item) => {
             if (
                 // is record auth
@@ -229,7 +229,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, options?: CommonOptions): Promise<boolean> {
+    async delete(id: string, options?: CommonOptions): Promise<boolean> {
         return super.delete(id, options).then((success) => {
             if (
                 success &&
@@ -268,8 +268,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Returns all available collection auth methods.
+     *
+     * @throws {ClientResponseError}
      */
-    listAuthMethods(options?: CommonOptions): Promise<AuthMethodsList> {
+    async listAuthMethods(options?: CommonOptions): Promise<AuthMethodsList> {
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -292,16 +294,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * the client's AuthStore data and returns:
      * - the authentication token
      * - the authenticated record model
+     *
+     * @throws {ClientResponseError}
      */
-    authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>
+    async authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>
 
     /**
      * @deprecated
      * Consider using authWithPassword(usernameOrEmail, password, options?).
      */
-    authWithPassword<T = M>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>
+    async authWithPassword<T = M>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>
 
-    authWithPassword<T = M>(usernameOrEmail: string, password: string, bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+    async authWithPassword<T = M>(usernameOrEmail: string, password: string, bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -331,8 +335,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * - the authentication token
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
+     *
+     * @throws {ClientResponseError}
      */
-    authWithOAuth2Code<T = M>(
+    async authWithOAuth2Code<T = M>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -345,7 +351,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @deprecated
      * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createdData, options?).
      */
-    authWithOAuth2Code<T = M>(
+    async authWithOAuth2Code<T = M>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -355,7 +361,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         query?: any
     ): Promise<RecordAuthResponse<T>>
 
-    authWithOAuth2Code<T = M>(
+    async authWithOAuth2Code<T = M>(
         provider: string,
         code: string,
         codeVerifier: string,
@@ -432,6 +438,8 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * _Site-note_: when creating the OAuth2 app in the provider dashboard
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
+     *
+     * @throws {ClientResponseError}
      */
     async authWithOAuth2<T = M>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>
 
@@ -544,16 +552,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * returns a new token and record data.
      *
      * On success this method also automatically updates the client's AuthStore.
+     *
+     * @throws {ClientResponseError}
      */
-    authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>
+    async authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>
 
     /**
      * @deprecated
      * Consider using authRefresh(options?).
      */
-    authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>
+    async authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>
 
-    authRefresh<T = M>(bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+    async authRefresh<T = M>(bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
         let options: any = {
             'method': 'POST',
         };
@@ -571,16 +581,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Sends auth record password reset request.
+     *
+     * @throws {ClientResponseError}
      */
-    requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
+    async requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using requestPasswordReset(email, options?).
      */
-    requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
+    async requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
 
-    requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -600,8 +612,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Confirms auth record password reset request.
+     *
+     * @throws {ClientResponseError}
      */
-    confirmPasswordReset(
+    async confirmPasswordReset(
         passwordResetToken: string,
         password: string,
         passwordConfirm: string,
@@ -612,7 +626,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @deprecated
      * Consider using confirmPasswordReset(passwordResetToken, password, passwordConfirm, options?).
      */
-    confirmPasswordReset(
+    async confirmPasswordReset(
         passwordResetToken: string,
         password: string,
         passwordConfirm: string,
@@ -620,7 +634,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         query?: any,
     ): Promise<boolean>
 
-    confirmPasswordReset(
+    async confirmPasswordReset(
         passwordResetToken: string,
         password: string,
         passwordConfirm: string,
@@ -649,16 +663,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Sends auth record verification email request.
+     *
+     * @throws {ClientResponseError}
      */
-    requestVerification(email: string, options?: CommonOptions): Promise<boolean>
+    async requestVerification(email: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using requestVerification(email, options?).
      */
-    requestVerification(email: string, body?: any, query?: any): Promise<boolean>
+    async requestVerification(email: string, body?: any, query?: any): Promise<boolean>
 
-    requestVerification(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestVerification(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -679,16 +695,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Confirms auth record email verification request.
+     *
+     * @throws {ClientResponseError}
      */
-    confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>
+    async confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using confirmVerification(verificationToken, options?).
      */
-    confirmVerification(verificationToken: string, body?: any, query?: any): Promise<boolean>
+    async confirmVerification(verificationToken: string, body?: any, query?: any): Promise<boolean>
 
-    confirmVerification(verificationToken: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async confirmVerification(verificationToken: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -709,16 +727,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Sends an email change request to the authenticated record model.
+     *
+     * @throws {ClientResponseError}
      */
-    requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>
+    async requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using requestEmailChange(newEmail, options?).
      */
-    requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>
+    async requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>
 
-    requestEmailChange(newEmail: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestEmailChange(newEmail: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -739,17 +759,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Confirms auth record's new email address.
+     *
+     * @throws {ClientResponseError}
      */
-    confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>
-
+    async confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using confirmEmailChange(emailChangeToken, password, options?).
      */
-    confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>
+    async confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>
 
-    confirmEmailChange(emailChangeToken: string, password: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async confirmEmailChange(emailChangeToken: string, password: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -771,8 +792,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Lists all linked external auth providers for the specified auth record.
+     *
+     * @throws {ClientResponseError}
      */
-    listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>> {
+    async listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>> {
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -782,8 +805,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
     /**
      * Unlink a single external auth provider from the specified auth record.
+     *
+     * @throws {ClientResponseError}
      */
-    unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean> {
+    async unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'DELETE',
         }, options);

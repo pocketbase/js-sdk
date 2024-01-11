@@ -1,4 +1,4 @@
-import { describe, assert, test, beforeAll, afterAll } from 'vitest';
+import { describe, assert, expect, test, beforeAll, afterAll } from 'vitest';
 import { CrudService } from '@/services/utils/CrudService';
 import { FetchMock }   from './mocks';
 
@@ -255,6 +255,14 @@ export function crudServiceTestsSuite<M>(
                 const expected = service.decode({ 'id': 'item-one' });
 
                 assert.deepEqual(result, expected);
+            });
+
+            test('Should return a 404 error if id is empty', async function() {
+                const options = { 'q1': 'abc', 'headers': {'x-test': '789'} };
+
+                expect(service.getOne("", options)).rejects.toThrow("Missing required record id.")
+                expect(service.getOne(null as any, options)).rejects.toThrow("Missing required record id.")
+                expect(service.getOne(undefined as any, options)).rejects.toThrow("Missing required record id.")
             });
         });
 

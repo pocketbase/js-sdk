@@ -1,3 +1,4 @@
+import { ClientResponseError } from '@/ClientResponseError';
 import { BaseService } from '@/services/utils/BaseService';
 import { ListResult, LogModel }  from '@/services/utils/dtos';
 import {
@@ -14,8 +15,10 @@ export interface HourlyStats {
 export class LogService extends BaseService {
     /**
      * Returns paginated logs list.
+     *
+     * @throws {ClientResponseError}
      */
-    getList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogModel>> {
+    async getList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogModel>> {
         options = Object.assign({'method': 'GET'}, options);
 
         options.query = Object.assign({
@@ -28,8 +31,24 @@ export class LogService extends BaseService {
 
     /**
      * Returns a single log by its id.
+     *
+     * If `id` is empty it will throw a 404 error.
+     *
+     * @throws {ClientResponseError}
      */
-    getOne(id: string, options?: CommonOptions): Promise<LogModel> {
+    async getOne(id: string, options?: CommonOptions): Promise<LogModel> {
+        if (!id) {
+            throw new ClientResponseError({
+                url: this.client.buildUrl('/api/logs/'),
+                status: 404,
+                response: {
+                    code: 404,
+                    message: "Missing required log id.",
+                    data: {},
+                },
+            });
+        }
+
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -39,8 +58,10 @@ export class LogService extends BaseService {
 
     /**
      * Returns logs statistics.
+     *
+     * @throws {ClientResponseError}
      */
-    getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
+    async getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
         options = Object.assign({
             'method': 'GET',
         }, options);

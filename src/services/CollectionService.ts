@@ -16,6 +16,8 @@ export class CollectionService extends CrudService<CollectionModel> {
      * If `deleteMissing` is `true`, all local collections and schema fields,
      * that are not present in the imported configuration, WILL BE DELETED
      * (including their related records data)!
+     *
+     * @throws {ClientResponseError}
      */
     async import(
         collections: Array<CollectionModel>,

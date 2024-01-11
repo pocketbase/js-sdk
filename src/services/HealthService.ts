@@ -10,8 +10,10 @@ export interface HealthCheckResponse {
 export class HealthService extends BaseService {
     /**
      * Checks the health status of the api.
+     *
+     * @throws {ClientResponseError}
      */
-    check(options?: CommonOptions): Promise<HealthCheckResponse> {
+    async check(options?: CommonOptions): Promise<HealthCheckResponse> {
         options = Object.assign({
             'method': 'GET',
         }, options);

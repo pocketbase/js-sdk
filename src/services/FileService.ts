@@ -43,8 +43,10 @@ export class FileService extends BaseService {
 
     /**
      * Requests a new private file access token for the current auth model (admin or record).
+     *
+     * @throws {ClientResponseError}
      */
-    getToken(options?: CommonOptions): Promise<string> {
+    async getToken(options?: CommonOptions): Promise<string> {
         options = Object.assign({
             'method': 'POST',
         }, options);

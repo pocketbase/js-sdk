@@ -26,14 +26,14 @@ export abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getFullList<T = M>(options?: FullListOptions): Promise<Array<T>>
+    async getFullList<T = M>(options?: FullListOptions): Promise<Array<T>>
 
     /**
      * Legacy version of getFullList with explicitly specified batch size.
      */
-    getFullList<T = M>(batch?: number, options?: ListOptions): Promise<Array<T>>
+    async getFullList<T = M>(batch?: number, options?: ListOptions): Promise<Array<T>>
 
-    getFullList<T = M>(batchOrqueryParams?: number|FullListOptions, options?: ListOptions): Promise<Array<T>> {
+    async getFullList<T = M>(batchOrqueryParams?: number|FullListOptions, options?: ListOptions): Promise<Array<T>> {
         if (typeof batchOrqueryParams == "number") {
             return this._getFullList<T>(batchOrqueryParams, options);
         }
@@ -54,7 +54,7 @@ export abstract class CrudService<M> extends BaseService   {
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      */
-    getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<T>> {
+    async getList<T = M>(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<T>> {
         options = Object.assign({
             method: 'GET'
         }, options);
@@ -85,7 +85,7 @@ export abstract class CrudService<M> extends BaseService   {
      * For consistency with `getOne`, this method will throw a 404
      * ClientResponseError if no item was found.
      */
-    getFirstListItem<T = M>(filter: string, options?: CommonOptions): Promise<T> {
+    async getFirstListItem<T = M>(filter: string, options?: CommonOptions): Promise<T> {
         options = Object.assign({
             'requestKey': 'one_by_filter_' + this.baseCrudPath + "_" + filter,
         }, options);
@@ -100,7 +100,7 @@ export abstract class CrudService<M> extends BaseService   {
                 if (!result?.items?.length) {
                     throw new ClientResponseError({
                         status: 404,
-                        data: {
+                        response: {
                             code: 404,
                             message: "The requested resource wasn't found.",
                             data: {},
@@ -116,8 +116,24 @@ export abstract class CrudService<M> extends BaseService   {
      * Returns single item by its id.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * If `id` is empty it will throw a 404 error.
+     *
+     * @throws {ClientResponseError}
      */
-    getOne<T = M>(id: string, options?: CommonOptions): Promise<T> {
+    async getOne<T = M>(id: string, options?: CommonOptions): Promise<T> {
+        if (!id) {
+            throw new ClientResponseError({
+                url: this.client.buildUrl(this.baseCrudPath + '/'),
+                status: 404,
+                response: {
+                    code: 404,
+                    message: "Missing required record id.",
+                    data: {},
+                },
+            });
+        }
+
         options = Object.assign({
             'method': 'GET',
         }, options);
@@ -130,8 +146,10 @@ export abstract class CrudService<M> extends BaseService   {
      * Creates a new item.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
-    create<T = M>(
+    async create<T = M>(
         bodyParams?: {[key:string]:any}|FormData,
         options?: CommonOptions,
     ): Promise<T> {
@@ -148,8 +166,10 @@ export abstract class CrudService<M> extends BaseService   {
      * Updates an existing item by its id.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
-    update<T = M>(
+    async update<T = M>(
         id: string,
         bodyParams?: {[key:string]:any}|FormData,
         options?: CommonOptions,
@@ -165,8 +185,10 @@ export abstract class CrudService<M> extends BaseService   {
 
     /**
      * Deletes an existing item by its id.
+     *
+     * @throws {ClientResponseError}
      */
-    delete(id: string, options?: CommonOptions): Promise<boolean> {
+    async delete(id: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign({
             'method': 'DELETE',
         }, options);

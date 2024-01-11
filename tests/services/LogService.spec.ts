@@ -1,4 +1,4 @@
-import { describe, assert, test, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, assert, expect, test, beforeAll, afterAll, afterEach } from 'vitest';
 import { FetchMock }  from '../mocks';
 import Client         from '@/Client';
 import { LogService } from '@/services/LogService';
@@ -61,6 +61,12 @@ describe('LogService', function () {
             const result = await service.getOne('test?123', { 'q1': 'abc', 'headers': {'x-test': '456'} });
 
             assert.deepEqual(result, { 'id': 'test123' } as any);
+        });
+
+        test('Should return a 404 error if id is empty', async function() {
+            expect(service.getOne('')).rejects.toThrow("Missing required log id.")
+            expect(service.getOne(null as any)).rejects.toThrow("Missing required log id.")
+            expect(service.getOne(undefined as any)).rejects.toThrow("Missing required log id.")
         });
     });
 

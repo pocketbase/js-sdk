@@ -29,7 +29,7 @@ export class AdminService extends CrudService<AdminModel> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    update<T = AdminModel>(
+    async update<T = AdminModel>(
         id: string,
         bodyParams?: {[key:string]:any}|FormData,
         options?: CommonOptions,
@@ -53,7 +53,7 @@ export class AdminService extends CrudService<AdminModel> {
      * If the current `client.authStore.model` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
-    delete(id: string, options?: CommonOptions): Promise<boolean> {
+    async delete(id: string, options?: CommonOptions): Promise<boolean> {
         return super.delete(id, options).then((success) => {
             // clear the store state if the deleted item id matches with the stored model
             if (
@@ -94,14 +94,16 @@ export class AdminService extends CrudService<AdminModel> {
      * and returns a new admin token and data.
      *
      * On success this method automatically updates the client's AuthStore data.
+     *
+     * @throws {ClientResponseError}
      */
-    authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>
+    async authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>
 
     /**
      * @deprecated
      * Consider using authWithPassword(email, password, options?).
      */
-    authWithPassword(email: string, password: string, body?: any, query?: any): Promise<AdminAuthResponse>
+    async authWithPassword(email: string, password: string, body?: any, query?: any): Promise<AdminAuthResponse>
 
     async authWithPassword(
         email: string,
@@ -153,16 +155,18 @@ export class AdminService extends CrudService<AdminModel> {
      * returns a new token and admin data.
      *
      * On success this method automatically updates the client's AuthStore data.
+     *
+     * @throws {ClientResponseError}
      */
-    authRefresh(options?: CommonOptions): Promise<AdminAuthResponse>
+    async authRefresh(options?: CommonOptions): Promise<AdminAuthResponse>
 
     /**
      * @deprecated
      * Consider using authRefresh(options?).
      */
-    authRefresh(body?: any, query?: any): Promise<AdminAuthResponse>
+    async authRefresh(body?: any, query?: any): Promise<AdminAuthResponse>
 
-    authRefresh(bodyOrOptions?: any, query?: any): Promise<AdminAuthResponse> {
+    async authRefresh(bodyOrOptions?: any, query?: any): Promise<AdminAuthResponse> {
         let options: any = {
             'method': 'POST',
         };
@@ -180,16 +184,18 @@ export class AdminService extends CrudService<AdminModel> {
 
     /**
      * Sends admin password reset request.
+     *
+     * @throws {ClientResponseError}
      */
-    requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
+    async requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using requestPasswordReset(email, options?).
      */
-    requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
+    async requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
 
-    requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
         let options: any = {
             'method': 'POST',
             'body': {
@@ -210,16 +216,18 @@ export class AdminService extends CrudService<AdminModel> {
 
     /**
      * Confirms admin password reset request.
+     *
+     * @throws {ClientResponseError}
      */
-    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>
+    async confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>
 
     /**
      * @deprecated
      * Consider using confirmPasswordReset(resetToken, password, passwordConfirm, options?).
      */
-    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, body?: any, query?: any): Promise<boolean>
+    async confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, body?: any, query?: any): Promise<boolean>
 
-    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, bodyOrOptions?: any, query?: any): Promise<boolean>{
+    async confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, bodyOrOptions?: any, query?: any): Promise<boolean>{
         let options: any = {
             'method': 'POST',
             'body': {

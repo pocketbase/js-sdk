@@ -203,12 +203,16 @@ interface appleClientSecret {
 declare class SettingsService extends BaseService {
     /**
      * Fetch all available app settings.
+     *
+     * @throws {ClientResponseError}
      */
     getAll(options?: CommonOptions): Promise<{
         [key: string]: any;
     }>;
     /**
      * Bulk updates app settings.
+     *
+     * @throws {ClientResponseError}
      */
     update(bodyParams?: {
         [key: string]: any;
@@ -219,6 +223,8 @@ declare class SettingsService extends BaseService {
      * Performs a S3 filesystem connection test.
      *
      * The currently supported `filesystem` are "storage" and "backups".
+     *
+     * @throws {ClientResponseError}
      */
     testS3(filesystem?: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -228,10 +234,14 @@ declare class SettingsService extends BaseService {
      * - verification
      * - password-reset
      * - email-change
+     *
+     * @throws {ClientResponseError}
      */
     testEmail(toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean>;
     /**
      * Generates a new Apple OAuth2 client secret.
+     *
+     * @throws {ClientResponseError}
      */
     generateAppleClientSecret(clientId: string, teamId: string, keyId: string, privateKey: string, duration: number, options?: CommonOptions): Promise<appleClientSecret>;
 }
@@ -342,12 +352,18 @@ declare abstract class CrudService<M> extends BaseService {
      * Returns single item by its id.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * If `id` is empty it will throw a 404 error.
+     *
+     * @throws {ClientResponseError}
      */
     getOne<T = M>(id: string, options?: CommonOptions): Promise<T>;
     /**
      * Creates a new item.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
     create<T = M>(bodyParams?: {
         [key: string]: any;
@@ -356,12 +372,16 @@ declare abstract class CrudService<M> extends BaseService {
      * Updates an existing item by its id.
      *
      * You can use the generic T to supply a wrapper type of the crud model.
+     *
+     * @throws {ClientResponseError}
      */
     update<T = M>(id: string, bodyParams?: {
         [key: string]: any;
     } | FormData, options?: CommonOptions): Promise<T>;
     /**
      * Deletes an existing item by its id.
+     *
+     * @throws {ClientResponseError}
      */
     delete(id: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -410,6 +430,8 @@ declare class AdminService extends CrudService<AdminModel> {
      * and returns a new admin token and data.
      *
      * On success this method automatically updates the client's AuthStore data.
+     *
+     * @throws {ClientResponseError}
      */
     authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>;
     /**
@@ -422,6 +444,8 @@ declare class AdminService extends CrudService<AdminModel> {
      * returns a new token and admin data.
      *
      * On success this method automatically updates the client's AuthStore data.
+     *
+     * @throws {ClientResponseError}
      */
     authRefresh(options?: CommonOptions): Promise<AdminAuthResponse>;
     /**
@@ -431,6 +455,8 @@ declare class AdminService extends CrudService<AdminModel> {
     authRefresh(body?: any, query?: any): Promise<AdminAuthResponse>;
     /**
      * Sends admin password reset request.
+     *
+     * @throws {ClientResponseError}
      */
     requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -440,6 +466,8 @@ declare class AdminService extends CrudService<AdminModel> {
     requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Confirms admin password reset request.
+     *
+     * @throws {ClientResponseError}
      */
     confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -661,6 +689,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     protected authResponse<T = M>(responseData: any): RecordAuthResponse<T>;
     /**
      * Returns all available collection auth methods.
+     *
+     * @throws {ClientResponseError}
      */
     listAuthMethods(options?: CommonOptions): Promise<AuthMethodsList>;
     /**
@@ -670,6 +700,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * the client's AuthStore data and returns:
      * - the authentication token
      * - the authenticated record model
+     *
+     * @throws {ClientResponseError}
      */
     authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
@@ -687,6 +719,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * - the authentication token
      * - the authenticated record model
      * - the OAuth2 account data (eg. name, email, avatar, etc.)
+     *
+     * @throws {ClientResponseError}
      */
     authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
         [key: string]: any;
@@ -739,6 +773,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * _Site-note_: when creating the OAuth2 app in the provider dashboard
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
+     *
+     * @throws {ClientResponseError}
      */
     authWithOAuth2<T = M>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
     /**
@@ -746,6 +782,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * returns a new token and record data.
      *
      * On success this method also automatically updates the client's AuthStore.
+     *
+     * @throws {ClientResponseError}
      */
     authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
@@ -755,6 +793,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
      * Sends auth record password reset request.
+     *
+     * @throws {ClientResponseError}
      */
     requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -764,6 +804,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Confirms auth record password reset request.
+     *
+     * @throws {ClientResponseError}
      */
     confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -773,6 +815,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     confirmPasswordReset(passwordResetToken: string, password: string, passwordConfirm: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Sends auth record verification email request.
+     *
+     * @throws {ClientResponseError}
      */
     requestVerification(email: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -782,6 +826,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     requestVerification(email: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Confirms auth record email verification request.
+     *
+     * @throws {ClientResponseError}
      */
     confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -791,6 +837,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     confirmVerification(verificationToken: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Sends an email change request to the authenticated record model.
+     *
+     * @throws {ClientResponseError}
      */
     requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -800,6 +848,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Confirms auth record's new email address.
+     *
+     * @throws {ClientResponseError}
      */
     confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -809,10 +859,14 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Lists all linked external auth providers for the specified auth record.
+     *
+     * @throws {ClientResponseError}
      */
     listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>>;
     /**
      * Unlink a single external auth provider from the specified auth record.
+     *
+     * @throws {ClientResponseError}
      */
     unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean>;
     // ---------------------------------------------------------------
@@ -833,6 +887,8 @@ declare class CollectionService extends CrudService<CollectionModel> {
      * If `deleteMissing` is `true`, all local collections and schema fields,
      * that are not present in the imported configuration, WILL BE DELETED
      * (including their related records data)!
+     *
+     * @throws {ClientResponseError}
      */
     import(collections: Array<CollectionModel>, deleteMissing?: boolean, options?: CommonOptions): Promise<true>;
 }
@@ -843,14 +899,22 @@ interface HourlyStats {
 declare class LogService extends BaseService {
     /**
      * Returns paginated logs list.
+     *
+     * @throws {ClientResponseError}
      */
     getList(page?: number, perPage?: number, options?: ListOptions): Promise<ListResult<LogModel>>;
     /**
      * Returns a single log by its id.
+     *
+     * If `id` is empty it will throw a 404 error.
+     *
+     * @throws {ClientResponseError}
      */
     getOne(id: string, options?: CommonOptions): Promise<LogModel>;
     /**
      * Returns logs statistics.
+     *
+     * @throws {ClientResponseError}
      */
     getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>>;
 }
@@ -864,6 +928,8 @@ interface HealthCheckResponse {
 declare class HealthService extends BaseService {
     /**
      * Checks the health status of the api.
+     *
+     * @throws {ClientResponseError}
      */
     check(options?: CommonOptions): Promise<HealthCheckResponse>;
 }
@@ -876,6 +942,8 @@ declare class FileService extends BaseService {
     }, filename: string, queryParams?: FileOptions): string;
     /**
      * Requests a new private file access token for the current auth model (admin or record).
+     *
+     * @throws {ClientResponseError}
      */
     getToken(options?: CommonOptions): Promise<string>;
 }
@@ -887,10 +955,14 @@ interface BackupFileInfo {
 declare class BackupService extends BaseService {
     /**
      * Returns list with all available backup files.
+     *
+     * @throws {ClientResponseError}
      */
     getFullList(options?: CommonOptions): Promise<Array<BackupFileInfo>>;
     /**
      * Initializes a new backup.
+     *
+     * @throws {ClientResponseError}
      */
     create(basename: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -903,16 +975,22 @@ declare class BackupService extends BaseService {
      *     file: new Blob([...]),
      * });
      * ```
+     *
+     * @throws {ClientResponseError}
      */
     upload(bodyParams: {
         [key: string]: any;
     } | FormData, options?: CommonOptions): Promise<boolean>;
     /**
      * Deletes a single backup file.
+     *
+     * @throws {ClientResponseError}
      */
     delete(key: string, options?: CommonOptions): Promise<boolean>;
     /**
      * Initializes an app data restore from an existing backup.
+     *
+     * @throws {ClientResponseError}
      */
     restore(key: string, options?: CommonOptions): Promise<boolean>;
     /**
@@ -971,7 +1049,7 @@ declare class Client {
      *         throw new ClientResponseError({
      *             url:      response.url,
      *             status:   response.status,
-     *             data:     data,
+     *             response: { ... },
      *         });
      *     }
      *
@@ -1126,9 +1204,13 @@ declare class Client {
     buildUrl(path: string): string;
     /**
      * Sends an api http request.
+     *
+     * @throws {ClientResponseError}
      */
     /**
      * Sends an api http request.
+     *
+     * @throws {ClientResponseError}
      */
     send<T = any>(path: string, options: SendOptions): Promise<T>;
     /**

@@ -62,7 +62,7 @@ export default class Client {
      *         throw new ClientResponseError({
      *             url:      response.url,
      *             status:   response.status,
-     *             data:     data,
+     *             response: { ... },
      *         });
      *     }
      *
@@ -295,6 +295,8 @@ export default class Client {
 
     /**
      * Sends an api http request.
+     *
+     * @throws {ClientResponseError}
      */
     async send<T = any>(path: string, options: SendOptions): Promise<T> {
         options = this.initSendOptions(path, options);
