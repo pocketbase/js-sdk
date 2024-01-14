@@ -464,15 +464,42 @@ export default class Client {
 
         const form = new FormData();
 
+        // @todo serialize and extract json fields under the `@json` key supported with PocketBase v0.21+
         for (let key in body) {
-            // @todo consider adding a note that `json` array values should be serialized!
-            const values = Array.isArray(body[key]) ? body[key] : [body[key]];
-            for (let val of values) {
-                form.append(key, val);
+            const normalized = this.normalizeFormDataValue(body[key]);
+            const values = Array.isArray(normalized) ? normalized : [normalized];
+
+            if (!values.length) {
+                form.append(key, "");
+            } else {
+                for (const v of values) {
+                    form.append(key, v);
+                }
             }
         }
 
         return form;
+    }
+
+    // @todo remove after PocketBase v0.21 and the @json field support
+    private normalizeFormDataValue(value: any): any {
+        // serialize json field values
+        if (
+            value !== null &&
+            typeof value === "object" &&
+            !(value instanceof Date) &&
+            !this.hasBlobField({data: value}) &&
+            (
+                // is an object
+                !Array.isArray(value) ||
+                // is an array with at least one non-string key
+                value.filter((v) => typeof v !== "string").length
+            )
+        ) {
+            return JSON.stringify(value)
+        }
+
+        return value
     }
 
     /**

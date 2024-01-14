@@ -1206,6 +1206,8 @@ declare class Client {
      * in case a plain object with File/Blob values is used.
      */
     private convertToFormDataIfNeeded;
+    // @todo remove after PocketBase v0.21 and the @json field support
+    private normalizeFormDataValue;
     /**
      * Checks if the submitted body object has at least one Blob/File field.
      */

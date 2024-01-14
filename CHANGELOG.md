@@ -1,3 +1,22 @@
+## 0.20.3
+
+- Partial and temporary workaround for the auto `application/json` -> `multipart/form-data` request serialization of a `json` field when a `Blob`/`File` is found in the request body ([#274](https://github.com/pocketbase/js-sdk/issues/274)).
+
+    The "fix" is partial because there still 2 edge cases that are not handled - when a `json` field value is empty array (eg. `[]`) or array of strings (eg. `["a","b"]`).
+    The reason for this is because the SDK doesn't have information about the field types and doesn't know which field is a `json` or an arrayable `select`, `file` or `relation`, so that it can serialize it properly as `FormData` string value.
+
+    If you are having troubles with persisting `json` values as part of a `multipart/form-data` request the easiest workaround is to manually stringify the `json` field value:
+    ```js
+    await pb.collection("example").create({
+      // having a Blob/File as object value will convert the request to multipart/form-data
+      "someFileField": new Blob([123]),
+      "someJsonField": JSON.stringify(["a","b","c"]),
+    })
+    ```
+
+    A proper fix for this will be implemented with PocketBase v0.21.0 where we'll have support for a special `@json` multipart body key, which will allow us to submit mixed `multipart/form-data` content (_kindof similar to the `multipart/mixed` MIME_).
+
+
 ## 0.20.2
 
 - Throw 404 error for `getOne("")` when invoked with empty id ([#271](https://github.com/pocketbase/js-sdk/issues/271)).
