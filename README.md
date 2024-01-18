@@ -767,7 +767,7 @@ This is out of the scope of the SDK, but you could find more resources about CSP
 - https://content-security-policy.com
 
 
-**Depending on how and where you use the JS SDK, it is also recommended to use the helper `pb.filter(expr, params)` when constructing filter strings with untrested user input to avoid eventual string injection attacks (see [Binding filter parameters](#binding-filter-parameters)).**
+**Depending on how and where you use the JS SDK, it is also recommended to use the helper `pb.filter(expr, params)` when constructing filter strings with untrusted user input to avoid eventual string injection attacks (see [Binding filter parameters](#binding-filter-parameters)).**
 
 
 ## Definitions
