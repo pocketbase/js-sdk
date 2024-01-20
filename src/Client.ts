@@ -464,15 +464,21 @@ export default class Client {
 
         const form = new FormData();
 
-        // @todo serialize and extract json fields under the `@json` key supported with PocketBase v0.21+
-        for (let key in body) {
-            const normalized = this.normalizeFormDataValue(body[key]);
-            const values = Array.isArray(normalized) ? normalized : [normalized];
+        for (const key in body) {
+            const val = body[key];
 
-            if (!values.length) {
-                form.append(key, "");
+            if (
+                typeof val === "object" &&
+                !this.hasBlobField({ data: val })
+            ) {
+                // send json-like values as jsonPayload to avoid the implicit string value normalization
+                let payload: {[key:string]: any} = {}
+                payload[key] = val;
+                form.append("@jsonPayload", JSON.stringify(payload));
             } else {
-                for (const v of values) {
+                // in case of mixed string and file/blob
+                const normalizedVal = Array.isArray(val) ? val : [val];
+                for (let v of normalizedVal) {
                     form.append(key, v);
                 }
             }
@@ -481,34 +487,13 @@ export default class Client {
         return form;
     }
 
-    // @todo remove after PocketBase v0.21 and the @json field support
-    private normalizeFormDataValue(value: any): any {
-        // serialize json field values
-        if (
-            value !== null &&
-            typeof value === "object" &&
-            !(value instanceof Date) &&
-            !this.hasBlobField({data: value}) &&
-            (
-                // is an object
-                !Array.isArray(value) ||
-                // is an array with at least one non-string key
-                value.filter((v) => typeof v !== "string").length
-            )
-        ) {
-            return JSON.stringify(value)
-        }
-
-        return value
-    }
-
     /**
      * Checks if the submitted body object has at least one Blob/File field.
      */
     private hasBlobField(body: {[key:string]: any}): boolean {
-        for (let key in body) {
+        for (const key in body) {
             const values = Array.isArray(body[key]) ? body[key] : [body[key]];
-            for (let v of values) {
+            for (const v of values) {
                 if (
                     (typeof Blob !== 'undefined' && v instanceof Blob) ||
                     (typeof File !== 'undefined' && v instanceof File)

@@ -261,7 +261,7 @@ describe('Client', function() {
 
                     // check FormData transformation
                     assert.deepEqual(config.body.getAll('title'), ['test']);
-                    assert.deepEqual(config.body.getAll('roles'), ['a', 'b']);
+                    assert.deepEqual(config.body.getAll('@jsonPayload'), ['{"roles":["a","b"]}', '{"json":null}']);
                     assert.equal(config.body.getAll('files').length, 2);
                     assert.equal(config.body.getAll('files')[0].size, 2);
                     assert.equal(config.body.getAll('files')[1].size, 1);
@@ -282,6 +282,7 @@ describe('Client', function() {
                 [client.send('/multipartAuto', { method: 'GET', body: {
                     title: "test",
                     roles: ["a", "b"],
+                    json:  null,
                     files: [new Blob(['11']), new Blob(['2'])]},
                 }), 'successMultipartAuto'],
             ];
