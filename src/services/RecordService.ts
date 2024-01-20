@@ -496,6 +496,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                             throw new Error("State parameters don't match.");
                         }
 
+                        if (e.error || !e.code) {
+                            throw new Error("OAuth2 redirect error or missing code: " + e.error);
+                        }
+
                         // clear the non SendOptions props
                         const options = Object.assign({}, config);
                         delete options.provider;

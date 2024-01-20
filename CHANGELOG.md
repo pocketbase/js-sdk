@@ -1,3 +1,13 @@
+## 0.21.0
+
+**⚠️ This release works only with PocketBase v0.21.0+ due to changes of how the `multipart/form-data` body is handled.**
+
+- Properly sent json body with `multipart/form-data` requests.
+  _This should fix the edge cases mentioned in the v0.20.3 release._
+
+- Gracefully handle OAuth2 redirect error with the `authWithOAuth2()` call.
+
+
 ## 0.20.3
 
 - Partial and temporary workaround for the auto `application/json` -> `multipart/form-data` request serialization of a `json` field when a `Blob`/`File` is found in the request body ([#274](https://github.com/pocketbase/js-sdk/issues/274)).
