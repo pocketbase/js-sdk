@@ -1,6 +1,8 @@
 ## 0.21.1
 
-- Manually update the current matching `AuthStore` model verified state on successful "confirm-verification" call.
+- Manually update the verified state of the current matching `AuthStore` model on successful "confirm-verification" call.
+
+- Manually clear the current matching `AuthStore` on "confirm-email-change" call because previous tokens are always invalidated.
 
 - Updated the `fetch` mock tests to check also the sent body params.
 
