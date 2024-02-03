@@ -833,6 +833,9 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record email verification request.
      *
+     * If the current `client.authStore.model` matches with the auth record from the token,
+     * then on success the `client.authStore.model.verified` will be updated to `true`.
+     *
      * @throws {ClientResponseError}
      */
     confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>;
@@ -854,6 +857,9 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>;
     /**
      * Confirms auth record's new email address.
+     *
+     * If the current `client.authStore.model` matches with the auth record from the token,
+     * then on success the `client.authStore` will be cleared.
      *
      * @throws {ClientResponseError}
      */

@@ -145,8 +145,103 @@ describe('RecordService', function() {
 
             assert.isNotNull(service.client.authStore.model);
         });
-    });
 
+        test('Should update the AuthStore record model verified state on matching token data', async function() {
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInR5cGUiOiJhdXRoUmVjb3JkIiwiY29sbGVjdGlvbklkIjoiNDU2In0.c9ZkXkC8rSqkKlpyx3kXt9ID3qYsIoy1Vz3a2m3ly0c"
+
+            fetchMock.on({
+                method: "POST",
+                url: service.client.buildUrl(service.baseCollectionPath) + "/confirm-verification",
+                body: { "token": token },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            service.client.authStore.save("auth_token", {
+                id: "123",
+                collectionId: "456",
+                verified: false,
+            } as any);
+
+            const result = await service.confirmVerification(token);
+
+            assert.isTrue(result);
+            assert.isTrue(service.client.authStore.model?.verified);
+        });
+
+        test('Should not update the AuthStore record model verified state on mismatched token data', async function() {
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInR5cGUiOiJhdXRoUmVjb3JkIiwiY29sbGVjdGlvbklkIjoiNDU2In0.c9ZkXkC8rSqkKlpyx3kXt9ID3qYsIoy1Vz3a2m3ly0c";
+
+            fetchMock.on({
+                method: "POST",
+                url: service.client.buildUrl(service.baseCollectionPath) + "/confirm-verification",
+                body: { "token": token },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            service.client.authStore.save("auth_token", {
+                id: "123",
+                collectionId: "789",
+                verified: false,
+            } as any);
+
+            const result = await service.confirmVerification(token);
+
+            assert.isTrue(result);
+            assert.isFalse(service.client.authStore.model?.verified);
+        });
+
+        test('Should delete the AuthStore record model matching the token data', async function() {
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInR5cGUiOiJhdXRoUmVjb3JkIiwiY29sbGVjdGlvbklkIjoiNDU2In0.c9ZkXkC8rSqkKlpyx3kXt9ID3qYsIoy1Vz3a2m3ly0c";
+
+            fetchMock.on({
+                method: "POST",
+                url: service.client.buildUrl(service.baseCollectionPath) + "/confirm-email-change",
+                body: {
+                    "token": token,
+                    "password": "1234",
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            service.client.authStore.save("auth_token", {
+                id: "123",
+                collectionId: "456",
+            } as any);
+
+            const result = await service.confirmEmailChange(token, "1234");
+
+            assert.isTrue(result);
+            assert.isEmpty(service.client.authStore.token);
+        });
+
+        test('Should not delete the AuthStore record model on mismatched token data', async function() {
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInR5cGUiOiJhdXRoUmVjb3JkIiwiY29sbGVjdGlvbklkIjoiNDU2In0.c9ZkXkC8rSqkKlpyx3kXt9ID3qYsIoy1Vz3a2m3ly0c";
+
+            fetchMock.on({
+                method: "POST",
+                url: service.client.buildUrl(service.baseCollectionPath) + "/confirm-email-change",
+                body: {
+                    "token": token,
+                    "password": "1234",
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            service.client.authStore.save("auth_token", {
+                id: "123",
+                collectionId: "789",
+            } as any);
+
+            const result = await service.confirmEmailChange(token, "1234");
+
+            assert.isTrue(result);
+            assert.isNotEmpty(service.client.authStore.token);
+        });
+    });
 
     // ---------------------------------------------------------------
     // auth tests

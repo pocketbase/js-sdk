@@ -1,4 +1,5 @@
 import Client from '@/Client';
+import { getTokenPayload } from '@/stores/utils/jwt';
 import { CrudService } from '@/services/utils/CrudService';
 import { RealtimeService, UnsubscribeFunc } from '@/services/RealtimeService';
 import { ClientResponseError } from '@/ClientResponseError';
@@ -700,6 +701,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record email verification request.
      *
+     * If the current `client.authStore.model` matches with the auth record from the token,
+     * then on success the `client.authStore.model.verified` will be updated to `true`.
+     *
      * @throws {ClientResponseError}
      */
     async confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>
@@ -726,7 +730,22 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         );
 
         return this.client.send(this.baseCollectionPath + '/confirm-verification', options)
-            .then(() => true);
+            .then(() => {
+                // on success manually update the current auth record verified state
+                const payload = getTokenPayload(verificationToken);
+                const model = this.client.authStore.model;
+                if (
+                    model &&
+                    !model.verified &&
+                    model.id === payload.id &&
+                    model.collectionId === payload.collectionId
+                ) {
+                    model.verified = true;
+                    this.client.authStore.save(this.client.authStore.token, model);
+                }
+
+                return true;
+            });
     }
 
     /**
@@ -764,6 +783,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record's new email address.
      *
+     * If the current `client.authStore.model` matches with the auth record from the token,
+     * then on success the `client.authStore` will be cleared.
+     *
      * @throws {ClientResponseError}
      */
     async confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>
@@ -791,7 +813,19 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         );
 
         return this.client.send(this.baseCollectionPath + '/confirm-email-change', options)
-            .then(() => true);
+            .then(() => {
+                const payload = getTokenPayload(emailChangeToken);
+                const model = this.client.authStore.model;
+                if (
+                    model &&
+                    model.id === payload.id &&
+                    model.collectionId === payload.collectionId
+                ) {
+                    this.client.authStore.clear();
+                }
+
+                return true;
+            });
     }
 
     /**
