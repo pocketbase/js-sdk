@@ -1,4 +1,4 @@
-import { BaseAuthStore, AuthModel } from '@/stores/BaseAuthStore';
+import { BaseAuthStore, AuthModel } from "@/stores/BaseAuthStore";
 
 /**
  * The default token store for browsers with auto fallback
@@ -6,7 +6,7 @@ import { BaseAuthStore, AuthModel } from '@/stores/BaseAuthStore';
  */
 export class LocalAuthStore extends BaseAuthStore {
     private storageFallback: { [key: string]: any } = {};
-    private storageKey: string
+    private storageKey: string;
 
     constructor(storageKey = "pocketbase_auth") {
         super();
@@ -22,7 +22,7 @@ export class LocalAuthStore extends BaseAuthStore {
     get token(): string {
         const data = this._storageGet(this.storageKey) || {};
 
-        return data.token || '';
+        return data.token || "";
     }
 
     /**
@@ -39,8 +39,8 @@ export class LocalAuthStore extends BaseAuthStore {
      */
     save(token: string, model?: AuthModel) {
         this._storageSet(this.storageKey, {
-            'token': token,
-            'model': model,
+            token: token,
+            model: model,
         });
 
         super.save(token, model);
@@ -64,11 +64,12 @@ export class LocalAuthStore extends BaseAuthStore {
      * (or runtime/memory if local storage is undefined).
      */
     private _storageGet(key: string): any {
-        if (typeof window !== 'undefined' && window?.localStorage) {
-            const rawValue = window.localStorage.getItem(key) || '';
+        if (typeof window !== "undefined" && window?.localStorage) {
+            const rawValue = window.localStorage.getItem(key) || "";
             try {
                 return JSON.parse(rawValue);
-            } catch (e) { // not a json
+            } catch (e) {
+                // not a json
                 return rawValue;
             }
         }
@@ -82,10 +83,10 @@ export class LocalAuthStore extends BaseAuthStore {
      * (or runtime/memory if local storage is undefined).
      */
     private _storageSet(key: string, value: any) {
-        if (typeof window !== 'undefined' && window?.localStorage) {
+        if (typeof window !== "undefined" && window?.localStorage) {
             // store in local storage
             let normalizedVal = value;
-            if (typeof value !== 'string') {
+            if (typeof value !== "string") {
                 normalizedVal = JSON.stringify(value);
             }
             window.localStorage.setItem(key, normalizedVal);
@@ -100,7 +101,7 @@ export class LocalAuthStore extends BaseAuthStore {
      */
     private _storageRemove(key: string) {
         // delete from local storage
-        if (typeof window !== 'undefined' && window?.localStorage) {
+        if (typeof window !== "undefined" && window?.localStorage) {
             window.localStorage?.removeItem(key);
         }
 
@@ -112,18 +113,22 @@ export class LocalAuthStore extends BaseAuthStore {
      * Updates the current store state on localStorage change.
      */
     private _bindStorageEvent() {
-        if (typeof window === 'undefined' || !window?.localStorage || !window.addEventListener) {
+        if (
+            typeof window === "undefined" ||
+            !window?.localStorage ||
+            !window.addEventListener
+        ) {
             return;
         }
 
-        window.addEventListener('storage', (e) => {
+        window.addEventListener("storage", (e) => {
             if (e.key != this.storageKey) {
                 return;
             }
 
             const data = this._storageGet(this.storageKey) || {};
 
-            super.save(data.token || '', data.model || null);
+            super.save(data.token || "", data.model || null);
         });
     }
 }

@@ -1,13 +1,13 @@
-import { CrudService }     from '@/services/utils/CrudService';
-import { CollectionModel } from '@/services/utils/dtos';
-import { CommonOptions }   from '@/services/utils/options';
+import { CrudService } from "@/services/utils/CrudService";
+import { CollectionModel } from "@/services/utils/dtos";
+import { CommonOptions } from "@/services/utils/options";
 
 export class CollectionService extends CrudService<CollectionModel> {
     /**
      * @inheritdoc
      */
     get baseCrudPath(): string {
-        return '/api/collections';
+        return "/api/collections";
     }
 
     /**
@@ -24,15 +24,17 @@ export class CollectionService extends CrudService<CollectionModel> {
         deleteMissing: boolean = false,
         options?: CommonOptions,
     ): Promise<true> {
-        options = Object.assign({
-            'method': 'PUT',
-            'body': {
-                'collections':   collections,
-                'deleteMissing': deleteMissing,
-            }
-        }, options);
+        options = Object.assign(
+            {
+                method: "PUT",
+                body: {
+                    collections: collections,
+                    deleteMissing: deleteMissing,
+                },
+            },
+            options,
+        );
 
-        return this.client.send(this.baseCrudPath + '/import', options)
-            .then(() => true);
+        return this.client.send(this.baseCrudPath + "/import", options).then(() => true);
     }
 }

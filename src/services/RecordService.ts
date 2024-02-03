@@ -1,17 +1,17 @@
-import Client from '@/Client';
-import { getTokenPayload } from '@/stores/utils/jwt';
-import { CrudService } from '@/services/utils/CrudService';
-import { RealtimeService, UnsubscribeFunc } from '@/services/RealtimeService';
-import { ClientResponseError } from '@/ClientResponseError';
-import { ListResult, RecordModel, ExternalAuthModel } from '@/services/utils/dtos';
+import Client from "@/Client";
+import { getTokenPayload } from "@/stores/utils/jwt";
+import { CrudService } from "@/services/utils/CrudService";
+import { RealtimeService, UnsubscribeFunc } from "@/services/RealtimeService";
+import { ClientResponseError } from "@/ClientResponseError";
+import { ListResult, RecordModel, ExternalAuthModel } from "@/services/utils/dtos";
 import {
     SendOptions,
     CommonOptions,
     RecordOptions,
     RecordListOptions,
     RecordFullListOptions,
-} from '@/services/utils/options';
-import { normalizeLegacyOptionsArgs } from '@/services/utils/legacy';
+} from "@/services/utils/options";
+import { normalizeLegacyOptionsArgs } from "@/services/utils/legacy";
 
 export interface RecordAuthResponse<T = RecordModel> {
     /**
@@ -30,24 +30,24 @@ export interface RecordAuthResponse<T = RecordModel> {
     /**
      * Auth meta data usually filled when OAuth2 is used.
      */
-    meta?: {[key: string]: any};
+    meta?: { [key: string]: any };
 }
 
 export interface AuthProviderInfo {
-    name:                string;
-    displayName:         string;
-    state:               string;
-    authUrl:             string;
-    codeVerifier:        string;
-    codeChallenge:       string;
+    name: string;
+    displayName: string;
+    state: string;
+    authUrl: string;
+    codeVerifier: string;
+    codeChallenge: string;
     codeChallengeMethod: string;
 }
 
 export interface AuthMethodsList {
     usernamePassword: boolean;
-    emailPassword:    boolean;
-    onlyVerified:     boolean;
-    authProviders:    Array<AuthProviderInfo>;
+    emailPassword: boolean;
+    onlyVerified: boolean;
+    authProviders: Array<AuthProviderInfo>;
 }
 
 export interface RecordSubscription<T = RecordModel> {
@@ -55,7 +55,7 @@ export interface RecordSubscription<T = RecordModel> {
     record: T;
 }
 
-export type OAuth2UrlCallback = (url: string) => void|Promise<void>;
+export type OAuth2UrlCallback = (url: string) => void | Promise<void>;
 
 export interface OAuth2AuthConfig extends SendOptions {
     // the name of the OAuth2 provider (eg. "google")
@@ -65,7 +65,7 @@ export interface OAuth2AuthConfig extends SendOptions {
     scopes?: Array<string>;
 
     // optional record create data
-    createData?: {[key: string]: any};
+    createData?: { [key: string]: any };
 
     // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
     urlCallback?: OAuth2UrlCallback;
@@ -87,14 +87,14 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @inheritdoc
      */
     get baseCrudPath(): string {
-        return this.baseCollectionPath + '/records';
+        return this.baseCollectionPath + "/records";
     }
 
     /**
      * Returns the current collection service base path.
      */
     get baseCollectionPath(): string {
-        return '/api/collections/' + encodeURIComponent(this.collectionIdOrName);
+        return "/api/collections/" + encodeURIComponent(this.collectionIdOrName);
     }
 
     // ---------------------------------------------------------------
@@ -127,7 +127,11 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
             throw new Error("Missing subscription callback.");
         }
 
-        return this.client.realtime.subscribe(this.collectionIdOrName + "/" + topic, callback, options);
+        return this.client.realtime.subscribe(
+            this.collectionIdOrName + "/" + topic,
+            callback,
+            options,
+        );
     }
 
     /**
@@ -140,7 +144,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     async unsubscribe(topic?: string): Promise<void> {
         // unsubscribe from the specified topic
         if (topic) {
-            return this.client.realtime.unsubscribe(this.collectionIdOrName + "/" + topic);
+            return this.client.realtime.unsubscribe(
+                this.collectionIdOrName + "/" + topic,
+            );
         }
 
         // unsubscribe from everything related to the collection
@@ -153,17 +159,23 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>
+    async getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>;
 
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(batch?: number, options?: RecordListOptions): Promise<Array<T>>
+    async getFullList<T = M>(
+        batch?: number,
+        options?: RecordListOptions,
+    ): Promise<Array<T>>;
 
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(batchOrOptions?: number|RecordFullListOptions, options?: RecordListOptions): Promise<Array<T>> {
+    async getFullList<T = M>(
+        batchOrOptions?: number | RecordFullListOptions,
+        options?: RecordListOptions,
+    ): Promise<Array<T>> {
         if (typeof batchOrOptions == "number") {
             return super.getFullList<T>(batchOrOptions, options);
         }
@@ -176,14 +188,21 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    async getList<T = M>(page = 1, perPage = 30, options?: RecordListOptions): Promise<ListResult<T>> {
+    async getList<T = M>(
+        page = 1,
+        perPage = 30,
+        options?: RecordListOptions,
+    ): Promise<ListResult<T>> {
         return super.getList<T>(page, perPage, options);
     }
 
     /**
      * @inheritdoc
      */
-    async getFirstListItem<T = M>(filter: string, options?: RecordListOptions): Promise<T> {
+    async getFirstListItem<T = M>(
+        filter: string,
+        options?: RecordListOptions,
+    ): Promise<T> {
         return super.getFirstListItem<T>(filter, options);
     }
 
@@ -197,7 +216,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    async create<T = M>(bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+    async create<T = M>(
+        bodyParams?: { [key: string]: any } | FormData,
+        options?: RecordOptions,
+    ): Promise<T> {
         return super.create<T>(bodyParams, options);
     }
 
@@ -207,15 +229,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * If the current `client.authStore.model` matches with the updated id, then
      * on success the `client.authStore.model` will be updated with the result.
      */
-    async update<T = M>(id: string, bodyParams?: {[key:string]:any}|FormData, options?: RecordOptions): Promise<T> {
+    async update<T = M>(
+        id: string,
+        bodyParams?: { [key: string]: any } | FormData,
+        options?: RecordOptions,
+    ): Promise<T> {
         return super.update<RecordModel>(id, bodyParams, options).then((item) => {
             if (
                 // is record auth
                 this.client.authStore.model?.id === item?.id &&
-                (
-                    this.client.authStore.model?.collectionId === this.collectionIdOrName ||
-                    this.client.authStore.model?.collectionName === this.collectionIdOrName
-                )
+                (this.client.authStore.model?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.model?.collectionName ===
+                        this.collectionIdOrName)
             ) {
                 this.client.authStore.save(this.client.authStore.token, item);
             }
@@ -236,10 +261,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 success &&
                 // is record auth
                 this.client.authStore.model?.id === id &&
-                (
-                    this.client.authStore.model?.collectionId === this.collectionIdOrName ||
-                    this.client.authStore.model?.collectionName === this.collectionIdOrName
-                )
+                (this.client.authStore.model?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.model?.collectionName ===
+                        this.collectionIdOrName)
             ) {
                 this.client.authStore.clear();
             }
@@ -262,8 +286,8 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         return Object.assign({}, responseData, {
             // normalize common fields
-            'token':  responseData?.token || '',
-            'record': record as any as T,
+            token: responseData?.token || "",
+            record: record as any as T,
         });
     }
 
@@ -273,17 +297,23 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @throws {ClientResponseError}
      */
     async listAuthMethods(options?: CommonOptions): Promise<AuthMethodsList> {
-        options = Object.assign({
-            'method': 'GET',
-        }, options);
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
 
-        return this.client.send(this.baseCollectionPath + '/auth-methods', options)
+        return this.client
+            .send(this.baseCollectionPath + "/auth-methods", options)
             .then((responseData: any) => {
                 return Object.assign({}, responseData, {
                     // normalize common fields
-                    'usernamePassword': !!responseData?.usernamePassword,
-                    'emailPassword':    !!responseData?.emailPassword,
-                    'authProviders':    Array.isArray(responseData?.authProviders) ? responseData?.authProviders : [],
+                    usernamePassword: !!responseData?.usernamePassword,
+                    emailPassword: !!responseData?.emailPassword,
+                    authProviders: Array.isArray(responseData?.authProviders)
+                        ? responseData?.authProviders
+                        : [],
                 });
             });
     }
@@ -298,31 +328,46 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>
+    async authWithPassword<T = M>(
+        usernameOrEmail: string,
+        password: string,
+        options?: RecordOptions,
+    ): Promise<RecordAuthResponse<T>>;
 
     /**
      * @deprecated
      * Consider using authWithPassword(usernameOrEmail, password, options?).
      */
-    async authWithPassword<T = M>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>
+    async authWithPassword<T = M>(
+        usernameOrEmail: string,
+        password: string,
+        body?: any,
+        query?: any,
+    ): Promise<RecordAuthResponse<T>>;
 
-    async authWithPassword<T = M>(usernameOrEmail: string, password: string, bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+    async authWithPassword<T = M>(
+        usernameOrEmail: string,
+        password: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<RecordAuthResponse<T>> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'identity': usernameOrEmail,
-                'password': password,
+            method: "POST",
+            body: {
+                identity: usernameOrEmail,
+                password: password,
             },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authWithPassword(usernameOrEmail, pass, body?, query?) is deprecated. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).',
+            "This form of authWithPassword(usernameOrEmail, pass, body?, query?) is deprecated. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/auth-with-password', options)
+        return this.client
+            .send(this.baseCollectionPath + "/auth-with-password", options)
             .then((data) => this.authResponse<T>(data));
     }
 
@@ -344,9 +389,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         code: string,
         codeVerifier: string,
         redirectUrl: string,
-        createData?: {[key:string]:any},
+        createData?: { [key: string]: any },
         options?: RecordOptions,
-    ): Promise<RecordAuthResponse<T>>
+    ): Promise<RecordAuthResponse<T>>;
 
     /**
      * @deprecated
@@ -357,39 +402,40 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         code: string,
         codeVerifier: string,
         redirectUrl: string,
-        createData?: {[key:string]:any},
+        createData?: { [key: string]: any },
         body?: any,
-        query?: any
-    ): Promise<RecordAuthResponse<T>>
+        query?: any,
+    ): Promise<RecordAuthResponse<T>>;
 
     async authWithOAuth2Code<T = M>(
         provider: string,
         code: string,
         codeVerifier: string,
         redirectUrl: string,
-        createData?: {[key:string]:any},
+        createData?: { [key: string]: any },
         bodyOrOptions?: any,
-        query?: any
+        query?: any,
     ): Promise<RecordAuthResponse<T>> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'provider':     provider,
-                'code':         code,
-                'codeVerifier': codeVerifier,
-                'redirectUrl':  redirectUrl,
-                'createData':   createData,
+            method: "POST",
+            body: {
+                provider: provider,
+                code: code,
+                codeVerifier: codeVerifier,
+                redirectUrl: redirectUrl,
+                createData: createData,
             },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is deprecated. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).',
+            "This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is deprecated. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/auth-with-oauth2', options)
+        return this.client
+            .send(this.baseCollectionPath + "/auth-with-oauth2", options)
             .then((data) => this.authResponse<T>(data));
     }
 
@@ -404,10 +450,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         code: string,
         codeVerifier: string,
         redirectUrl: string,
-        createData?: {[key: string]: any},
-        bodyParams?: {[key: string]: any},
+        createData?: { [key: string]: any },
+        bodyParams?: { [key: string]: any },
         queryParams?: RecordOptions,
-    ): Promise<RecordAuthResponse<T>>
+    ): Promise<RecordAuthResponse<T>>;
 
     /**
      * Authenticate a single auth collection record with OAuth2
@@ -442,17 +488,21 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async authWithOAuth2<T = M>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>
+    async authWithOAuth2<T = M>(
+        options: OAuth2AuthConfig,
+    ): Promise<RecordAuthResponse<T>>;
 
     async authWithOAuth2<T = M>(...args: any): Promise<RecordAuthResponse<T>> {
         // fallback to legacy format
-        if (args.length > 1 || typeof args?.[0] === 'string') {
-            console.warn("PocketBase: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.");
+        if (args.length > 1 || typeof args?.[0] === "string") {
+            console.warn(
+                "PocketBase: This form of authWithOAuth2() is deprecated and may get removed in the future. Please replace with authWithOAuth2Code() OR use the authWithOAuth2() realtime form as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.",
+            );
             return this.authWithOAuth2Code<T>(
-                args?.[0] || '',
-                args?.[1] || '',
-                args?.[2] || '',
-                args?.[3] || '',
+                args?.[0] || "",
+                args?.[1] || "",
+                args?.[2] || "",
+                args?.[3] || "",
                 args?.[4] || {},
                 args?.[5] || {},
                 args?.[6] || {},
@@ -463,12 +513,16 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         const authMethods = await this.listAuthMethods();
 
-        const provider = authMethods.authProviders.find((p) => p.name === config.provider);
+        const provider = authMethods.authProviders.find(
+            (p) => p.name === config.provider,
+        );
         if (!provider) {
-            throw new ClientResponseError(new Error(`Missing or invalid provider "${config.provider}".`));
+            throw new ClientResponseError(
+                new Error(`Missing or invalid provider "${config.provider}".`),
+            );
         }
 
-        const redirectUrl = this.client.buildUrl('/api/oauth2-redirect');
+        const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
 
         // initialize a one-off realtime service
         const realtime = new RealtimeService(this.client);
@@ -477,7 +531,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         //
         // note: it is opened before the async call due to Safari restrictions
         // (see https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061)
-        let eagerDefaultPopup: Window|null = null;
+        let eagerDefaultPopup: Window | null = null;
         if (!config.urlCallback) {
             eagerDefaultPopup = openBrowserPopup(undefined);
         }
@@ -489,7 +543,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         return new Promise(async (resolve, reject) => {
             try {
-                await realtime.subscribe('@oauth2', async (e) => {
+                await realtime.subscribe("@oauth2", async (e) => {
                     const oldState = realtime.clientId;
 
                     try {
@@ -498,7 +552,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                         }
 
                         if (e.error || !e.code) {
-                            throw new Error("OAuth2 redirect error or missing code: " + e.error);
+                            throw new Error(
+                                "OAuth2 redirect error or missing code: " + e.error,
+                            );
                         }
 
                         // clear the non SendOptions props
@@ -525,24 +581,29 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                     cleanup();
                 });
 
-                const replacements: {[key: string]: any} = {
-                    "state": realtime.clientId,
-                }
+                const replacements: { [key: string]: any } = {
+                    state: realtime.clientId,
+                };
                 if (config.scopes?.length) {
                     replacements["scope"] = config.scopes.join(" ");
                 }
 
-                const url = this._replaceQueryParams(provider.authUrl + redirectUrl, replacements);
+                const url = this._replaceQueryParams(
+                    provider.authUrl + redirectUrl,
+                    replacements,
+                );
 
-                let urlCallback = config.urlCallback || function (url: string) {
-                    if (eagerDefaultPopup) {
-                       eagerDefaultPopup.location.href = url;
-                    } else {
-                        // it could have been blocked due to its empty initial url,
-                        // try again...
-                        eagerDefaultPopup = openBrowserPopup(url);
-                    }
-                }
+                let urlCallback =
+                    config.urlCallback ||
+                    function (url: string) {
+                        if (eagerDefaultPopup) {
+                            eagerDefaultPopup.location.href = url;
+                        } else {
+                            // it could have been blocked due to its empty initial url,
+                            // try again...
+                            eagerDefaultPopup = openBrowserPopup(url);
+                        }
+                    };
 
                 await urlCallback(url);
             } catch (err) {
@@ -560,27 +621,31 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>
+    async authRefresh<T = M>(options?: RecordOptions): Promise<RecordAuthResponse<T>>;
 
     /**
      * @deprecated
      * Consider using authRefresh(options?).
      */
-    async authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>
+    async authRefresh<T = M>(body?: any, query?: any): Promise<RecordAuthResponse<T>>;
 
-    async authRefresh<T = M>(bodyOrOptions?: any, query?: any): Promise<RecordAuthResponse<T>> {
+    async authRefresh<T = M>(
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<RecordAuthResponse<T>> {
         let options: any = {
-            'method': 'POST',
+            method: "POST",
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of authRefresh(body?, query?) is deprecated. Consider replacing it with authRefresh(options?).',
+            "This form of authRefresh(body?, query?) is deprecated. Consider replacing it with authRefresh(options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/auth-refresh', options)
+        return this.client
+            .send(this.baseCollectionPath + "/auth-refresh", options)
             .then((data) => this.authResponse<T>(data));
     }
 
@@ -589,30 +654,36 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>
+    async requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>;
 
     /**
      * @deprecated
      * Consider using requestPasswordReset(email, options?).
      */
-    async requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>
+    async requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>;
 
-    async requestPasswordReset(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestPasswordReset(
+        email: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'email': email,
-            }
+            method: "POST",
+            body: {
+                email: email,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestPasswordReset(email, body?, query?) is deprecated. Consider replacing it with requestPasswordReset(email, options?).',
+            "This form of requestPasswordReset(email, body?, query?) is deprecated. Consider replacing it with requestPasswordReset(email, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/request-password-reset', options).then(() => true);
+        return this.client
+            .send(this.baseCollectionPath + "/request-password-reset", options)
+            .then(() => true);
     }
 
     /**
@@ -625,7 +696,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         password: string,
         passwordConfirm: string,
         options?: CommonOptions,
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
     /**
      * @deprecated
@@ -637,7 +708,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         passwordConfirm: string,
         body?: any,
         query?: any,
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
     async confirmPasswordReset(
         passwordResetToken: string,
@@ -647,22 +718,23 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         query?: any,
     ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'token':           passwordResetToken,
-                'password':        password,
-                'passwordConfirm': passwordConfirm,
-            }
+            method: "POST",
+            body: {
+                token: passwordResetToken,
+                password: password,
+                passwordConfirm: passwordConfirm,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmPasswordReset(token, password, passwordConfirm, body?, query?) is deprecated. Consider replacing it with confirmPasswordReset(token, password, passwordConfirm, options?).',
+            "This form of confirmPasswordReset(token, password, passwordConfirm, body?, query?) is deprecated. Consider replacing it with confirmPasswordReset(token, password, passwordConfirm, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/confirm-password-reset', options)
+        return this.client
+            .send(this.baseCollectionPath + "/confirm-password-reset", options)
             .then(() => true);
     }
 
@@ -671,30 +743,35 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async requestVerification(email: string, options?: CommonOptions): Promise<boolean>
+    async requestVerification(email: string, options?: CommonOptions): Promise<boolean>;
 
     /**
      * @deprecated
      * Consider using requestVerification(email, options?).
      */
-    async requestVerification(email: string, body?: any, query?: any): Promise<boolean>
+    async requestVerification(email: string, body?: any, query?: any): Promise<boolean>;
 
-    async requestVerification(email: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestVerification(
+        email: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'email': email,
-            }
+            method: "POST",
+            body: {
+                email: email,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestVerification(email, body?, query?) is deprecated. Consider replacing it with requestVerification(email, options?).',
+            "This form of requestVerification(email, body?, query?) is deprecated. Consider replacing it with requestVerification(email, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/request-verification', options)
+        return this.client
+            .send(this.baseCollectionPath + "/request-verification", options)
             .then(() => true);
     }
 
@@ -706,30 +783,42 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async confirmVerification(verificationToken: string, options?: CommonOptions): Promise<boolean>
+    async confirmVerification(
+        verificationToken: string,
+        options?: CommonOptions,
+    ): Promise<boolean>;
 
     /**
      * @deprecated
      * Consider using confirmVerification(verificationToken, options?).
      */
-    async confirmVerification(verificationToken: string, body?: any, query?: any): Promise<boolean>
+    async confirmVerification(
+        verificationToken: string,
+        body?: any,
+        query?: any,
+    ): Promise<boolean>;
 
-    async confirmVerification(verificationToken: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async confirmVerification(
+        verificationToken: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'token': verificationToken,
-            }
+            method: "POST",
+            body: {
+                token: verificationToken,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmVerification(token, body?, query?) is deprecated. Consider replacing it with confirmVerification(token, options?).',
+            "This form of confirmVerification(token, body?, query?) is deprecated. Consider replacing it with confirmVerification(token, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/confirm-verification', options)
+        return this.client
+            .send(this.baseCollectionPath + "/confirm-verification", options)
             .then(() => {
                 // on success manually update the current auth record verified state
                 const payload = getTokenPayload(verificationToken);
@@ -753,30 +842,35 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>
+    async requestEmailChange(newEmail: string, options?: CommonOptions): Promise<boolean>;
 
     /**
      * @deprecated
      * Consider using requestEmailChange(newEmail, options?).
      */
-    async requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>
+    async requestEmailChange(newEmail: string, body?: any, query?: any): Promise<boolean>;
 
-    async requestEmailChange(newEmail: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async requestEmailChange(
+        newEmail: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'newEmail': newEmail,
-            }
+            method: "POST",
+            body: {
+                newEmail: newEmail,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of requestEmailChange(newEmail, body?, query?) is deprecated. Consider replacing it with requestEmailChange(newEmail, options?).',
+            "This form of requestEmailChange(newEmail, body?, query?) is deprecated. Consider replacing it with requestEmailChange(newEmail, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/request-email-change', options)
+        return this.client
+            .send(this.baseCollectionPath + "/request-email-change", options)
             .then(() => true);
     }
 
@@ -788,31 +882,46 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async confirmEmailChange(emailChangeToken: string, password: string, options?: CommonOptions): Promise<boolean>
+    async confirmEmailChange(
+        emailChangeToken: string,
+        password: string,
+        options?: CommonOptions,
+    ): Promise<boolean>;
 
     /**
      * @deprecated
      * Consider using confirmEmailChange(emailChangeToken, password, options?).
      */
-    async confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>
+    async confirmEmailChange(
+        emailChangeToken: string,
+        password: string,
+        body?: any,
+        query?: any,
+    ): Promise<boolean>;
 
-    async confirmEmailChange(emailChangeToken: string, password: string, bodyOrOptions?: any, query?: any): Promise<boolean> {
+    async confirmEmailChange(
+        emailChangeToken: string,
+        password: string,
+        bodyOrOptions?: any,
+        query?: any,
+    ): Promise<boolean> {
         let options: any = {
-            'method': 'POST',
-            'body': {
-                'token':    emailChangeToken,
-                'password': password,
-            }
+            method: "POST",
+            body: {
+                token: emailChangeToken,
+                password: password,
+            },
         };
 
         options = normalizeLegacyOptionsArgs(
-            'This form of confirmEmailChange(token, password, body?, query?) is deprecated. Consider replacing it with confirmEmailChange(token, password, options?).',
+            "This form of confirmEmailChange(token, password, body?, query?) is deprecated. Consider replacing it with confirmEmailChange(token, password, options?).",
             options,
             bodyOrOptions,
-            query
+            query,
         );
 
-        return this.client.send(this.baseCollectionPath + '/confirm-email-change', options)
+        return this.client
+            .send(this.baseCollectionPath + "/confirm-email-change", options)
             .then(() => {
                 const payload = getTokenPayload(emailChangeToken);
                 const model = this.client.authStore.model;
@@ -833,12 +942,21 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>> {
-        options = Object.assign({
-            'method': 'GET',
-        }, options);
+    async listExternalAuths(
+        recordId: string,
+        options?: CommonOptions,
+    ): Promise<Array<ExternalAuthModel>> {
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
 
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths', options);
+        return this.client.send(
+            this.baseCrudPath + "/" + encodeURIComponent(recordId) + "/external-auths",
+            options,
+        );
     }
 
     /**
@@ -846,12 +964,27 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    async unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean> {
-        options = Object.assign({
-            'method': 'DELETE',
-        }, options);
+    async unlinkExternalAuth(
+        recordId: string,
+        provider: string,
+        options?: CommonOptions,
+    ): Promise<boolean> {
+        options = Object.assign(
+            {
+                method: "DELETE",
+            },
+            options,
+        );
 
-        return this.client.send(this.baseCrudPath + '/' + encodeURIComponent(recordId) + '/external-auths/' + encodeURIComponent(provider), options)
+        return this.client
+            .send(
+                this.baseCrudPath +
+                    "/" +
+                    encodeURIComponent(recordId) +
+                    "/external-auths/" +
+                    encodeURIComponent(provider),
+                options,
+            )
             .then(() => true);
     }
 
@@ -861,8 +994,11 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     // URL (and URLSearchParams) doesn't seem to be fully supported in React Native
     //
     // note: for details behind some of the decode/encode parsing check https://unixpapa.com/js/querystring.html
-    private _replaceQueryParams(url: string, replacements: {[key: string]: any} = {}): string {
-        let urlPath = url
+    private _replaceQueryParams(
+        url: string,
+        replacements: { [key: string]: any } = {},
+    ): string {
+        let urlPath = url;
         let query = "";
 
         const queryIndex = url.indexOf("?");
@@ -871,17 +1007,18 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
             query = url.substring(url.indexOf("?") + 1);
         }
 
-        const parsedParams: {[key: string]: string} = {};
+        const parsedParams: { [key: string]: string } = {};
 
         // parse the query parameters
         const rawParams = query.split("&");
         for (const param of rawParams) {
             if (param == "") {
-                continue
+                continue;
             }
 
             const pair = param.split("=");
-            parsedParams[decodeURIComponent(pair[0].replace(/\+/g,' '))] = decodeURIComponent((pair[1] || "").replace(/\+/g,' '));
+            parsedParams[decodeURIComponent(pair[0].replace(/\+/g, " "))] =
+                decodeURIComponent((pair[1] || "").replace(/\+/g, " "));
         }
 
         // apply the replacements
@@ -908,36 +1045,51 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 query += "&";
             }
 
-            query += encodeURIComponent(key.replace(/%20/g,'+')) + "=" + encodeURIComponent(parsedParams[key].replace(/%20/g,'+'));
+            query +=
+                encodeURIComponent(key.replace(/%20/g, "+")) +
+                "=" +
+                encodeURIComponent(parsedParams[key].replace(/%20/g, "+"));
         }
 
-        return query != "" ? (urlPath + "?" + query) : urlPath;
+        return query != "" ? urlPath + "?" + query : urlPath;
     }
 }
 
-function openBrowserPopup(url?: string): Window|null {
+function openBrowserPopup(url?: string): Window | null {
     if (typeof window === "undefined" || !window?.open) {
-        throw new ClientResponseError(new Error(`Not in a browser context - please pass a custom urlCallback function.`));
+        throw new ClientResponseError(
+            new Error(
+                `Not in a browser context - please pass a custom urlCallback function.`,
+            ),
+        );
     }
 
-    let width  = 1024;
+    let width = 1024;
     let height = 768;
 
-    let windowWidth  = window.innerWidth;
+    let windowWidth = window.innerWidth;
     let windowHeight = window.innerHeight;
 
     // normalize window size
-    width  = width > windowWidth ? windowWidth : width;
+    width = width > windowWidth ? windowWidth : width;
     height = height > windowHeight ? windowHeight : height;
 
-    let left = (windowWidth / 2) - (width / 2);
-    let top  = (windowHeight / 2) - (height / 2);
+    let left = windowWidth / 2 - width / 2;
+    let top = windowHeight / 2 - height / 2;
 
     // note: we don't use the noopener and noreferrer attributes since
     // for some reason browser blocks such windows then url is undefined/blank
     return window.open(
         url,
-        'popup_window',
-        'width='+width+',height='+height+',top='+top+',left='+left+',resizable,menubar=no'
+        "popup_window",
+        "width=" +
+            width +
+            ",height=" +
+            height +
+            ",top=" +
+            top +
+            ",left=" +
+            left +
+            ",resizable,menubar=no",
     );
 }

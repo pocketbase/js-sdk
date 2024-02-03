@@ -1,43 +1,56 @@
-import { describe, assert, test } from 'vitest';
-import { getTokenPayload, isTokenExpired } from '@/stores/utils/jwt';
+import { describe, assert, test } from "vitest";
+import { getTokenPayload, isTokenExpired } from "@/stores/utils/jwt";
 
-describe('jwt', function () {
-    describe('getTokenPayload()', function () {
-        test('Should extract JWT payload without validation', function () {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M'
+describe("jwt", function () {
+    describe("getTokenPayload()", function () {
+        test("Should extract JWT payload without validation", function () {
+            const token =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M";
 
             const payload = getTokenPayload(token);
 
-            assert.deepEqual(payload, { 'test': 123 });
+            assert.deepEqual(payload, { test: 123 });
         });
 
-        test('Should fallback to empty object on invalid JWT string', function () {
-            const testCases = ['', 'abc', 'a.b.c'];
+        test("Should fallback to empty object on invalid JWT string", function () {
+            const testCases = ["", "abc", "a.b.c"];
             for (let i in testCases) {
                 const test = testCases[i];
                 const payload = getTokenPayload(test);
-                assert.deepEqual(payload, {}, 'scenario ' + i);
+                assert.deepEqual(payload, {}, "scenario " + i);
             }
         });
     });
 
-    describe('isTokenExpired()', function () {
-        test('Should successfully verify that a JWT token is expired or not', function () {
+    describe("isTokenExpired()", function () {
+        test("Should successfully verify that a JWT token is expired or not", function () {
             const testCases = [
                 // invalid JWT string
-                [true, ''],
+                [true, ""],
                 // token with empty payload is also considered invalid JWT string
-                [true, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58U'],
+                [
+                    true,
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58U",
+                ],
                 // token without exp param
-                [false, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M'],
+                [
+                    false,
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjN9.da77dJt5jjPU43vaaCr6WeHEXrxzB37b0edfjwyD-2M",
+                ],
                 // token with exp param in the past
-                [true, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTYyNDc4ODAwMH0.WOzXh8TQh6fBXJJlOvHktBuv7D8eSyrYx4_IBj2Deyo'],
+                [
+                    true,
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTYyNDc4ODAwMH0.WOzXh8TQh6fBXJJlOvHktBuv7D8eSyrYx4_IBj2Deyo",
+                ],
                 // token with exp param in the future
-                [false, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE'],
+                [
+                    false,
+                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE",
+                ],
             ];
             for (let i in testCases) {
                 const test = testCases[i];
-                assert.equal(isTokenExpired(test[1] as string), test[0], 'scenario ' + i);
+                assert.equal(isTokenExpired(test[1] as string), test[0], "scenario " + i);
             }
         });
     });

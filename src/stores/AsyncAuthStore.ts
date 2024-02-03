@@ -1,4 +1,4 @@
-import { BaseAuthStore, AuthModel } from '@/stores/BaseAuthStore';
+import { BaseAuthStore, AuthModel } from "@/stores/BaseAuthStore";
 
 export type AsyncSaveFunc = (serializedPayload: string) => Promise<void>;
 
@@ -33,16 +33,16 @@ export class AsyncAuthStore extends BaseAuthStore {
     constructor(config: {
         // The async function that is called every time
         // when the auth store state needs to be persisted.
-        save: AsyncSaveFunc,
+        save: AsyncSaveFunc;
 
         /// An *optional* async function that is called every time
         /// when the auth store needs to be cleared.
         ///
         /// If not explicitly set, `saveFunc` with empty data will be used.
-        clear?: AsyncClearFunc,
+        clear?: AsyncClearFunc;
 
         // An *optional* initial data to load into the store.
-        initial?: string|Promise<any>,
+        initial?: string | Promise<any>;
     }) {
         super();
 
@@ -58,11 +58,11 @@ export class AsyncAuthStore extends BaseAuthStore {
     save(token: string, model?: AuthModel): void {
         super.save(token, model);
 
-        let value = '';
+        let value = "";
         try {
-            value = JSON.stringify({token, model})
+            value = JSON.stringify({ token, model });
         } catch (err) {
-            console.warn('AsyncAuthStore: failed to stringify the new state');
+            console.warn("AsyncAuthStore: failed to stringify the new state");
         }
 
         this._enqueue(() => this.saveFunc(value));
@@ -84,15 +84,15 @@ export class AsyncAuthStore extends BaseAuthStore {
     /**
      * Initializes the auth store state.
      */
-    private async _loadInitial(payload?: string|Promise<any>) {
+    private async _loadInitial(payload?: string | Promise<any>) {
         try {
             payload = await payload;
 
             if (payload) {
                 let parsed;
-                if (typeof payload === 'string') {
+                if (typeof payload === "string") {
                     parsed = JSON.parse(payload) || {};
-                } else if (typeof payload === 'object') {
+                } else if (typeof payload === "object") {
                     parsed = payload;
                 }
 

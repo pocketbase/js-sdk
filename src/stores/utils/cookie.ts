@@ -14,40 +14,40 @@
  */
 const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
 
-export interface ParseOptions{
-    decode?: (val: string) => string,
+export interface ParseOptions {
+    decode?: (val: string) => string;
 }
 
 /**
-* Parses the given cookie header string into an object
-* The object has the various cookies as keys(names) => values
-*/
-export function cookieParse(str: string, options?: ParseOptions): { [key: string]: any }  {
+ * Parses the given cookie header string into an object
+ * The object has the various cookies as keys(names) => values
+ */
+export function cookieParse(str: string, options?: ParseOptions): { [key: string]: any } {
     const result: { [key: string]: any } = {};
 
-    if (typeof str !== 'string') {
+    if (typeof str !== "string") {
         return result;
     }
 
-    const opt    = Object.assign({}, options || {});
+    const opt = Object.assign({}, options || {});
     const decode = opt.decode || defaultDecode;
 
     let index = 0;
     while (index < str.length) {
-        const eqIdx = str.indexOf('=', index);
+        const eqIdx = str.indexOf("=", index);
 
         // no more cookie pairs
         if (eqIdx === -1) {
             break;
         }
 
-        let endIdx = str.indexOf(';', index);
+        let endIdx = str.indexOf(";", index);
 
         if (endIdx === -1) {
             endIdx = str.length;
         } else if (endIdx < eqIdx) {
             // backtrack on prior semicolon
-            index = str.lastIndexOf(';', eqIdx - 1) + 1;
+            index = str.lastIndexOf(";", eqIdx - 1) + 1;
             continue;
         }
 
@@ -73,18 +73,18 @@ export function cookieParse(str: string, options?: ParseOptions): { [key: string
     }
 
     return result;
-};
+}
 
 export interface SerializeOptions {
-    encode?:   (val: string | number | boolean) => string,
-    maxAge?:   number,
-    domain?:   string,
-    path?:     string,
-    expires?:  Date,
-    httpOnly?: boolean,
-    secure?:   boolean,
-    priority?: string,
-    sameSite?: boolean|string,
+    encode?: (val: string | number | boolean) => string;
+    maxAge?: number;
+    domain?: string;
+    path?: string;
+    expires?: Date;
+    httpOnly?: boolean;
+    secure?: boolean;
+    priority?: string;
+    sameSite?: boolean | string;
 }
 
 /**
@@ -97,114 +97,118 @@ export interface SerializeOptions {
  * cookieSerialize('foo', 'bar', { httpOnly: true }) // "foo=bar; httpOnly"
  * ```
  */
-export function cookieSerialize(name: string, val: string, options?: SerializeOptions): string {
-    const opt    = Object.assign({}, options || {});
+export function cookieSerialize(
+    name: string,
+    val: string,
+    options?: SerializeOptions,
+): string {
+    const opt = Object.assign({}, options || {});
     const encode = opt.encode || defaultEncode;
 
     if (!fieldContentRegExp.test(name)) {
-        throw new TypeError('argument name is invalid');
+        throw new TypeError("argument name is invalid");
     }
 
     const value = encode(val);
 
     if (value && !fieldContentRegExp.test(value)) {
-        throw new TypeError('argument val is invalid');
+        throw new TypeError("argument val is invalid");
     }
 
-    let result = name + '=' + value;
+    let result = name + "=" + value;
 
     if (opt.maxAge != null) {
         const maxAge = opt.maxAge - 0;
 
         if (isNaN(maxAge) || !isFinite(maxAge)) {
-            throw new TypeError('option maxAge is invalid');
+            throw new TypeError("option maxAge is invalid");
         }
 
-        result += '; Max-Age=' + Math.floor(maxAge);
+        result += "; Max-Age=" + Math.floor(maxAge);
     }
 
     if (opt.domain) {
         if (!fieldContentRegExp.test(opt.domain)) {
-            throw new TypeError('option domain is invalid');
+            throw new TypeError("option domain is invalid");
         }
 
-        result += '; Domain=' + opt.domain;
+        result += "; Domain=" + opt.domain;
     }
 
     if (opt.path) {
         if (!fieldContentRegExp.test(opt.path)) {
-            throw new TypeError('option path is invalid');
+            throw new TypeError("option path is invalid");
         }
 
-        result += '; Path=' + opt.path;
+        result += "; Path=" + opt.path;
     }
 
     if (opt.expires) {
         if (!isDate(opt.expires) || isNaN(opt.expires.valueOf())) {
-            throw new TypeError('option expires is invalid');
+            throw new TypeError("option expires is invalid");
         }
 
-        result += '; Expires=' + opt.expires.toUTCString();
+        result += "; Expires=" + opt.expires.toUTCString();
     }
 
     if (opt.httpOnly) {
-        result += '; HttpOnly';
+        result += "; HttpOnly";
     }
 
     if (opt.secure) {
-        result += '; Secure';
+        result += "; Secure";
     }
 
     if (opt.priority) {
-        const priority = typeof opt.priority === 'string' ? opt.priority.toLowerCase() : opt.priority;
+        const priority =
+            typeof opt.priority === "string" ? opt.priority.toLowerCase() : opt.priority;
 
         switch (priority) {
-            case 'low':
-                result += '; Priority=Low';
+            case "low":
+                result += "; Priority=Low";
                 break;
-            case 'medium':
-                result += '; Priority=Medium';
+            case "medium":
+                result += "; Priority=Medium";
                 break;
-            case 'high':
-                result += '; Priority=High';
+            case "high":
+                result += "; Priority=High";
                 break;
             default:
-                throw new TypeError('option priority is invalid');
+                throw new TypeError("option priority is invalid");
         }
     }
 
     if (opt.sameSite) {
-        const sameSite = typeof opt.sameSite === 'string' ? opt.sameSite.toLowerCase() : opt.sameSite;
+        const sameSite =
+            typeof opt.sameSite === "string" ? opt.sameSite.toLowerCase() : opt.sameSite;
 
         switch (sameSite) {
             case true:
-                result += '; SameSite=Strict';
+                result += "; SameSite=Strict";
                 break;
-            case 'lax':
-                result += '; SameSite=Lax';
+            case "lax":
+                result += "; SameSite=Lax";
                 break;
-            case 'strict':
-                result += '; SameSite=Strict';
+            case "strict":
+                result += "; SameSite=Strict";
                 break;
-            case 'none':
-                result += '; SameSite=None';
+            case "none":
+                result += "; SameSite=None";
                 break;
             default:
-                throw new TypeError('option sameSite is invalid');
+                throw new TypeError("option sameSite is invalid");
         }
     }
 
     return result;
-};
+}
 
 /**
  * Default URL-decode string value function.
  * Optimized to skip native call when no `%`.
  */
 function defaultDecode(val: string): string {
-    return val.indexOf('%') !== -1
-        ? decodeURIComponent(val)
-        : val;
+    return val.indexOf("%") !== -1 ? decodeURIComponent(val) : val;
 }
 
 /**
@@ -218,8 +222,5 @@ function defaultEncode(val: string | number | boolean): string {
  * Determines if value is a Date.
  */
 function isDate(val: any): boolean {
-    return (
-        Object.prototype.toString.call(val) === '[object Date]' ||
-        val instanceof Date
-    );
+    return Object.prototype.toString.call(val) === "[object Date]" || val instanceof Date;
 }

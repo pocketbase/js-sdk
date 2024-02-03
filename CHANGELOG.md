@@ -1,3 +1,10 @@
+## 0.21.1
+
+- Manually update the current matching `AuthStore` model verified state on successful "confirm-verification" call.
+
+- Updated the `fetch` mock tests to check also the sent body params.
+
+
 ## 0.21.0
 
 **⚠️ This release works only with PocketBase v0.21.0+ due to changes of how the `multipart/form-data` body is handled.**

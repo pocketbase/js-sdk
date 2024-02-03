@@ -1,15 +1,11 @@
-import { ClientResponseError } from '@/ClientResponseError';
-import { BaseService } from '@/services/utils/BaseService';
-import { ListResult, LogModel }  from '@/services/utils/dtos';
-import {
-    CommonOptions,
-    ListOptions,
-    LogStatsOptions,
-} from '@/services/utils/options';
+import { ClientResponseError } from "@/ClientResponseError";
+import { BaseService } from "@/services/utils/BaseService";
+import { ListResult, LogModel } from "@/services/utils/dtos";
+import { CommonOptions, ListOptions, LogStatsOptions } from "@/services/utils/options";
 
 export interface HourlyStats {
     total: number;
-    date:  string;
+    date: string;
 }
 
 export class LogService extends BaseService {
@@ -18,15 +14,22 @@ export class LogService extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    async getList(page = 1, perPage = 30, options?: ListOptions): Promise<ListResult<LogModel>> {
-        options = Object.assign({'method': 'GET'}, options);
+    async getList(
+        page = 1,
+        perPage = 30,
+        options?: ListOptions,
+    ): Promise<ListResult<LogModel>> {
+        options = Object.assign({ method: "GET" }, options);
 
-        options.query = Object.assign({
-            'page':    page,
-            'perPage': perPage,
-        }, options.query);
+        options.query = Object.assign(
+            {
+                page: page,
+                perPage: perPage,
+            },
+            options.query,
+        );
 
-        return this.client.send('/api/logs', options);
+        return this.client.send("/api/logs", options);
     }
 
     /**
@@ -39,7 +42,7 @@ export class LogService extends BaseService {
     async getOne(id: string, options?: CommonOptions): Promise<LogModel> {
         if (!id) {
             throw new ClientResponseError({
-                url: this.client.buildUrl('/api/logs/'),
+                url: this.client.buildUrl("/api/logs/"),
                 status: 404,
                 response: {
                     code: 404,
@@ -49,11 +52,14 @@ export class LogService extends BaseService {
             });
         }
 
-        options = Object.assign({
-            'method': 'GET',
-        }, options);
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
 
-        return this.client.send('/api/logs/' + encodeURIComponent(id), options);
+        return this.client.send("/api/logs/" + encodeURIComponent(id), options);
     }
 
     /**
@@ -62,10 +68,13 @@ export class LogService extends BaseService {
      * @throws {ClientResponseError}
      */
     async getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>> {
-        options = Object.assign({
-            'method': 'GET',
-        }, options);
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
 
-        return this.client.send('/api/logs/stats', options);
+        return this.client.send("/api/logs/stats", options);
     }
 }

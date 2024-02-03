@@ -1,22 +1,26 @@
-import { ClientResponseError } from '@/ClientResponseError';
-import { BaseAuthStore }       from '@/stores/BaseAuthStore';
-import { LocalAuthStore }      from '@/stores/LocalAuthStore';
-import { SettingsService }     from '@/services/SettingsService';
-import { AdminService }        from '@/services/AdminService';
-import { RecordService }       from '@/services/RecordService';
-import { CollectionService }   from '@/services/CollectionService';
-import { LogService }          from '@/services/LogService';
-import { RealtimeService }     from '@/services/RealtimeService';
-import { HealthService }       from '@/services/HealthService';
-import { FileService }         from '@/services/FileService';
-import { BackupService }       from '@/services/BackupService';
-import { RecordModel }         from '@/services/utils/dtos';
-import { SendOptions, FileOptions, normalizeUnknownQueryParams } from '@/services/utils/options';
+import { ClientResponseError } from "@/ClientResponseError";
+import { BaseAuthStore } from "@/stores/BaseAuthStore";
+import { LocalAuthStore } from "@/stores/LocalAuthStore";
+import { SettingsService } from "@/services/SettingsService";
+import { AdminService } from "@/services/AdminService";
+import { RecordService } from "@/services/RecordService";
+import { CollectionService } from "@/services/CollectionService";
+import { LogService } from "@/services/LogService";
+import { RealtimeService } from "@/services/RealtimeService";
+import { HealthService } from "@/services/HealthService";
+import { FileService } from "@/services/FileService";
+import { BackupService } from "@/services/BackupService";
+import { RecordModel } from "@/services/utils/dtos";
+import {
+    SendOptions,
+    FileOptions,
+    normalizeUnknownQueryParams,
+} from "@/services/utils/options";
 
 export interface BeforeSendResult {
-    [key:     string]: any, // for backward compatibility
-    url?:     string,
-    options?: {[key: string]: any}
+    [key: string]: any; // for backward compatibility
+    url?: string;
+    options?: { [key: string]: any };
 }
 
 /**
@@ -47,7 +51,10 @@ export default class Client {
      * };
      * ```
      */
-    beforeSend?: (url: string, options: SendOptions) => BeforeSendResult|Promise<BeforeSendResult>;
+    beforeSend?: (
+        url: string,
+        options: SendOptions,
+    ) => BeforeSendResult | Promise<BeforeSendResult>;
 
     /**
      * Hook that get triggered after successfully sending the fetch request,
@@ -127,24 +134,20 @@ export default class Client {
     private recordServices: { [key: string]: RecordService } = {};
     private enableAutoCancellation: boolean = true;
 
-    constructor(
-        baseUrl = '/',
-        authStore?: BaseAuthStore | null,
-        lang = 'en-US',
-    ) {
-        this.baseUrl   = baseUrl;
-        this.lang      = lang;
+    constructor(baseUrl = "/", authStore?: BaseAuthStore | null, lang = "en-US") {
+        this.baseUrl = baseUrl;
+        this.lang = lang;
         this.authStore = authStore || new LocalAuthStore();
 
         // services
-        this.admins      = new AdminService(this);
+        this.admins = new AdminService(this);
         this.collections = new CollectionService(this);
-        this.files       = new FileService(this);
-        this.logs        = new LogService(this);
-        this.settings    = new SettingsService(this);
-        this.realtime    = new RealtimeService(this);
-        this.health      = new HealthService(this);
-        this.backups     = new BackupService(this);
+        this.files = new FileService(this);
+        this.logs = new LogService(this);
+        this.settings = new SettingsService(this);
+        this.realtime = new RealtimeService(this);
+        this.health = new HealthService(this);
+        this.backups = new BackupService(this);
     }
 
     /**
@@ -218,7 +221,7 @@ export default class Client {
      * ))
      * ```
      */
-    filter(raw: string, params?: {[key:string]:any}): string {
+    filter(raw: string, params?: { [key: string]: any }): string {
         if (!params) {
             return raw;
         }
@@ -226,23 +229,23 @@ export default class Client {
         for (let key in params) {
             let val = params[key];
             switch (typeof val) {
-                case 'boolean':
-                case 'number':
-                    val = '' + val;
+                case "boolean":
+                case "number":
+                    val = "" + val;
                     break;
-                case 'string':
+                case "string":
                     val = "'" + val.replace(/'/g, "\\'") + "'";
                     break;
                 default:
                     if (val === null) {
                         val = "null";
                     } else if (val instanceof Date) {
-                        val = "'" + val.toISOString().replace('T', ' ') + "'";
+                        val = "'" + val.toISOString().replace("T", " ") + "'";
                     } else {
                         val = "'" + JSON.stringify(val).replace(/'/g, "\\'") + "'";
                     }
             }
-            raw = raw.replaceAll("{:" + key + "}", val)
+            raw = raw.replaceAll("{:" + key + "}", val);
         }
 
         return raw;
@@ -252,9 +255,9 @@ export default class Client {
      * Legacy alias of `pb.files.getUrl()`.
      */
     getFileUrl(
-        record: {[key:string]:any},
+        record: { [key: string]: any },
         filename: string,
-        queryParams: FileOptions = {}
+        queryParams: FileOptions = {},
     ): string {
         return this.files.getUrl(record, filename, queryParams);
     }
@@ -267,18 +270,18 @@ export default class Client {
 
         // construct an absolute base url if in a browser environment
         if (
-            typeof window !== 'undefined' &&
+            typeof window !== "undefined" &&
             !!window.location &&
-            !url.startsWith('https://') &&
-            !url.startsWith('http://')
+            !url.startsWith("https://") &&
+            !url.startsWith("http://")
         ) {
-            url = window.location.origin?.endsWith('/') ?
-                window.location.origin.substring(0, window.location.origin.length - 1) :
-                (window.location.origin || '');
+            url = window.location.origin?.endsWith("/")
+                ? window.location.origin.substring(0, window.location.origin.length - 1)
+                : window.location.origin || "";
 
-            if (!this.baseUrl.startsWith('/')) {
-                url += window.location.pathname || '/';
-                url += url.endsWith('/') ? '' : '/';
+            if (!this.baseUrl.startsWith("/")) {
+                url += window.location.pathname || "/";
+                url += url.endsWith("/") ? "" : "/";
             }
 
             url += this.baseUrl;
@@ -286,8 +289,8 @@ export default class Client {
 
         // concatenate the path
         if (path) {
-            url += url.endsWith('/') ? '' : '/'; // append trailing slash if missing
-            url += path.startsWith('/') ? path.substring(1) : path;
+            url += url.endsWith("/") ? "" : "/"; // append trailing slash if missing
+            url += path.startsWith("/") ? path.substring(1) : path;
         }
 
         return url;
@@ -306,29 +309,36 @@ export default class Client {
 
         if (this.beforeSend) {
             const result = Object.assign({}, await this.beforeSend(url, options));
-            if (typeof result.url !== 'undefined' || typeof result.options !== 'undefined') {
+            if (
+                typeof result.url !== "undefined" ||
+                typeof result.options !== "undefined"
+            ) {
                 url = result.url || url;
                 options = result.options || options;
             } else if (Object.keys(result).length) {
                 // legacy behavior
                 options = result as SendOptions;
-                console?.warn && console.warn('Deprecated format of beforeSend return: please use `return { url, options }`, instead of `return options`.');
+                console?.warn &&
+                    console.warn(
+                        "Deprecated format of beforeSend return: please use `return { url, options }`, instead of `return options`.",
+                    );
             }
         }
 
         // serialize the query parameters
-        if (typeof options.query !== 'undefined') {
-            const query = this.serializeQueryParams(options.query)
+        if (typeof options.query !== "undefined") {
+            const query = this.serializeQueryParams(options.query);
             if (query) {
-                url += (url.includes('?') ? '&' : '?') + query;
+                url += (url.includes("?") ? "&" : "?") + query;
             }
             delete options.query;
         }
 
         // ensures that the json body is serialized
         if (
-            this.getHeader(options.headers, 'Content-Type') == 'application/json' &&
-            options.body && typeof options.body !== 'string'
+            this.getHeader(options.headers, "Content-Type") == "application/json" &&
+            options.body &&
+            typeof options.body !== "string"
         ) {
             options.body = JSON.stringify(options.body);
         }
@@ -338,7 +348,7 @@ export default class Client {
         // send the request
         return fetchFunc(url, options)
             .then(async (response) => {
-                let data : any = {};
+                let data: any = {};
 
                 try {
                     data = await response.json();
@@ -353,14 +363,15 @@ export default class Client {
 
                 if (response.status >= 400) {
                     throw new ClientResponseError({
-                        url:      response.url,
-                        status:   response.status,
-                        data:     data,
+                        url: response.url,
+                        status: response.status,
+                        data: data,
                     });
                 }
 
                 return data as T;
-            }).catch((err) => {
+            })
+            .catch((err) => {
                 // wrap to normalize all errors
                 throw new ClientResponseError(err);
             });
@@ -374,7 +385,7 @@ export default class Client {
      * @return {SendOptions}
      */
     private initSendOptions(path: string, options: SendOptions): SendOptions {
-        options = Object.assign({ method: 'GET' } as SendOptions, options)
+        options = Object.assign({ method: "GET" } as SendOptions, options);
 
         // auto convert the body to FormData, if needed
         options.body = this.convertToFormDataIfNeeded(options.body);
@@ -385,7 +396,7 @@ export default class Client {
         // requestKey normalizations for backward-compatibility
         // ---
         options.query = Object.assign({}, options.params, options.query);
-        if (typeof options.requestKey === 'undefined') {
+        if (typeof options.requestKey === "undefined") {
             if (options.$autoCancel === false || options.query.$autoCancel === false) {
                 options.requestKey = null;
             } else if (options.$cancelKey || options.query.$cancelKey) {
@@ -402,18 +413,18 @@ export default class Client {
         // add the json header, if not explicitly set
         // (for FormData body the Content-Type header should be skipped since the boundary is autogenerated)
         if (
-            this.getHeader(options.headers, 'Content-Type') === null &&
+            this.getHeader(options.headers, "Content-Type") === null &&
             !this.isFormData(options.body)
         ) {
             options.headers = Object.assign({}, options.headers, {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             });
         }
 
         // add Accept-Language header, if not explicitly set
-        if (this.getHeader(options.headers, 'Accept-Language') === null) {
+        if (this.getHeader(options.headers, "Accept-Language") === null) {
             options.headers = Object.assign({}, options.headers, {
-                'Accept-Language': this.lang,
+                "Accept-Language": this.lang,
             });
         }
 
@@ -422,16 +433,16 @@ export default class Client {
             // has valid token
             this.authStore.token &&
             // auth header is not explicitly set
-            (this.getHeader(options.headers, 'Authorization') === null)
+            this.getHeader(options.headers, "Authorization") === null
         ) {
             options.headers = Object.assign({}, options.headers, {
-                'Authorization': this.authStore.token,
+                Authorization: this.authStore.token,
             });
         }
 
         // handle auto cancelation for duplicated pending request
         if (this.enableAutoCancellation && options.requestKey !== null) {
-            const requestKey = options.requestKey || ((options.method || 'GET') + path);
+            const requestKey = options.requestKey || (options.method || "GET") + path;
 
             delete options.requestKey;
 
@@ -443,7 +454,7 @@ export default class Client {
             options.signal = controller.signal;
         }
 
-        return options
+        return options;
     }
 
     /**
@@ -452,7 +463,7 @@ export default class Client {
      */
     private convertToFormDataIfNeeded(body: any): any {
         if (
-            typeof FormData === 'undefined' ||
+            typeof FormData === "undefined" ||
             typeof body === "undefined" ||
             typeof body !== "object" ||
             body === null ||
@@ -467,12 +478,9 @@ export default class Client {
         for (const key in body) {
             const val = body[key];
 
-            if (
-                typeof val === "object" &&
-                !this.hasBlobField({ data: val })
-            ) {
+            if (typeof val === "object" && !this.hasBlobField({ data: val })) {
                 // send json-like values as jsonPayload to avoid the implicit string value normalization
-                let payload: {[key:string]: any} = {}
+                let payload: { [key: string]: any } = {};
                 payload[key] = val;
                 form.append("@jsonPayload", JSON.stringify(payload));
             } else {
@@ -490,13 +498,13 @@ export default class Client {
     /**
      * Checks if the submitted body object has at least one Blob/File field.
      */
-    private hasBlobField(body: {[key:string]: any}): boolean {
+    private hasBlobField(body: { [key: string]: any }): boolean {
         for (const key in body) {
             const values = Array.isArray(body[key]) ? body[key] : [body[key]];
             for (const v of values) {
                 if (
-                    (typeof Blob !== 'undefined' && v instanceof Blob) ||
-                    (typeof File !== 'undefined' && v instanceof File)
+                    (typeof Blob !== "undefined" && v instanceof Blob) ||
+                    (typeof File !== "undefined" && v instanceof File)
                 ) {
                     return true;
                 }
@@ -510,7 +518,10 @@ export default class Client {
      * Extracts the header with the provided name in case-insensitive manner.
      * Returns `null` if no header matching the name is found.
      */
-    private getHeader(headers: {[key:string]:string}|undefined, name: string): string|null {
+    private getHeader(
+        headers: { [key: string]: string } | undefined,
+        name: string,
+    ): string | null {
         headers = headers || {};
         name = name.toLowerCase();
 
@@ -527,22 +538,23 @@ export default class Client {
      * Loosely checks if the specified body is a FormData instance.
      */
     private isFormData(body: any): boolean {
-        return body && (
+        return (
+            body &&
             // we are checking the constructor name because FormData
             // is not available natively in some environments and the
             // polyfill(s) may not be globally accessible
-            body.constructor.name === 'FormData' ||
-            // fallback to global FormData instance check
-            // note: this is needed because the constructor.name could be different in case of
-            //       custom global FormData implementation, eg. React Native on Android/iOS
-            (typeof FormData !== 'undefined' && body instanceof FormData)
-        )
+            (body.constructor.name === "FormData" ||
+                // fallback to global FormData instance check
+                // note: this is needed because the constructor.name could be different in case of
+                //       custom global FormData implementation, eg. React Native on Android/iOS
+                (typeof FormData !== "undefined" && body instanceof FormData))
+        );
     }
 
     /**
      * Serializes the provided query parameters into a query string.
      */
-    private serializeQueryParams(params: {[key: string]: any}): string {
+    private serializeQueryParams(params: { [key: string]: any }): string {
         const result: Array<string> = [];
         for (const key in params) {
             if (params[key] === null) {
@@ -556,17 +568,17 @@ export default class Client {
             if (Array.isArray(value)) {
                 // repeat array params
                 for (const v of value) {
-                    result.push(encodedKey + '=' + encodeURIComponent(v));
+                    result.push(encodedKey + "=" + encodeURIComponent(v));
                 }
             } else if (value instanceof Date) {
-                result.push(encodedKey + '=' + encodeURIComponent(value.toISOString()));
-            } else if (typeof value !== null && typeof value === 'object') {
-                result.push(encodedKey + '=' + encodeURIComponent(JSON.stringify(value)));
+                result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
+            } else if (typeof value !== null && typeof value === "object") {
+                result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
             } else {
-                result.push(encodedKey + '=' + encodeURIComponent(value));
+                result.push(encodedKey + "=" + encodeURIComponent(value));
             }
         }
 
-        return result.join('&');
+        return result.join("&");
     }
 }

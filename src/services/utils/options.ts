@@ -35,12 +35,12 @@ export interface SendOptions extends RequestInit {
     /**
      * The request identifier that can be used to cancel pending requests.
      */
-    requestKey?:  string|null;
+    requestKey?: string | null;
 
     /**
      * @deprecated use `requestKey:string` instead
      */
-    $cancelKey?:  string;
+    $cancelKey?: string;
 
     /**
      * @deprecated use `requestKey:null` instead
@@ -53,10 +53,10 @@ export interface CommonOptions extends SendOptions {
 }
 
 export interface ListOptions extends CommonOptions {
-    page?:      number;
-    perPage?:   number;
-    sort?:      string;
-    filter?:    string;
+    page?: number;
+    perPage?: number;
+    sort?: string;
+    filter?: string;
     skipTotal?: boolean;
 }
 
@@ -68,11 +68,9 @@ export interface RecordOptions extends CommonOptions {
     expand?: string;
 }
 
-export interface RecordListOptions extends ListOptions, RecordOptions {
-}
+export interface RecordListOptions extends ListOptions, RecordOptions {}
 
-export interface RecordFullListOptions extends FullListOptions, RecordOptions {
-}
+export interface RecordFullListOptions extends FullListOptions, RecordOptions {}
 
 export interface LogStatsOptions extends CommonOptions {
     filter?: string;
@@ -104,42 +102,42 @@ export interface AuthOptions extends CommonOptions {
 
 // list of known SendOptions keys (everything else is treated as query param)
 const knownSendOptionsKeys = [
-    'requestKey',
-    '$cancelKey',
-    '$autoCancel',
-    'fetch',
-    'headers',
-    'body',
-    'query',
-    'params',
+    "requestKey",
+    "$cancelKey",
+    "$autoCancel",
+    "fetch",
+    "headers",
+    "body",
+    "query",
+    "params",
     // ---,
-    'cache',
-    'credentials',
-    'headers',
-    'integrity',
-    'keepalive',
-    'method',
-    'mode',
-    'redirect',
-    'referrer',
-    'referrerPolicy',
-    'signal',
-    'window',
+    "cache",
+    "credentials",
+    "headers",
+    "integrity",
+    "keepalive",
+    "method",
+    "mode",
+    "redirect",
+    "referrer",
+    "referrerPolicy",
+    "signal",
+    "window",
 ];
 
 // modifies in place the provided options by moving unknown send options as query parameters.
 export function normalizeUnknownQueryParams(options?: SendOptions): void {
     if (!options) {
-        return
+        return;
     }
 
     options.query = options.query || {};
     for (let key in options) {
         if (knownSendOptionsKeys.includes(key)) {
-            continue
+            continue;
         }
 
         options.query[key] = options[key];
-        delete (options[key]);
+        delete options[key];
     }
 }

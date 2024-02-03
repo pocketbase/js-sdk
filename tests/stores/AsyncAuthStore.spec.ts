@@ -1,18 +1,18 @@
-import { describe, assert, expect, test } from 'vitest';
-import { AsyncAuthStore } from '@/stores/AsyncAuthStore';
+import { describe, assert, expect, test } from "vitest";
+import { AsyncAuthStore } from "@/stores/AsyncAuthStore";
 
-describe('AsyncAuthStore', function() {
-    describe('construct()', function() {
-        test('load empty initial', async function() {
+describe("AsyncAuthStore", function () {
+    describe("construct()", function () {
+        test("load empty initial", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
-                }
+                },
             });
 
-            assert.equal(store.token, '');
+            assert.equal(store.token, "");
             assert.equal(store.model, null);
 
             const callsPromise = new Promise((resolve, _) => {
@@ -21,14 +21,14 @@ describe('AsyncAuthStore', function() {
             await expect(callsPromise).resolves.toStrictEqual([]);
         });
 
-        test('load initial from string', async function() {
+        test("load initial from string", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
                 },
-                initial: `{"token": "test", "model": {"id": "id1"}}`
+                initial: `{"token": "test", "model": {"id": "id1"}}`,
             });
 
             const callsPromise = new Promise((resolve, _) => {
@@ -38,18 +38,18 @@ describe('AsyncAuthStore', function() {
                 `{"token":"test","model":{"id":"id1"}}`,
             ]);
 
-            assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, {'id': 'id1'} as any);
+            assert.equal(store.token, "test");
+            assert.deepEqual(store.model, { id: "id1" } as any);
         });
 
-        test('load initial from Promise<string>', async function() {
+        test("load initial from Promise<string>", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
                 },
-                initial: Promise.resolve(`{"token": "test", "model": {"id": "id1"}}`)
+                initial: Promise.resolve(`{"token": "test", "model": {"id": "id1"}}`),
             });
 
             const callsPromise = new Promise((resolve, _) => {
@@ -59,18 +59,18 @@ describe('AsyncAuthStore', function() {
                 `{"token":"test","model":{"id":"id1"}}`,
             ]);
 
-            assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, {'id': 'id1'} as any);
+            assert.equal(store.token, "test");
+            assert.deepEqual(store.model, { id: "id1" } as any);
         });
 
-        test('load initial from Promise<object>', async function() {
+        test("load initial from Promise<object>", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
                 },
-                initial: Promise.resolve({"token": "test", "model": {"id": "id1"}})
+                initial: Promise.resolve({ token: "test", model: { id: "id1" } }),
             });
 
             const callsPromise = new Promise((resolve, _) => {
@@ -80,29 +80,29 @@ describe('AsyncAuthStore', function() {
                 `{"token":"test","model":{"id":"id1"}}`,
             ]);
 
-            assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, {'id': 'id1'} as any);
+            assert.equal(store.token, "test");
+            assert.deepEqual(store.model, { id: "id1" } as any);
         });
     });
 
-    describe('save()', function() {
-        test('trigger saveFunc', async function() {
+    describe("save()", function () {
+        test("trigger saveFunc", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
-                }
+                },
             });
 
-            store.save('test1', { 'id': 'id1' } as any);
-            assert.equal(store.token, 'test1');
-            assert.deepEqual(store.model, { 'id': 'id1' } as any);
+            store.save("test1", { id: "id1" } as any);
+            assert.equal(store.token, "test1");
+            assert.deepEqual(store.model, { id: "id1" } as any);
 
             // update
-            store.save('test2', { 'id': 'id2' } as any);
-            assert.equal(store.token, 'test2');
-            assert.deepEqual(store.model, { 'id': 'id2' } as any);
+            store.save("test2", { id: "id2" } as any);
+            assert.equal(store.token, "test2");
+            assert.deepEqual(store.model, { id: "id2" } as any);
 
             const callsPromise = new Promise((resolve, _) => {
                 setTimeout(() => resolve(calls), 0);
@@ -114,22 +114,22 @@ describe('AsyncAuthStore', function() {
         });
     });
 
-    describe('clear()', function() {
-        test('no explicit clearFunc', async function() {
+    describe("clear()", function () {
+        test("no explicit clearFunc", async function () {
             let calls: any = [];
 
             const store = new AsyncAuthStore({
                 save: async (payload) => {
                     calls.push(payload);
-                }
+                },
             });
 
-            store.save('test', { 'id': 'id1' } as any);
-            assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, { 'id': 'id1' } as any);
+            store.save("test", { id: "id1" } as any);
+            assert.equal(store.token, "test");
+            assert.deepEqual(store.model, { id: "id1" } as any);
 
             store.clear();
-            assert.equal(store.token, '');
+            assert.equal(store.token, "");
             assert.deepEqual(store.model, null);
 
             const callsPromise = new Promise((resolve, _) => {
@@ -141,7 +141,7 @@ describe('AsyncAuthStore', function() {
             ]);
         });
 
-        test('with explicit clearFunc', async function() {
+        test("with explicit clearFunc", async function () {
             let saveCalls: any = [];
             let clearCalls: any = [];
 
@@ -151,15 +151,15 @@ describe('AsyncAuthStore', function() {
                 },
                 clear: async () => {
                     clearCalls.push("clear_test");
-                }
+                },
             });
 
-            store.save('test', { 'id': 'id1' } as any);
-            assert.equal(store.token, 'test');
-            assert.deepEqual(store.model, { 'id': 'id1' } as any);
+            store.save("test", { id: "id1" } as any);
+            assert.equal(store.token, "test");
+            assert.deepEqual(store.model, { id: "id1" } as any);
 
             store.clear();
-            assert.equal(store.token, '');
+            assert.equal(store.token, "");
             assert.deepEqual(store.model, null);
 
             const savePromise = new Promise((resolve, _) => {

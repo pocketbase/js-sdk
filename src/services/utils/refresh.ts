@@ -1,5 +1,5 @@
-import Client             from '@/Client';
-import { isTokenExpired } from '@/stores/utils/jwt';
+import Client from "@/Client";
+import { isTokenExpired } from "@/stores/utils/jwt";
 
 // reset previous auto refresh registrations
 export function resetAutoRefresh(client: Client) {
@@ -7,10 +7,10 @@ export function resetAutoRefresh(client: Client) {
 }
 
 export function registerAutoRefresh(
-  client: Client,
-  threshold: number,
-  refreshFunc: () => Promise<any>,
-  reauthenticateFunc: () => Promise<any>,
+    client: Client,
+    threshold: number,
+    refreshFunc: () => Promise<any>,
+    reauthenticateFunc: () => Promise<any>,
 ) {
     resetAutoRefresh(client);
 
@@ -24,14 +24,15 @@ export function registerAutoRefresh(
             !newToken ||
             model?.id != oldModel?.id ||
             // check the collection id in case an admin and auth record share the same id
-            ((model?.collectionId || oldModel?.collectionId) && model?.collectionId != oldModel?.collectionId)
+            ((model?.collectionId || oldModel?.collectionId) &&
+                model?.collectionId != oldModel?.collectionId)
         ) {
             resetAutoRefresh(client);
         }
     });
 
     // initialize a reset function and attach it dynamically to the client
-    (client as any)._resetAutoRefresh = function() {
+    (client as any)._resetAutoRefresh = function () {
         unsubStoreChange();
         client.beforeSend = oldBeforeSend;
         delete (client as any)._resetAutoRefresh;
@@ -80,5 +81,5 @@ export function registerAutoRefresh(
         sendOptions.headers = headers;
 
         return oldBeforeSend ? oldBeforeSend(url, sendOptions) : { url, sendOptions };
-    }
+    };
 }

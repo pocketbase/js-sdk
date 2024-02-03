@@ -24,7 +24,13 @@
         "javascript-sdk",
         "pocketbase-sdk"
     ],
+    "prettier": {
+        "tabWidth": 4,
+        "printWidth": 90,
+        "bracketSameLine": true
+    },
     "scripts": {
+        "format": "npx prettier ./src ./tests --write",
         "build": "rm -rf dist && rollup -c",
         "dev": "rollup -c -w",
         "test": "vitest",
@@ -32,6 +38,7 @@
     },
     "devDependencies": {
         "@rollup/plugin-terser": "^0.4.3",
+        "prettier": "3.2.4",
         "rollup": "^3.0.0",
         "rollup-plugin-ts": "^3.0.0",
         "typescript": "^5.1.6",

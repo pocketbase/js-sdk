@@ -1,9 +1,9 @@
-import { BaseService }   from '@/services/utils/BaseService';
-import { CommonOptions } from '@/services/utils/options';
+import { BaseService } from "@/services/utils/BaseService";
+import { CommonOptions } from "@/services/utils/options";
 
 export interface BackupFileInfo {
-    key:      string;
-    size:     number;
+    key: string;
+    size: number;
     modified: string;
 }
 
@@ -14,11 +14,14 @@ export class BackupService extends BaseService {
      * @throws {ClientResponseError}
      */
     async getFullList(options?: CommonOptions): Promise<Array<BackupFileInfo>> {
-        options = Object.assign({
-            'method': 'GET',
-        }, options);
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
 
-        return this.client.send('/api/backups', options);
+        return this.client.send("/api/backups", options);
     }
 
     /**
@@ -27,15 +30,17 @@ export class BackupService extends BaseService {
      * @throws {ClientResponseError}
      */
     async create(basename: string, options?: CommonOptions): Promise<boolean> {
-        options = Object.assign({
-            'method': 'POST',
-            'body':   {
-                'name': basename,
+        options = Object.assign(
+            {
+                method: "POST",
+                body: {
+                    name: basename,
+                },
             },
-        }, options);
+            options,
+        );
 
-        return this.client.send('/api/backups', options)
-            .then(() => true);
+        return this.client.send("/api/backups", options).then(() => true);
     }
 
     /**
@@ -51,14 +56,19 @@ export class BackupService extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    async upload(bodyParams: {[key:string]:any}|FormData, options?: CommonOptions): Promise<boolean> {
-        options = Object.assign({
-            'method': 'POST',
-            'body':   bodyParams,
-        }, options);
+    async upload(
+        bodyParams: { [key: string]: any } | FormData,
+        options?: CommonOptions,
+    ): Promise<boolean> {
+        options = Object.assign(
+            {
+                method: "POST",
+                body: bodyParams,
+            },
+            options,
+        );
 
-        return this.client.send('/api/backups/upload', options)
-            .then(() => true);
+        return this.client.send("/api/backups/upload", options).then(() => true);
     }
 
     /**
@@ -67,11 +77,15 @@ export class BackupService extends BaseService {
      * @throws {ClientResponseError}
      */
     async delete(key: string, options?: CommonOptions): Promise<boolean> {
-        options = Object.assign({
-            'method': 'DELETE',
-        }, options);
+        options = Object.assign(
+            {
+                method: "DELETE",
+            },
+            options,
+        );
 
-        return this.client.send(`/api/backups/${encodeURIComponent(key)}`, options)
+        return this.client
+            .send(`/api/backups/${encodeURIComponent(key)}`, options)
             .then(() => true);
     }
 
@@ -81,11 +95,15 @@ export class BackupService extends BaseService {
      * @throws {ClientResponseError}
      */
     async restore(key: string, options?: CommonOptions): Promise<boolean> {
-        options = Object.assign({
-            'method': 'POST',
-        }, options);
+        options = Object.assign(
+            {
+                method: "POST",
+            },
+            options,
+        );
 
-        return this.client.send(`/api/backups/${encodeURIComponent(key)}/restore`, options)
+        return this.client
+            .send(`/api/backups/${encodeURIComponent(key)}/restore`, options)
             .then(() => true);
     }
 
@@ -96,6 +114,8 @@ export class BackupService extends BaseService {
      * The file token can be generated via `pb.files.getToken()`.
      */
     getDownloadUrl(token: string, key: string): string {
-        return this.client.buildUrl(`/api/backups/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`);
+        return this.client.buildUrl(
+            `/api/backups/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`,
+        );
     }
 }

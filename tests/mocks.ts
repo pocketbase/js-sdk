@@ -1,22 +1,25 @@
 import { ClientResponseError } from "@/ClientResponseError";
 
 export type RequestMock = {
-    method?:    string,
-    url?:       string,
-    body?:      { [key:string]: any },
-    additionalMatcher?: (url: RequestInfo |URL, config: RequestInit | {[key:string]:any} | undefined) => boolean,
-    delay?:     number,
-    replyCode?: number,
-    replyBody?: any,
-}
+    method?: string;
+    url?: string;
+    body?: { [key: string]: any };
+    additionalMatcher?: (
+        url: RequestInfo | URL,
+        config: RequestInit | { [key: string]: any } | undefined,
+    ) => boolean;
+    delay?: number;
+    replyCode?: number;
+    replyBody?: any;
+};
 
 export function dummyJWT(payload = {}) {
     const buf = Buffer.from(JSON.stringify(payload));
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + buf.toString('base64') + '.test';
+    return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + buf.toString("base64") + ".test";
 }
 
 export class FetchMock {
-    private originalFetch?: Function
+    private originalFetch?: Function;
     private mocks: Array<RequestMock> = [];
 
     on(request: RequestMock) {
@@ -29,28 +32,32 @@ export class FetchMock {
     init() {
         this.originalFetch = global?.fetch;
 
-        global.fetch = (url: RequestInfo | URL, config: RequestInit | {[key:string]:any} | undefined) => {
+        global.fetch = (
+            url: RequestInfo | URL,
+            config: RequestInit | { [key: string]: any } | undefined,
+        ) => {
             for (let mock of this.mocks) {
                 // match url and method
-                if (
-                    mock.url !== url ||
-                    config?.method !== mock.method
-                ) {
+                if (mock.url !== url || config?.method !== mock.method) {
                     continue;
                 }
 
                 // match body params
                 if (mock.body) {
-                    let configBody: { [key:string]: any } = {};
+                    let configBody: { [key: string]: any } = {};
 
                     // deserialize
-                    if (typeof config?.body === 'string') {
-                        configBody = JSON.parse(config?.body) as { [key:string]: any };
+                    if (typeof config?.body === "string") {
+                        configBody = JSON.parse(config?.body) as { [key: string]: any };
                     }
 
                     let hasMissingBodyParam = false;
                     for (const key in mock.body) {
-                        if (typeof configBody[key] === 'undefined' || JSON.stringify(configBody[key]) != JSON.stringify(mock.body[key])) {
+                        if (
+                            typeof configBody[key] === "undefined" ||
+                            JSON.stringify(configBody[key]) !=
+                                JSON.stringify(mock.body[key])
+                        ) {
                             hasMissingBodyParam = true;
                             break;
                         }
@@ -61,15 +68,15 @@ export class FetchMock {
                 }
 
                 if (mock.additionalMatcher && !mock.additionalMatcher(url, config)) {
-                    continue
+                    continue;
                 }
 
-                const response = ({
+                const response = {
                     url: url,
                     status: mock.replyCode,
-                    statusText: 'test',
-                    json: async () => (mock.replyBody || {}),
-                } as Response);
+                    statusText: "test",
+                    json: async () => mock.replyBody || {},
+                } as Response;
 
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
@@ -81,8 +88,8 @@ export class FetchMock {
                 });
             }
 
-            throw new Error('Request not mocked: ' + url);
-        }
+            throw new Error("Request not mocked: " + url);
+        };
     }
 
     /**

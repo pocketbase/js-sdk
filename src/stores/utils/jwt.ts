@@ -1,6 +1,6 @@
 let atobPolyfill: Function;
-if (typeof atob === 'function') {
-    atobPolyfill = atob
+if (typeof atob === "function") {
+    atobPolyfill = atob;
 } else {
     /**
      * The code was extracted from:
@@ -11,7 +11,9 @@ if (typeof atob === 'function') {
 
         let str = String(input).replace(/=+$/, "");
         if (str.length % 4 == 1) {
-            throw new Error("'atob' failed: The string to be decoded is not correctly encoded.");
+            throw new Error(
+                "'atob' failed: The string to be decoded is not correctly encoded.",
+            );
         }
 
         for (
@@ -22,11 +24,11 @@ if (typeof atob === 'function') {
             // character found in table? initialize bit storage and add its ascii value;
             ~buffer &&
             ((bs = bc % 4 ? (bs as any) * 64 + buffer : buffer),
-                // and if not first of each 4 characters,
-                // convert the first 8 bits to one ascii character
-                bc++ % 4) ?
-            (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6)))) :
-            0
+            // and if not first of each 4 characters,
+            // convert the first 8 bits to one ascii character
+            bc++ % 4)
+                ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
+                : 0
         ) {
             // try to find character in table (0-63, not found => -1)
             buffer = chars.indexOf(buffer);
@@ -42,13 +44,17 @@ if (typeof atob === 'function') {
 export function getTokenPayload(token: string): { [key: string]: any } {
     if (token) {
         try {
-            const encodedPayload = decodeURIComponent(atobPolyfill(token.split('.')[1]).split('').map(function (c: string) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
+            const encodedPayload = decodeURIComponent(
+                atobPolyfill(token.split(".")[1])
+                    .split("")
+                    .map(function (c: string) {
+                        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+                    })
+                    .join(""),
+            );
 
             return JSON.parse(encodedPayload) || {};
-        } catch (e) {
-        }
+        } catch (e) {}
     }
 
     return {};
@@ -67,7 +73,7 @@ export function isTokenExpired(token: string, expirationThreshold = 0): boolean 
 
     if (
         Object.keys(payload).length > 0 &&
-        (!payload.exp || (payload.exp - expirationThreshold) > (Date.now() / 1000))
+        (!payload.exp || payload.exp - expirationThreshold > Date.now() / 1000)
     ) {
         return false;
     }

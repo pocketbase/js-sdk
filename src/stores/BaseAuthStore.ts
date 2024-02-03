@@ -1,18 +1,18 @@
-import { cookieParse, cookieSerialize, SerializeOptions } from '@/stores/utils/cookie';
-import { isTokenExpired, getTokenPayload } from '@/stores/utils/jwt';
+import { cookieParse, cookieSerialize, SerializeOptions } from "@/stores/utils/cookie";
+import { isTokenExpired, getTokenPayload } from "@/stores/utils/jwt";
 
-export type AuthModel = { [key: string]: any }|null;
+export type AuthModel = { [key: string]: any } | null;
 
 export type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
 
-const defaultCookieKey = 'pb_auth';
+const defaultCookieKey = "pb_auth";
 
 /**
  * Base AuthStore class that is intended to be extended by all other
  * PocketBase AuthStore implementations.
  */
 export abstract class BaseAuthStore {
-    protected baseToken: string = '';
+    protected baseToken: string = "";
     protected baseModel: AuthModel = null;
 
     private _onChangeCallbacks: Array<OnStoreChangeFunc> = [];
@@ -56,7 +56,7 @@ export abstract class BaseAuthStore {
      * Saves the provided new token and model data in the auth store.
      */
     save(token: string, model?: AuthModel): void {
-        this.baseToken = token || '';
+        this.baseToken = token || "";
         this.baseModel = model || null;
 
         this.triggerChange();
@@ -66,7 +66,7 @@ export abstract class BaseAuthStore {
      * Removes the stored token and model data form the auth store.
      */
     clear(): void {
-        this.baseToken = '';
+        this.baseToken = "";
         this.baseModel = null;
         this.triggerChange();
     }
@@ -96,18 +96,18 @@ export abstract class BaseAuthStore {
      * ```
      */
     loadFromCookie(cookie: string, key = defaultCookieKey): void {
-        const rawData = cookieParse(cookie || '')[key] || '';
+        const rawData = cookieParse(cookie || "")[key] || "";
 
         let data: { [key: string]: any } = {};
         try {
             data = JSON.parse(rawData);
             // normalize
-            if (typeof data === null || typeof data !== 'object' || Array.isArray(data)) {
+            if (typeof data === null || typeof data !== "object" || Array.isArray(data)) {
                 data = {};
             }
         } catch (_) {}
 
-        this.save(data.token || '', data.model || null);
+        this.save(data.token || "", data.model || null);
     }
 
     /**
@@ -126,10 +126,10 @@ export abstract class BaseAuthStore {
      */
     exportToCookie(options?: SerializeOptions, key = defaultCookieKey): string {
         const defaultOptions: SerializeOptions = {
-            secure:   true,
+            secure: true,
             sameSite: true,
             httpOnly: true,
-            path:     "/",
+            path: "/",
         };
 
         // extract the token expiration date
@@ -137,7 +137,7 @@ export abstract class BaseAuthStore {
         if (payload?.exp) {
             defaultOptions.expires = new Date(payload.exp * 1000);
         } else {
-            defaultOptions.expires = new Date('1970-01-01');
+            defaultOptions.expires = new Date("1970-01-01");
         }
 
         // merge with the user defined options
@@ -150,12 +150,12 @@ export abstract class BaseAuthStore {
 
         let result = cookieSerialize(key, JSON.stringify(rawData), options);
 
-        const resultLength = typeof Blob !== 'undefined' ?
-            (new Blob([result])).size : result.length;
+        const resultLength =
+            typeof Blob !== "undefined" ? new Blob([result]).size : result.length;
 
         // strip down the model data to the bare minimum
         if (rawData.model && resultLength > 4096) {
-            rawData.model = {id: rawData?.model?.id, email: rawData?.model?.email};
+            rawData.model = { id: rawData?.model?.id, email: rawData?.model?.email };
             const extraProps = ["collectionId", "username", "verified"];
             for (const prop in this.model) {
                 if (extraProps.includes(prop)) {
@@ -186,12 +186,12 @@ export abstract class BaseAuthStore {
         return () => {
             for (let i = this._onChangeCallbacks.length - 1; i >= 0; i--) {
                 if (this._onChangeCallbacks[i] == callback) {
-                    delete this._onChangeCallbacks[i];    // removes the function reference
+                    delete this._onChangeCallbacks[i]; // removes the function reference
                     this._onChangeCallbacks.splice(i, 1); // reindex the array
                     return;
                 }
             }
-        }
+        };
     }
 
     protected triggerChange(): void {

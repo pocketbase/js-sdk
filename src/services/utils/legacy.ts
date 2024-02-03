@@ -1,8 +1,13 @@
-import { SendOptions } from '@/services/utils/options';
+import { SendOptions } from "@/services/utils/options";
 
-export function normalizeLegacyOptionsArgs(legacyWarn: string, baseOptions: SendOptions, bodyOrOptions?: any, query?: any): SendOptions {
-    const hasBodyOrOptions = typeof bodyOrOptions !== 'undefined';
-    const hasQuery = typeof query !== 'undefined';
+export function normalizeLegacyOptionsArgs(
+    legacyWarn: string,
+    baseOptions: SendOptions,
+    bodyOrOptions?: any,
+    query?: any,
+): SendOptions {
+    const hasBodyOrOptions = typeof bodyOrOptions !== "undefined";
+    const hasQuery = typeof query !== "undefined";
 
     if (!hasQuery && !hasBodyOrOptions) {
         return baseOptions;
