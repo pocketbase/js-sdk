@@ -1068,6 +1068,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 # run unit tests
 npm test
 
+# run prettier
+npm run format
+
 # build and minify for production
 npm run build
 ```

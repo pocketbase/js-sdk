@@ -4,6 +4,8 @@
 
 - Updated the `fetch` mock tests to check also the sent body params.
 
+- Formatted the source and tests with prettier.
+
 
 ## 0.21.0
 
