@@ -477,7 +477,12 @@ export async function handle({ event, resolve }) {
     const response = await resolve(event);
 
     // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie());
+    response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie({
+        // consider setting sameSite to 'lax' if you have issues with cookies not being set after redirects
+        // see https://github.com/pocketbase/pocketbase/discussions/903#discussioncomment-4369424
+        // and https://web.dev/articles/samesite-cookies-explained for more details
+        // sameSite: 'lax',
+    }));
 
     return response;
 }
