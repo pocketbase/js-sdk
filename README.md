@@ -545,7 +545,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }: any, next:
     const response = await next();
 
     // send back the default 'pb_auth' cookie to the client with the latest store state
-    response.headers.append('set-cookie', locals.pb.authStore.exportToCookie());
+    response.headers.append('set-cookie', locals.pb.authStore.exportToCookie({ httpOnly: false, secure: !!import.meta.env.PROD }));
 
     return response;
 });
