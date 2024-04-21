@@ -1255,52 +1255,6 @@ declare class ClientResponseError extends Error {
      */
     toJSON(): this;
 }
-/**
- * The default token store for browsers with auto fallback
- * to runtime/memory if local storage is undefined (eg. in node env).
- */
-declare class LocalAuthStore extends BaseAuthStore {
-    private storageFallback;
-    private storageKey;
-    constructor(storageKey?: string);
-    /**
-     * @inheritdoc
-     */
-    get token(): string;
-    /**
-     * @inheritdoc
-     */
-    get model(): AuthModel;
-    /**
-     * @inheritdoc
-     */
-    save(token: string, model?: AuthModel): void;
-    /**
-     * @inheritdoc
-     */
-    clear(): void;
-    // ---------------------------------------------------------------
-    // Internal helpers:
-    // ---------------------------------------------------------------
-    /**
-     * Retrieves `key` from the browser's local storage
-     * (or runtime/memory if local storage is undefined).
-     */
-    private _storageGet;
-    /**
-     * Stores a new data in the browser's local storage
-     * (or runtime/memory if local storage is undefined).
-     */
-    private _storageSet;
-    /**
-     * Removes `key` from the browser's local storage and the runtime/memory.
-     */
-    private _storageRemove;
-    /**
-     * Updates the current store state on localStorage change.
-     */
-    private _bindStorageEvent;
-}
 type AsyncSaveFunc = (serializedPayload: string) => Promise<void>;
 type AsyncClearFunc = () => Promise<void>;
 /**
@@ -1360,6 +1314,52 @@ declare class AsyncAuthStore extends BaseAuthStore {
     private _dequeue;
 }
 /**
+ * The default token store for browsers with auto fallback
+ * to runtime/memory if local storage is undefined (eg. in node env).
+ */
+declare class LocalAuthStore extends BaseAuthStore {
+    private storageFallback;
+    private storageKey;
+    constructor(storageKey?: string);
+    /**
+     * @inheritdoc
+     */
+    get token(): string;
+    /**
+     * @inheritdoc
+     */
+    get model(): AuthModel;
+    /**
+     * @inheritdoc
+     */
+    save(token: string, model?: AuthModel): void;
+    /**
+     * @inheritdoc
+     */
+    clear(): void;
+    // ---------------------------------------------------------------
+    // Internal helpers:
+    // ---------------------------------------------------------------
+    /**
+     * Retrieves `key` from the browser's local storage
+     * (or runtime/memory if local storage is undefined).
+     */
+    private _storageGet;
+    /**
+     * Stores a new data in the browser's local storage
+     * (or runtime/memory if local storage is undefined).
+     */
+    private _storageSet;
+    /**
+     * Removes `key` from the browser's local storage and the runtime/memory.
+     */
+    private _storageRemove;
+    /**
+     * Updates the current store state on localStorage change.
+     */
+    private _bindStorageEvent;
+}
+/**
  * Returns JWT token's payload data.
  */
 declare function getTokenPayload(token: string): {
@@ -1374,4 +1374,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, CrudService, AdminAuthResponse, AdminService, CollectionService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, getTokenPayload, isTokenExpired, ParseOptions, cookieParse, SerializeOptions, cookieSerialize };
+export { Client as default, BeforeSendResult, ClientResponseError, AdminAuthResponse, AdminService, CollectionService, HealthCheckResponse, HealthService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, CrudService, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, ParseOptions, cookieParse, SerializeOptions, cookieSerialize, getTokenPayload, isTokenExpired };
