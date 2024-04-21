@@ -1,3 +1,8 @@
+## 0.21.2
+
+- Exported `HealthService` types ([#289](https://github.com/pocketbase/js-sdk/issues/289)).
+
+
 ## 0.21.1
 
 - Manually update the verified state of the current matching `AuthStore` model on successful "confirm-verification" call.
