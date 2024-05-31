@@ -1,5 +1,11 @@
+// @todo remove after https://github.com/reactwg/react-native-releases/issues/287
+const isReactNative = (
+    (typeof navigator !== 'undefined' && navigator.product === 'ReactNative') ||
+    (typeof global !== 'undefined' && (global as any).HermesInternal)
+);
+
 let atobPolyfill: Function;
-if (typeof atob === "function") {
+if (typeof atob === "function" && !isReactNative) {
     atobPolyfill = atob;
 } else {
     /**
@@ -23,10 +29,10 @@ if (typeof atob === "function") {
             (buffer = str.charAt(idx++));
             // character found in table? initialize bit storage and add its ascii value;
             ~buffer &&
-            ((bs = bc % 4 ? (bs as any) * 64 + buffer : buffer),
-            // and if not first of each 4 characters,
-            // convert the first 8 bits to one ascii character
-            bc++ % 4)
+                ((bs = bc % 4 ? (bs as any) * 64 + buffer : buffer),
+                    // and if not first of each 4 characters,
+                    // convert the first 8 bits to one ascii character
+                    bc++ % 4)
                 ? (output += String.fromCharCode(255 & (bs >> ((-2 * bc) & 6))))
                 : 0
         ) {

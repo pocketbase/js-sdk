@@ -1,3 +1,8 @@
+## 0.21.3
+
+- Enforce temporary the `atob` polyfill for ReactNative until [Expo 51+ and React Native v0.17+ `atob` fix get released](https://github.com/reactwg/react-native-releases/issues/287).
+
+
 ## 0.21.2
 
 - Exported `HealthService` types ([#289](https://github.com/pocketbase/js-sdk/issues/289)).
