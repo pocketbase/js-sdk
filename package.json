@@ -16,7 +16,7 @@
     "main": "./dist/pocketbase.es.mjs",
     "module": "./dist/pocketbase.es.mjs",
     "react-native": "./dist/pocketbase.es.js",
-    "types": "./dist/pocketbase.es.d.mts",
+    "types": "./dist/pocketbase.es.d.ts",
     "keywords": [
         "pocketbase",
         "pocketbase-js",
@@ -38,6 +38,7 @@
     },
     "devDependencies": {
         "@rollup/plugin-terser": "^0.4.3",
+        "@types/node": "^20.14.2",
         "prettier": "3.2.4",
         "rollup": "^3.0.0",
         "rollup-plugin-ts": "^3.0.0",
