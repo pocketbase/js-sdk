@@ -54,15 +54,14 @@ export default [
         watch: { clearScreen: false },
     },
 
-    // UMD bundle (only the PocketBase client as default export).
+    // UMD bundle (the PocketBase client as default export + additional helper classes).
     {
-        input: 'src/Client.ts',
+        input: 'src/index.ts',
         output: [
             {
                 name:      'PocketBase',
                 file:      'dist/pocketbase.umd.js',
                 format:    'umd',
-                exports:   'default',
                 sourcemap: isProduction,
             },
         ],
@@ -70,15 +69,14 @@ export default [
         watch: { clearScreen: false },
     },
 
-    // CommonJS bundle (only the PocketBase client as default export).
+    // CommonJS bundle (the PocketBase client as default export + additional helper classes).
     {
-        input: 'src/Client.ts',
+        input: 'src/index.ts',
         output: [
             {
                 name:      'PocketBase',
                 file:      'dist/pocketbase.cjs.js',
                 format:    'cjs',
-                exports:   'default',
                 sourcemap: isProduction,
             }
         ],
@@ -90,9 +88,9 @@ export default [
     // @deprecated - kept only for backwards compatibility and will be removed in v1.0.0
     // !!!
     //
-    // Browser-friendly iife bundle (only the PocketBase client as default export).
+    // Browser-friendly iife bundle (the PocketBase client as default export + additional helper classes).
     {
-        input: 'src/Client.ts',
+        input: 'src/index.ts',
         output: [
             {
                 name:      'PocketBase',

@@ -1,3 +1,13 @@
+interface ParseOptions {
+    decode?: (val: string) => string;
+}
+/**
+ * Parses the given cookie header string into an object
+ * The object has the various cookies as keys(names) => values
+ */
+declare function cookieParse(str: string, options?: ParseOptions): {
+    [key: string]: any;
+};
 interface SerializeOptions {
     encode?: (val: string | number | boolean) => string;
     maxAge?: number;
@@ -9,6 +19,17 @@ interface SerializeOptions {
     priority?: string;
     sameSite?: boolean | string;
 }
+/**
+ * Serialize data into a cookie header.
+ *
+ * Serialize the a name value pair into a cookie string suitable for
+ * http headers. An optional options object specified cookie parameters.
+ *
+ * ```js
+ * cookieSerialize('foo', 'bar', { httpOnly: true }) // "foo=bar; httpOnly"
+ * ```
+ */
+declare function cookieSerialize(name: string, val: string, options?: SerializeOptions): string;
 type AuthModel = {
     [key: string]: any;
 } | null;
@@ -197,6 +218,8 @@ interface AuthOptions extends CommonOptions {
      */
     autoRefreshThreshold?: number;
 }
+// modifies in place the provided options by moving unknown send options as query parameters.
+declare function normalizeUnknownQueryParams(options?: SendOptions): void;
 interface appleClientSecret {
     secret: string;
 }
@@ -1014,7 +1037,7 @@ declare class BackupService extends BaseService {
     getDownloadUrl(token: string, key: string): string;
 }
 interface BeforeSendResult {
-    [key: string]: any;
+    [key: string]: any; // for backward compatibility
     url?: string;
     options?: {
         [key: string]: any;
@@ -1121,16 +1144,7 @@ declare class Client {
      * @param  {string} idOrName
      * @return {RecordService}
      */
-    /**
-     * Returns the RecordService associated to the specified collection.
-     *
-     * @param  {string} idOrName
-     * @return {RecordService}
-     */
     collection<M = RecordModel>(idOrName: string): RecordService<M>;
-    /**
-     * Globally enable or disable auto cancellation for pending duplicated requests.
-     */
     /**
      * Globally enable or disable auto cancellation for pending duplicated requests.
      */
@@ -1138,40 +1152,11 @@ declare class Client {
     /**
      * Cancels single request by its cancellation key.
      */
-    /**
-     * Cancels single request by its cancellation key.
-     */
     cancelRequest(requestKey: string): Client;
     /**
      * Cancels all pending requests.
      */
-    /**
-     * Cancels all pending requests.
-     */
     cancelAllRequests(): Client;
-    /**
-     * Constructs a filter expression with placeholders populated from a parameters object.
-     *
-     * Placeholder parameters are defined with the `{:paramName}` notation.
-     *
-     * The following parameter values are supported:
-     *
-     * - `string` (_single quotes are autoescaped_)
-     * - `number`
-     * - `boolean`
-     * - `Date` object (_stringified into the PocketBase datetime format_)
-     * - `null`
-     * - everything else is converted to a string using `JSON.stringify()`
-     *
-     * Example:
-     *
-     * ```js
-     * pb.collection("example").getFirstListItem(pb.filter(
-     *    'title ~ {:title} && created >= {:created}',
-     *    { title: "example", created: new Date()}
-     * ))
-     * ```
-     */
     /**
      * Constructs a filter expression with placeholders populated from a parameters object.
      *
@@ -1201,24 +1186,13 @@ declare class Client {
     /**
      * Legacy alias of `pb.files.getUrl()`.
      */
-    /**
-     * Legacy alias of `pb.files.getUrl()`.
-     */
     getFileUrl(record: {
         [key: string]: any;
     }, filename: string, queryParams?: FileOptions): string;
     /**
      * Builds a full client url by safely concatenating the provided path.
      */
-    /**
-     * Builds a full client url by safely concatenating the provided path.
-     */
     buildUrl(path: string): string;
-    /**
-     * Sends an api http request.
-     *
-     * @throws {ClientResponseError}
-     */
     /**
      * Sends an api http request.
      *
@@ -1232,18 +1206,7 @@ declare class Client {
      * @param  {SendOptions} options
      * @return {SendOptions}
      */
-    /**
-     * Shallow copy the provided object and takes care to initialize
-     * any options required to preserve the backward compatability.
-     *
-     * @param  {SendOptions} options
-     * @return {SendOptions}
-     */
     private initSendOptions;
-    /**
-     * Converts analyzes the provided body and converts it to FormData
-     * in case a plain object with File/Blob values is used.
-     */
     /**
      * Converts analyzes the provided body and converts it to FormData
      * in case a plain object with File/Blob values is used.
@@ -1252,14 +1215,7 @@ declare class Client {
     /**
      * Checks if the submitted body object has at least one Blob/File field.
      */
-    /**
-     * Checks if the submitted body object has at least one Blob/File field.
-     */
     private hasBlobField;
-    /**
-     * Extracts the header with the provided name in case-insensitive manner.
-     * Returns `null` if no header matching the name is found.
-     */
     /**
      * Extracts the header with the provided name in case-insensitive manner.
      * Returns `null` if no header matching the name is found.
@@ -1268,16 +1224,154 @@ declare class Client {
     /**
      * Loosely checks if the specified body is a FormData instance.
      */
-    /**
-     * Loosely checks if the specified body is a FormData instance.
-     */
     private isFormData;
-    /**
-     * Serializes the provided query parameters into a query string.
-     */
     /**
      * Serializes the provided query parameters into a query string.
      */
     private serializeQueryParams;
 }
-export { BeforeSendResult, Client as default };
+/**
+ * ClientResponseError is a custom Error class that is intended to wrap
+ * and normalize any error thrown by `Client.send()`.
+ */
+declare class ClientResponseError extends Error {
+    url: string;
+    status: number;
+    response: {
+        [key: string]: any;
+    };
+    isAbort: boolean;
+    originalError: any;
+    constructor(errData?: any);
+    /**
+     * Alias for `this.response` to preserve the backward compatibility.
+     */
+    get data(): {
+        [key: string]: any;
+    };
+    /**
+     * Make a POJO's copy of the current error class instance.
+     * @see https://github.com/vuex-orm/vuex-orm/issues/255
+     */
+    toJSON(): this;
+}
+type AsyncSaveFunc = (serializedPayload: string) => Promise<void>;
+type AsyncClearFunc = () => Promise<void>;
+/**
+ * AsyncAuthStore is a helper auth store implementation
+ * that could be used with any external async persistent layer
+ * (key-value db, local file, etc.).
+ *
+ * Here is an example with the React Native AsyncStorage package:
+ *
+ * ```
+ * import AsyncStorage from "@react-native-async-storage/async-storage";
+ * import PocketBase, { AsyncAuthStore } from "pocketbase";
+ *
+ * const store = new AsyncAuthStore({
+ *     save:    async (serialized) => AsyncStorage.setItem("pb_auth", serialized),
+ *     initial: AsyncStorage.getItem("pb_auth"),
+ * });
+ *
+ * const pb = new PocketBase("https://example.com", store)
+ * ```
+ */
+declare class AsyncAuthStore extends BaseAuthStore {
+    private saveFunc;
+    private clearFunc?;
+    private queue;
+    constructor(config: {
+        // The async function that is called every time
+        // when the auth store state needs to be persisted.
+        save: AsyncSaveFunc;
+        /// An *optional* async function that is called every time
+        /// when the auth store needs to be cleared.
+        ///
+        /// If not explicitly set, `saveFunc` with empty data will be used.
+        clear?: AsyncClearFunc;
+        // An *optional* initial data to load into the store.
+        initial?: string | Promise<any>;
+    });
+    /**
+     * @inheritdoc
+     */
+    save(token: string, model?: AuthModel): void;
+    /**
+     * @inheritdoc
+     */
+    clear(): void;
+    /**
+     * Initializes the auth store state.
+     */
+    private _loadInitial;
+    /**
+     * Appends an async function to the queue.
+     */
+    private _enqueue;
+    /**
+     * Starts the queue processing.
+     */
+    private _dequeue;
+}
+/**
+ * The default token store for browsers with auto fallback
+ * to runtime/memory if local storage is undefined (eg. in node env).
+ */
+declare class LocalAuthStore extends BaseAuthStore {
+    private storageFallback;
+    private storageKey;
+    constructor(storageKey?: string);
+    /**
+     * @inheritdoc
+     */
+    get token(): string;
+    /**
+     * @inheritdoc
+     */
+    get model(): AuthModel;
+    /**
+     * @inheritdoc
+     */
+    save(token: string, model?: AuthModel): void;
+    /**
+     * @inheritdoc
+     */
+    clear(): void;
+    // ---------------------------------------------------------------
+    // Internal helpers:
+    // ---------------------------------------------------------------
+    /**
+     * Retrieves `key` from the browser's local storage
+     * (or runtime/memory if local storage is undefined).
+     */
+    private _storageGet;
+    /**
+     * Stores a new data in the browser's local storage
+     * (or runtime/memory if local storage is undefined).
+     */
+    private _storageSet;
+    /**
+     * Removes `key` from the browser's local storage and the runtime/memory.
+     */
+    private _storageRemove;
+    /**
+     * Updates the current store state on localStorage change.
+     */
+    private _bindStorageEvent;
+}
+/**
+ * Returns JWT token's payload data.
+ */
+declare function getTokenPayload(token: string): {
+    [key: string]: any;
+};
+/**
+ * Checks whether a JWT token is expired or not.
+ * Tokens without `exp` payload key are considered valid.
+ * Tokens with empty payload (eg. invalid token strings) are considered expired.
+ *
+ * @param token The token to check.
+ * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
+ */
+declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
+export { Client as default, BeforeSendResult, ClientResponseError, AdminAuthResponse, AdminService, CollectionService, HealthCheckResponse, HealthService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, RecordService, CrudService, ListResult, BaseModel, AdminModel, SchemaField, CollectionModel, ExternalAuthModel, LogModel, RecordModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, ParseOptions, cookieParse, SerializeOptions, cookieSerialize, getTokenPayload, isTokenExpired };
