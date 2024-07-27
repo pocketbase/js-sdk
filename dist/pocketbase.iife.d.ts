@@ -800,7 +800,6 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * })
      * ```
      *
-     *
      * @throws {ClientResponseError}
      */
     authWithOAuth2<T = M>(options: OAuth2AuthConfig): Promise<RecordAuthResponse<T>>;
