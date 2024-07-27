@@ -776,9 +776,30 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * })
      * ```
      *
-     * _Site-note_: when creating the OAuth2 app in the provider dashboard
+     * Note1: When creating the OAuth2 app in the provider dashboard
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
+     *
+     * Note2: Safari may block the default `urlCallback` popup because
+     * it doesn't allow `window.open` calls as part of an `async` click functions.
+     * To workaround this you can either change your click handler to not be marked as `async`
+     * OR manually call `window.open` before your `async` function and use the
+     * window reference in your own custom `urlCallback` (see https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061).
+     * For example:
+     * ```js
+     * <button id="btn">Login with Gitlab</button>
+     * ...
+     * document.getElementById("btn").addEventListener("click", () => {
+     *     pb.collection("users").authWithOAuth2({
+     *         provider: "gitlab",
+     *     }).then((authData) => {
+     *         console.log(authData)
+     *     }).catch((err) => {
+     *         console.log(err, err.originalError);
+     *     });
+     * })
+     * ```
+     *
      *
      * @throws {ClientResponseError}
      */

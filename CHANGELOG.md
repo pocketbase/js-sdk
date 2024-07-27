@@ -1,3 +1,9 @@
+## 0.21.4
+
+- Fixed the `requestKey` handling in `authWithOAuth2({...})` to allow manually cancelling the entire OAuth2 pending request flow using `pb.cancelRequest(requestKey)`.
+  _Due to the [`window.close` caveats](https://developer.mozilla.org/en-US/docs/Web/API/Window/close) note that the OAuth2 popup window may still remain open depending on which stage of the OAuth2 flow the cancellation has been invoked._
+
+
 ## 0.21.3
 
 - Enforce temporary the `atob` polyfill for ReactNative until [Expo 51+ and React Native v0.74+ `atob` fix get released](https://github.com/reactwg/react-native-releases/issues/287).

@@ -482,9 +482,29 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * })
      * ```
      *
-     * _Site-note_: when creating the OAuth2 app in the provider dashboard
+     * Note1: When creating the OAuth2 app in the provider dashboard
      * you have to configure `https://yourdomain.com/api/oauth2-redirect`
      * as redirect URL.
+     *
+     * Note2: Safari may block the default `urlCallback` popup because
+     * it doesn't allow `window.open` calls as part of an `async` click functions.
+     * To workaround this you can either change your click handler to not be marked as `async`
+     * OR manually call `window.open` before your `async` function and use the
+     * window reference in your own custom `urlCallback` (see https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061).
+     * For example:
+     * ```js
+     * <button id="btn">Login with Gitlab</button>
+     * ...
+     * document.getElementById("btn").addEventListener("click", () => {
+     *     pb.collection("users").authWithOAuth2({
+     *         provider: "gitlab",
+     *     }).then((authData) => {
+     *         console.log(authData)
+     *     }).catch((err) => {
+     *         console.log(err, err.originalError);
+     *     });
+     * })
+     * ```
      *
      * @throws {ClientResponseError}
      */
@@ -492,7 +512,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         options: OAuth2AuthConfig,
     ): Promise<RecordAuthResponse<T>>;
 
-    async authWithOAuth2<T = M>(...args: any): Promise<RecordAuthResponse<T>> {
+    authWithOAuth2<T = M>(...args: any): Promise<RecordAuthResponse<T>> {
         // fallback to legacy format
         if (args.length > 1 || typeof args?.[0] === "string") {
             console.warn(
@@ -511,106 +531,128 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         const config = args?.[0] || {};
 
-        const authMethods = await this.listAuthMethods();
-
-        const provider = authMethods.authProviders.find(
-            (p) => p.name === config.provider,
-        );
-        if (!provider) {
-            throw new ClientResponseError(
-                new Error(`Missing or invalid provider "${config.provider}".`),
-            );
-        }
-
-        const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
-
-        // initialize a one-off realtime service
-        const realtime = new RealtimeService(this.client);
-
         // open a new popup window in case config.urlCallback is not set
         //
-        // note: it is opened before the async call due to Safari restrictions
+        // note: it is opened before any async calls due to Safari restrictions
         // (see https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061)
         let eagerDefaultPopup: Window | null = null;
         if (!config.urlCallback) {
             eagerDefaultPopup = openBrowserPopup(undefined);
         }
 
+        // initialize a one-off realtime service
+        const realtime = new RealtimeService(this.client);
+
         function cleanup() {
             eagerDefaultPopup?.close();
             realtime.unsubscribe();
         }
 
-        return new Promise(async (resolve, reject) => {
-            try {
-                await realtime.subscribe("@oauth2", async (e) => {
-                    const oldState = realtime.clientId;
+        const requestKeyOptions: SendOptions = {};
+        const requestKey = config.requestKey
+        if (requestKey) {
+            requestKeyOptions.requestKey = requestKey;
+        }
 
-                    try {
-                        if (!e.state || oldState !== e.state) {
-                            throw new Error("State parameters don't match.");
-                        }
+        return this.listAuthMethods(requestKeyOptions).then((authMethods) => {
+            const provider = authMethods.authProviders.find(
+                (p) => p.name === config.provider,
+            );
+            if (!provider) {
+                throw new ClientResponseError(
+                    new Error(`Missing or invalid provider "${config.provider}".`),
+                );
+            }
 
-                        if (e.error || !e.code) {
-                            throw new Error(
-                                "OAuth2 redirect error or missing code: " + e.error,
+            const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
+
+            // find the AbortController associated with the current request key (if any)
+            const cancelController = requestKey ? this.client['cancelControllers']?.[requestKey] : undefined;
+            if (cancelController) {
+                cancelController.signal.onabort = () => {
+                    cleanup();
+                }
+            }
+
+            return new Promise(async (resolve, reject) => {
+                try {
+                    await realtime.subscribe("@oauth2", async (e) => {
+                        const oldState = realtime.clientId;
+
+                        try {
+                            if (!e.state || oldState !== e.state) {
+                                throw new Error("State parameters don't match.");
+                            }
+
+                            if (e.error || !e.code) {
+                                throw new Error(
+                                    "OAuth2 redirect error or missing code: " + e.error,
+                                );
+                            }
+
+                            // clear the non SendOptions props
+                            const options = Object.assign({}, config);
+                            delete options.provider;
+                            delete options.scopes;
+                            delete options.createData;
+                            delete options.urlCallback;
+
+                            // reset the cancelController listener as it will be triggered by the next api call
+                            if (cancelController?.signal?.onabort) {
+                                cancelController.signal.onabort = null
+                            }
+
+                            const authData = await this.authWithOAuth2Code<T>(
+                                provider.name,
+                                e.code,
+                                provider.codeVerifier,
+                                redirectUrl,
+                                config.createData,
+                                options,
                             );
+
+                            resolve(authData);
+                        } catch (err) {
+                            reject(new ClientResponseError(err));
                         }
 
-                        // clear the non SendOptions props
-                        const options = Object.assign({}, config);
-                        delete options.provider;
-                        delete options.scopes;
-                        delete options.createData;
-                        delete options.urlCallback;
+                        cleanup();
+                    });
 
-                        const authData = await this.authWithOAuth2Code<T>(
-                            provider.name,
-                            e.code,
-                            provider.codeVerifier,
-                            redirectUrl,
-                            config.createData,
-                            options,
-                        );
-
-                        resolve(authData);
-                    } catch (err) {
-                        reject(new ClientResponseError(err));
+                    const replacements: { [key: string]: any } = {
+                        state: realtime.clientId,
+                    };
+                    if (config.scopes?.length) {
+                        replacements["scope"] = config.scopes.join(" ");
                     }
 
+                    const url = this._replaceQueryParams(
+                        provider.authUrl + redirectUrl,
+                        replacements,
+                    );
+
+                    let urlCallback =
+                        config.urlCallback ||
+                        function (url: string) {
+                            if (eagerDefaultPopup) {
+                                eagerDefaultPopup.location.href = url;
+                            } else {
+                                // it could have been blocked due to its empty initial url,
+                                // try again...
+                                eagerDefaultPopup = openBrowserPopup(url);
+                            }
+                        };
+
+                    await urlCallback(url);
+                } catch (err) {
                     cleanup();
-                });
-
-                const replacements: { [key: string]: any } = {
-                    state: realtime.clientId,
-                };
-                if (config.scopes?.length) {
-                    replacements["scope"] = config.scopes.join(" ");
+                    reject(new ClientResponseError(err));
                 }
-
-                const url = this._replaceQueryParams(
-                    provider.authUrl + redirectUrl,
-                    replacements,
-                );
-
-                let urlCallback =
-                    config.urlCallback ||
-                    function (url: string) {
-                        if (eagerDefaultPopup) {
-                            eagerDefaultPopup.location.href = url;
-                        } else {
-                            // it could have been blocked due to its empty initial url,
-                            // try again...
-                            eagerDefaultPopup = openBrowserPopup(url);
-                        }
-                    };
-
-                await urlCallback(url);
-            } catch (err) {
-                cleanup();
-                reject(new ClientResponseError(err));
-            }
-        });
+            });
+        }).catch((err) => {
+            cleanup();
+            throw err // rethrow
+        }) as Promise<RecordAuthResponse<T>>;
     }
 
     /**
