@@ -141,3 +141,32 @@ export function normalizeUnknownQueryParams(options?: SendOptions): void {
         delete options[key];
     }
 }
+
+export function serializeQueryParams(params: { [key: string]: any }): string {
+    const result: Array<string> = [];
+
+    for (const key in params) {
+        if (params[key] === null) {
+            // skip null query params
+            continue;
+        }
+
+        const value = params[key];
+        const encodedKey = encodeURIComponent(key);
+
+        if (Array.isArray(value)) {
+            // repeat array params
+            for (const v of value) {
+                result.push(encodedKey + "=" + encodeURIComponent(v));
+            }
+        } else if (value instanceof Date) {
+            result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
+        } else if (typeof value !== null && typeof value === "object") {
+            result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
+        } else {
+            result.push(encodedKey + "=" + encodeURIComponent(value));
+        }
+    }
+
+    return result.join("&");
+}

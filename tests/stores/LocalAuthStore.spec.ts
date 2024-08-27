@@ -8,12 +8,12 @@ describe("LocalAuthStore", function () {
 
             store.save("test1", { id: "id1" } as any);
             assert.equal(store.token, "test1");
-            assert.deepEqual(store.model, { id: "id1" } as any);
+            assert.deepEqual(store.record, { id: "id1" } as any);
 
             // update
             store.save("test2", { id: "id2" } as any);
             assert.equal(store.token, "test2");
-            assert.deepEqual(store.model, { id: "id2" } as any);
+            assert.deepEqual(store.record, { id: "id2" } as any);
         });
     });
 
@@ -23,11 +23,11 @@ describe("LocalAuthStore", function () {
 
             store.save("test", { id: "id1" } as any);
             assert.equal(store.token, "test");
-            assert.deepEqual(store.model, { id: "id1" } as any);
+            assert.deepEqual(store.record, { id: "id1" } as any);
 
             store.clear();
             assert.equal(store.token, "");
-            assert.deepEqual(store.model, null);
+            assert.deepEqual(store.record, null);
         });
     });
 
@@ -41,13 +41,13 @@ describe("LocalAuthStore", function () {
         });
     });
 
-    describe("get model()", function () {
-        test("Should extract the stored model value", function () {
+    describe("get record()", function () {
+        test("Should extract the stored record value", function () {
             const store = new LocalAuthStore();
 
-            assert.deepEqual(store.model, null);
+            assert.deepEqual(store.record, null);
             store.save("test", { id: "1" } as any);
-            assert.deepEqual(store.model, { id: "1" } as any);
+            assert.deepEqual(store.record, { id: "1" } as any);
         });
     });
 
@@ -106,13 +106,13 @@ describe("LocalAuthStore", function () {
 
             const data = {
                 token: "test_token",
-                model: { id: 123 },
+                record: { id: 123 },
             };
 
             store.loadFromCookie("pb_auth=" + JSON.stringify(data));
 
             assert.equal(store.token, data.token);
-            assert.deepEqual((store.model as any).id, data.model?.id);
+            assert.deepEqual((store.record as any).id, data.record?.id);
         });
     });
 
@@ -128,7 +128,7 @@ describe("LocalAuthStore", function () {
 
             assert.equal(
                 result,
-                "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%7D%7D; Path=/; Expires=Thu, 27 Jun 2030 10:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
+                "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22record%22%3A%7B%22id%22%3A%221%22%7D%7D; Path=/; Expires=Thu, 27 Jun 2030 10:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
             );
         });
 
@@ -156,11 +156,11 @@ describe("LocalAuthStore", function () {
 
             assert.equal(
                 result,
-                "custom_key=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%2C%22name%22%3A%22test%22%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
+                "custom_key=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22record%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%2C%22name%22%3A%22test%22%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
             );
         });
 
-        test("Should strip the model data in the generated cookie if exceed 4096", function () {
+        test("Should strip the record data in the generated cookie if exceed 4096", function () {
             const store = new LocalAuthStore();
             store.save(
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE",
@@ -181,7 +181,7 @@ describe("LocalAuthStore", function () {
 
             assert.equal(
                 result,
-                "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22model%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
+                "pb_auth=%7B%22token%22%3A%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoxMjMsImV4cCI6MTkwODc4NDgwMH0.vVbRVx-Bs7pusxfU8TTTOEtNcUEYSzmJUboC68PB5iE%22%2C%22record%22%3A%7B%22id%22%3A%221%22%2C%22email%22%3A%22test%40example.com%22%2C%22collectionId%22%3A%22test_collection_id%22%2C%22verified%22%3Atrue%7D%7D; Path=/a/b/c; Expires=Sat, 01 Jan 2022 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict",
             );
         });
     });

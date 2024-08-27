@@ -2,7 +2,6 @@ import { ClientResponseError } from "@/ClientResponseError";
 import { BaseAuthStore } from "@/stores/BaseAuthStore";
 import { LocalAuthStore } from "@/stores/LocalAuthStore";
 import { SettingsService } from "@/services/SettingsService";
-import { AdminService } from "@/services/AdminService";
 import { RecordService } from "@/services/RecordService";
 import { CollectionService } from "@/services/CollectionService";
 import { LogService } from "@/services/LogService";
@@ -10,12 +9,15 @@ import { RealtimeService } from "@/services/RealtimeService";
 import { HealthService } from "@/services/HealthService";
 import { FileService } from "@/services/FileService";
 import { BackupService } from "@/services/BackupService";
-import { RecordModel } from "@/services/utils/dtos";
+import { BatchService } from "@/services/BatchService";
+import { RecordModel } from "@/tools/dtos";
 import {
     SendOptions,
     FileOptions,
     normalizeUnknownQueryParams,
-} from "@/services/utils/options";
+    serializeQueryParams,
+} from "@/tools/options";
+import { isFormData, convertToFormDataIfNeeded } from "@/tools/formdata";
 
 export interface BeforeSendResult {
     [key: string]: any; // for backward compatibility
@@ -64,7 +66,7 @@ export default class Client {
      *
      * Example:
      * ```js
-     * client.afterSend = function (response, data) {
+     * client.afterSend = function (response, data, options) {
      *     if (response.status != 200) {
      *         throw new ClientResponseError({
      *             url:      response.url,
@@ -77,7 +79,7 @@ export default class Client {
      * };
      * ```
      */
-    afterSend?: (response: Response, data: any) => any;
+    afterSend?: ((response: Response, data: any) => any) & ((response: Response, data: any, options: SendOptions) => any);
 
     /**
      * Optional language code (default to `en-US`) that will be sent
@@ -94,11 +96,6 @@ export default class Client {
      * An instance of the service that handles the **Settings APIs**.
      */
     readonly settings: SettingsService;
-
-    /**
-     * An instance of the service that handles the **Admin APIs**.
-     */
-    readonly admins: AdminService;
 
     /**
      * An instance of the service that handles the **Collection APIs**.
@@ -137,10 +134,17 @@ export default class Client {
     constructor(baseUrl = "/", authStore?: BaseAuthStore | null, lang = "en-US") {
         this.baseUrl = baseUrl;
         this.lang = lang;
-        this.authStore = authStore || new LocalAuthStore();
 
-        // services
-        this.admins = new AdminService(this);
+        if (authStore) {
+            this.authStore = authStore;
+        } else if (typeof window != "undefined" && !!(window as any).Deno) {
+            // note: to avoid common security issues we fallback to runtime/memory store in case the code is running in Deno env
+            this.authStore = new BaseAuthStore();
+        } else {
+            this.authStore = new LocalAuthStore();
+        }
+
+        // common services
         this.collections = new CollectionService(this);
         this.files = new FileService(this);
         this.logs = new LogService(this);
@@ -151,10 +155,36 @@ export default class Client {
     }
 
     /**
-     * Returns the RecordService associated to the specified collection.
+     * @deprecated
+     * With PocketBase v0.23.0 admins are converted to a regular auth
+     * collection named "_superusers", aka. you can use directly collection("_superusers").
+     */
+    get admins(): RecordService {
+        return this.collection("_superusers");
+    }
+
+    /**
+     * Creates a new batch handler for sending multiple transactional
+     * create/update/upsert/delete collection requests in one network call.
      *
-     * @param  {string} idOrName
-     * @return {RecordService}
+     * Example:
+     * ```js
+     * const batch = pb.createBatch();
+     *
+     * batch.collection("example1").create({ ... })
+     * batch.collection("example2").update("RECORD_ID", { ... })
+     * batch.collection("example3").delete("RECORD_ID")
+     * batch.collection("example4").upsert({ ... })
+     *
+     * await batch.send()
+     * ```
+     */
+    createBatch(): BatchService {
+        return new BatchService(this);
+    }
+
+    /**
+     * Returns the RecordService associated to the specified collection.
      */
     collection<M = RecordModel>(idOrName: string): RecordService<M> {
         if (!this.recordServices[idOrName]) {
@@ -327,7 +357,7 @@ export default class Client {
 
         // serialize the query parameters
         if (typeof options.query !== "undefined") {
-            const query = this.serializeQueryParams(options.query);
+            const query = serializeQueryParams(options.query);
             if (query) {
                 url += (url.includes("?") ? "&" : "?") + query;
             }
@@ -358,7 +388,7 @@ export default class Client {
                 }
 
                 if (this.afterSend) {
-                    data = await this.afterSend(response, data);
+                    data = await this.afterSend(response, data, options);
                 }
 
                 if (response.status >= 400) {
@@ -388,7 +418,7 @@ export default class Client {
         options = Object.assign({ method: "GET" } as SendOptions, options);
 
         // auto convert the body to FormData, if needed
-        options.body = this.convertToFormDataIfNeeded(options.body);
+        options.body = convertToFormDataIfNeeded(options.body);
 
         // move unknown send options as query parameters
         normalizeUnknownQueryParams(options);
@@ -414,7 +444,7 @@ export default class Client {
         // (for FormData body the Content-Type header should be skipped since the boundary is autogenerated)
         if (
             this.getHeader(options.headers, "Content-Type") === null &&
-            !this.isFormData(options.body)
+            !isFormData(options.body)
         ) {
             options.headers = Object.assign({}, options.headers, {
                 "Content-Type": "application/json",
@@ -458,63 +488,6 @@ export default class Client {
     }
 
     /**
-     * Converts analyzes the provided body and converts it to FormData
-     * in case a plain object with File/Blob values is used.
-     */
-    private convertToFormDataIfNeeded(body: any): any {
-        if (
-            typeof FormData === "undefined" ||
-            typeof body === "undefined" ||
-            typeof body !== "object" ||
-            body === null ||
-            this.isFormData(body) ||
-            !this.hasBlobField(body)
-        ) {
-            return body;
-        }
-
-        const form = new FormData();
-
-        for (const key in body) {
-            const val = body[key];
-
-            if (typeof val === "object" && !this.hasBlobField({ data: val })) {
-                // send json-like values as jsonPayload to avoid the implicit string value normalization
-                let payload: { [key: string]: any } = {};
-                payload[key] = val;
-                form.append("@jsonPayload", JSON.stringify(payload));
-            } else {
-                // in case of mixed string and file/blob
-                const normalizedVal = Array.isArray(val) ? val : [val];
-                for (let v of normalizedVal) {
-                    form.append(key, v);
-                }
-            }
-        }
-
-        return form;
-    }
-
-    /**
-     * Checks if the submitted body object has at least one Blob/File field.
-     */
-    private hasBlobField(body: { [key: string]: any }): boolean {
-        for (const key in body) {
-            const values = Array.isArray(body[key]) ? body[key] : [body[key]];
-            for (const v of values) {
-                if (
-                    (typeof Blob !== "undefined" && v instanceof Blob) ||
-                    (typeof File !== "undefined" && v instanceof File)
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Extracts the header with the provided name in case-insensitive manner.
      * Returns `null` if no header matching the name is found.
      */
@@ -532,53 +505,5 @@ export default class Client {
         }
 
         return null;
-    }
-
-    /**
-     * Loosely checks if the specified body is a FormData instance.
-     */
-    private isFormData(body: any): boolean {
-        return (
-            body &&
-            // we are checking the constructor name because FormData
-            // is not available natively in some environments and the
-            // polyfill(s) may not be globally accessible
-            (body.constructor.name === "FormData" ||
-                // fallback to global FormData instance check
-                // note: this is needed because the constructor.name could be different in case of
-                //       custom global FormData implementation, eg. React Native on Android/iOS
-                (typeof FormData !== "undefined" && body instanceof FormData))
-        );
-    }
-
-    /**
-     * Serializes the provided query parameters into a query string.
-     */
-    private serializeQueryParams(params: { [key: string]: any }): string {
-        const result: Array<string> = [];
-        for (const key in params) {
-            if (params[key] === null) {
-                // skip null query params
-                continue;
-            }
-
-            const value = params[key];
-            const encodedKey = encodeURIComponent(key);
-
-            if (Array.isArray(value)) {
-                // repeat array params
-                for (const v of value) {
-                    result.push(encodedKey + "=" + encodeURIComponent(v));
-                }
-            } else if (value instanceof Date) {
-                result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
-            } else if (typeof value !== null && typeof value === "object") {
-                result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
-            } else {
-                result.push(encodedKey + "=" + encodeURIComponent(value));
-            }
-        }
-
-        return result.join("&");
     }
 }

@@ -1,5 +1,5 @@
-import { BaseService } from "@/services/utils/BaseService";
-import { CommonOptions } from "@/services/utils/options";
+import { BaseService } from "@/services/BaseService";
+import { CommonOptions } from "@/tools/options";
 
 export interface HealthCheckResponse {
     code: number;

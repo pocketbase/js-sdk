@@ -1,3 +1,102 @@
+## 0.22.0 - WIP
+
+**⚠️ This release works only with PocketBase v0.23.0+ and contains breaking changes!**
+
+- Added support for sending batch/transactional create/updated/delete/**upsert** requests with the new batch Web APIs.
+    ```js
+    const batch = pb.createBatch();
+
+    batch.collection("example1").create({ ... });
+    batch.collection("example2").update("RECORD_ID", { ... });
+    batch.collection("example3").delete("RECORD_ID");
+    batch.collection("example4").upsert({ ... });
+
+    const result = await batch.send();
+    ```
+
+- Added support for authenticating with OTP (email code):
+    ```js
+    const result = await pb.collection("users").requestOTP("test@example.com");
+
+    // ... show a modal for users to check their email and to enter the received code ...
+
+    await pb.collection("users").authWithOTP(result.otpId, "EMAIL_CODE");
+    ```
+
+    Note that PocketBase v0.23.0 comes also with Multi-factor authentication (MFA) support.
+    When enabled from the dashboard, the first auth attempt will result in 401 response and a `mfaId` response,
+    that will have to be submitted with the second auth request. For example:
+    ```js
+    try {
+      await pb.collection("users").authWithPassword("test@example.com", "1234567890");
+    } catch (err) {
+      const mfaId = err.response?.mfaId;
+      if (!mfaId) {
+        throw err; // not mfa -> rethrow
+      }
+
+      // the user needs to authenticate again with another auth method, for example OTP
+      const result = await pb.collection("users").requestOTP("test@example.com");
+      // ... show a modal for users to check their email and to enter the received code ...
+      await pb.collection("users").authWithOTP(result.otpId, "EMAIL_CODE", { "mfaId": mfaId });
+    }
+    ```
+
+- Added new `pb.collection("users").impersonate("RECORD_ID")` method for superusers.
+    It authenticates with the specified record id and returns a new client with the impersonated auth state loaded in a memory store.
+    ```js
+    // authenticate as superusers (with v0.23.0 admins is converted to a special system auth collection "_superusers"):
+    await pb.collection("_superusers").authWithPassword("test@example.com", "1234567890");
+
+    // impersonate
+    const impersonateClient = pb.collection("users").impersonate("USER_RECORD_ID", 3600 /* optional token duration in seconds */)
+
+    // log the impersonate token and user data
+    console.log(impersonateClient.authStore.token);
+    console.log(impersonateClient.authStore.record);
+
+    // send requests as the impersonated user
+    impersonateClient.collection("example").getFullList();
+    ```
+
+- Added new `pb.collections.getScaffolds()` method to retrieve a type indexed map with the collection models (base, auth, view) loaded with their defaults.
+
+- Added the submitted fetch options as 3rd last argument in the `pb.afterSend` hook.
+
+- ⚠️ Admins are converted to `_superusers` auth collection and there is no longer `AdminService` and `AdminModel` types.
+    `pb.admins` is soft-deprecated and aliased to `pb.collection("_superusers")`.
+    ```js
+    // before   ->  after
+    pb.admins.* ->  pb.collection("_superusers").*
+    ```
+
+- ⚠️ `pb.authStore.model` is soft-deprecated and superseded by `pb.authStore.record`.
+
+- ⚠️ Soft-deprecated the OAuth2 success auth `meta.avatarUrl` response field in favour of `meta.avatarURL` for consistency with the Go conventions.
+
+- ⚠️ Changed `AuthMethodsList` inerface fields to accomodate the new auth methods and `listAuthMethods()` response.
+    ```
+    {
+      "mfa": {
+        "duration": 100,
+        "enabled": true
+      },
+      "otp": {
+        "duration": 0,
+        "enabled": false
+      },
+      "password": {
+        "enabled": true,
+        "identityFields": ["email", "username"]
+      },
+      "oauth2": {
+        "enabled": true,
+        "providers": [{"name": "gitlab", ...}, {"name": "google", ...}]
+      }
+    }
+    ```
+
+
 ## 0.21.5
 
 - Shallow copy the realtime subscribe `options` argument for consistency with the other methods ([#308](https://github.com/pocketbase/js-sdk/issues/308)).

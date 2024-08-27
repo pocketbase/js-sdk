@@ -1,6 +1,6 @@
-import { CrudService } from "@/services/utils/CrudService";
-import { CollectionModel } from "@/services/utils/dtos";
-import { CommonOptions } from "@/services/utils/options";
+import { CrudService } from "@/services/CrudService";
+import { CollectionModel } from "@/tools/dtos";
+import { CommonOptions } from "@/tools/options";
 
 export class CollectionService extends CrudService<CollectionModel> {
     /**
@@ -36,5 +36,24 @@ export class CollectionService extends CrudService<CollectionModel> {
         );
 
         return this.client.send(this.baseCrudPath + "/import", options).then(() => true);
+    }
+
+    /**
+     * Returns type indexed map with scaffolded collection models
+     * populated with their default field values.
+     *
+     * @throws {ClientResponseError}
+     */
+    async getScaffolds(
+        options?: CommonOptions,
+    ): Promise<{ [key: string]: CollectionModel }> {
+        options = Object.assign(
+            {
+                method: "GET",
+            },
+            options,
+        );
+
+        return this.client.send(this.baseCrudPath + "/meta/scaffolds", options);
     }
 }

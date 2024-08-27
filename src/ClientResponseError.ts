@@ -55,7 +55,7 @@ export class ClientResponseError extends Error {
     }
 
     /**
-     * Alias for `this.response` to preserve the backward compatibility.
+     * Alias for `this.response` for backward compatibility.
      */
     get data() {
         return this.response;

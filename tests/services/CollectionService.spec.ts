@@ -3,7 +3,7 @@ import { FetchMock } from "../mocks";
 import { crudServiceTestsSuite } from "../suites";
 import Client from "@/Client";
 import { CollectionService } from "@/services/CollectionService";
-import { CollectionModel } from "@/services/utils/dtos";
+import { CollectionModel } from "@/tools/dtos";
 
 describe("CollectionService", function () {
     const client = new Client("test_base_url");
@@ -51,6 +51,27 @@ describe("CollectionService", function () {
             );
 
             assert.deepEqual(result, true);
+        });
+    });
+
+    describe("getScaffolds()", function () {
+        test("Should send collection scaffolds request", async function () {
+            fetchMock.on({
+                method: "GET",
+                url: service.client.buildUrl("/api/collections/meta/scaffolds?q1=456"),
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.["x-test"] === "123";
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.getScaffolds({
+                q1: 456,
+                headers: { "x-test": "123" },
+            });
+
+            assert.deepEqual(result as any, true);
         });
     });
 });

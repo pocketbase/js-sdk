@@ -1,6 +1,6 @@
 import { ClientResponseError } from "@/ClientResponseError";
-import { BaseService } from "@/services/utils/BaseService";
-import { SendOptions, normalizeUnknownQueryParams } from "@/services/utils/options";
+import { BaseService } from "@/services/BaseService";
+import { SendOptions, normalizeUnknownQueryParams } from "@/tools/options";
 
 interface promiseCallbacks {
     resolve: Function;

@@ -88,16 +88,13 @@ const pb = new PocketBase('http://127.0.0.1:8090');
 
 ...
 
+// authenticate as auth collection record
+const userData = await pb.collection('users').authWithPassword('test@example.com', '123456');
+
 // list and filter "example" collection records
 const result = await pb.collection('example').getList(1, 20, {
     filter: 'status = true && created > "2022-08-01 10:00:00"'
 });
-
-// authenticate as auth collection record
-const userData = await pb.collection('users').authWithPassword('test@example.com', '123456');
-
-// or as super-admin
-const adminData = await pb.admins.authWithPassword('test@example.com', '123456');
 
 // and much more...
 ```
@@ -134,22 +131,22 @@ The supported placeholder parameter values are:
 PocketBase Web API supports file upload via `multipart/form-data` requests,
 which means that to upload a file it is enough to provide either a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) instance OR plain object with `File`/`Blob` prop values.
 
-- Using `FormData` as body:
-    ```js
-    // the standard way to create multipart/form-data body
-    const data = new FormData();
-    data.set('title', 'lorem ipsum...')
-    data.set('document', new File(...))
-
-    await pb.collection('example').create(data);
-    ```
-
 - Using plain object as body _(this is the same as above and it will be converted to `FormData` behind the scenes)_:
     ```js
     const data = {
       'title':    'lorem ipsum...',
       'document': new File(...),
     };
+
+    await pb.collection('example').create(data);
+    ```
+
+- Using `FormData` as body:
+    ```js
+    // the standard way to create multipart/form-data body
+    const data = new FormData();
+    data.set('title', 'lorem ipsum...')
+    data.set('document', new File(...))
 
     await pb.collection('example').create(data);
     ```
@@ -238,15 +235,15 @@ The default `pb.authStore` extends [`BaseAuthStore`](https://github.com/pocketba
 ```js
 BaseAuthStore {
     // base fields
-    model:        RecordModel|AdminModel|null // the authenticated auth record or admin model
-    token:        string // the authenticated token
+    record:       RecordModel|null // the authenticated auth record
+    token:        string  // the authenticated token
     isValid:      boolean // checks if the store has existing and unexpired token
     isAdmin:      boolean // checks if the store state is for admin
     isAuthRecord: boolean // checks if the store state is for an auth record
 
     // main methods
-    clear()            // "logout" the authenticated record or admin model
-    save(token, model) // update the store with the new auth data
+    clear()             // "logout" the authenticated record or admin model
+    save(token, record) // update the store with the new auth data
     onChange(callback, fireImmediately = false) // register a callback that will be called on store change
 
     // cookie parse and serialize helpers
@@ -260,13 +257,13 @@ To _"logout"_ an authenticated record or admin you can call `pb.authStore.clear(
 To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
 ```js
 // triggered everytime on store change
-const removeListener1 = pb.authStore.onChange((token, model) => {
-    console.log('New store data 1:', token, model)
+const removeListener1 = pb.authStore.onChange((token, record) => {
+    console.log('New store data 1:', token, record)
 });
 
 // triggered once right after registration and everytime on store change
-const removeListener2 = pb.authStore.onChange((token, model) => {
-    console.log('New store data 2:', token, model)
+const removeListener2 = pb.authStore.onChange((token, record) => {
+    console.log('New store data 2:', token, record)
 }, true);
 
 // (optional) removes the attached listeners
@@ -359,7 +356,7 @@ pb.collection('posts').getOne("RECORD_ID") // -> results in Promise<Post>
 
 ### Custom request options
 
-All API services accept an optional `options` argument (usually the last one and of type [`SendOptions`](https://github.com/pocketbase/js-sdk/blob/master/src/services/utils/options.ts)), that can be used to provide:
+All API services accept an optional `options` argument (usually the last one and of type [`SendOptions`](https://github.com/pocketbase/js-sdk/blob/master/src/tools/options.ts)), that can be used to provide:
 
 - custom headers for a single request
 - custom fetch options
@@ -535,7 +532,7 @@ export const onRequest = defineMiddleware(async ({ locals, request }: any, next:
     locals.pb.authStore.loadFromCookie(request.headers.get('cookie') || '');
 
     try {
-        // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
+        // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
         locals.pb.authStore.isValid && await locals.pb.collection('users').authRefresh();
     } catch (_) {
         // clear the auth store on failed refresh
@@ -600,13 +597,13 @@ export default defineNuxtPlugin(async () => {
   })
 
   // load the store data from the cookie value
-  pb.authStore.save(cookie.value?.token, cookie.value?.model);
+  pb.authStore.save(cookie.value?.token, cookie.value?.record);
 
   // send back the default 'pb_auth' cookie to the client with the latest store state
   pb.authStore.onChange(() => {
     cookie.value = {
       token: pb.authStore.token,
-      model: pb.authStore.model,
+      record: pb.authStore.record,
     };
   });
 
@@ -665,7 +662,7 @@ export default async (ctx, inject) => {
   });
 
   try {
-      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
+      // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
       pb.authStore.isValid && await pb.collection('users').authRefresh();
   } catch (_) {
       // clear the auth store on failed refresh
@@ -723,7 +720,7 @@ async function initPocketBase(req, res) {
   });
 
   try {
-      // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
+      // get an up-to-date auth store state by verifying and refreshing the loaded auth record (if any)
       pb.authStore.isValid && await pb.collection('users').authRefresh();
   } catch (_) {
       // clear the auth store on failed refresh
@@ -851,16 +848,22 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 // Authenticates a record with their username/email and password.
 🔓 pb.collection(collectionIdOrName).authWithPassword(usernameOrEmail, password, options = {});
 
+// Authenticates a record with an OTP.
+🔓 pb.collection(collectionIdOrName).authWithOTP(otpId, password, options = {});
+
 // Authenticates a record with OAuth2 provider without custom redirects, deeplinks or even page reload.
 🔓 pb.collection(collectionIdOrName).authWithOAuth2(authConfig);
 
 // Authenticates a record with OAuth2 code.
 🔓 pb.collection(collectionIdOrName).authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData = {}, options = {});
 
-// Refreshes the current authenticated record model and auth token.
+// Refreshes the current authenticated record and auth token.
 🔐 pb.collection(collectionIdOrName).authRefresh(options = {});
 
-// Sends a user password reset email.
+// Sends a record OTP email request.
+🔓 pb.collection(collectionIdOrName).requestOTP(email, options = {});
+
+// Sends a record password reset email.
 🔓 pb.collection(collectionIdOrName).requestPasswordReset(email, options = {});
 
 // Confirms a record password reset request.
@@ -883,6 +886,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Unlinks a single external auth provider relation from the specified record.
 🔐 pb.collection(collectionIdOrName).unlinkExternalAuth(recordId, provider, options = {});
+
+// Impersonate authenticates with the specified recordId and returns a new client with the received auth token in a memory store.
+🔐 pb.collection(collectionIdOrName).impersonate(recordId, duration, options = {});
 ```
 
 ---
@@ -895,46 +901,6 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Requests a new private file access token for the current auth model (admin or record).
 🔐 pb.files.getToken(options = {});
-```
-
----
-
-##### AdminService
-
-```js
-// Authenticates an admin account by its email and password.
-🔓 pb.admins.authWithPassword(email, password, options = {});
-
-// Refreshes the current admin authenticated model and token.
-🔐 pb.admins.authRefresh(options = {});
-
-// Sends an admin password reset email.
-🔓 pb.admins.requestPasswordReset(email, options = {});
-
-// Confirms an admin password reset request.
-🔓 pb.admins.confirmPasswordReset(resetToken, newPassword, newPasswordConfirm, options = {});
-
-// Returns a paginated admins list.
-🔐 pb.admins.getList(page = 1, perPage = 30, options = {});
-
-// Returns a list with all admins batch fetched at once
-// (by default 200 items per request; to change it set the `batch` query param).
-🔐 pb.admins.getFullList(options = {});
-
-// Returns the first found admin matching the specified filter.
-🔐 pb.admins.getFirstListItem(filter, options = {});
-
-// Returns a single admin by their id.
-🔐 pb.admins.getOne(id, options = {});
-
-// Creates a new admin.
-🔐 pb.admins.create(bodyParams = {}, options = {});
-
-// Updates an existing admin by their id.
-🔐 pb.admins.update(id, bodyParams = {}, options = {});
-
-// Deletes a single admin by their id.
-🔐 pb.admins.delete(id, options = {});
 ```
 
 ---
@@ -966,6 +932,9 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 // Imports the provided collections.
 🔐 pb.collections.import(collections, deleteMissing = false, options = {});
+
+// Returns type indexed map with scaffolded collection models populated with their default field values.
+🔐 pb.collections.import(options = {});
 ```
 
 ---

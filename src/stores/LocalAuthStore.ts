@@ -1,8 +1,8 @@
-import { BaseAuthStore, AuthModel } from "@/stores/BaseAuthStore";
+import { BaseAuthStore, AuthRecord } from "@/stores/BaseAuthStore";
 
 /**
  * The default token store for browsers with auto fallback
- * to runtime/memory if local storage is undefined (eg. in node env).
+ * to runtime/memory if local storage is undefined (e.g. in node env).
  */
 export class LocalAuthStore extends BaseAuthStore {
     private storageFallback: { [key: string]: any } = {};
@@ -28,22 +28,29 @@ export class LocalAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    get model(): AuthModel {
+    get record(): AuthRecord {
         const data = this._storageGet(this.storageKey) || {};
 
-        return data.model || null;
+        return data.record || data.model || null;
+    }
+
+    /**
+     * @deprecated use `record` instead.
+     */
+    get model(): AuthRecord {
+        return this.record;
     }
 
     /**
      * @inheritdoc
      */
-    save(token: string, model?: AuthModel) {
+    save(token: string, record?: AuthRecord) {
         this._storageSet(this.storageKey, {
             token: token,
-            model: model,
+            record: record,
         });
 
-        super.save(token, model);
+        super.save(token, record);
     }
 
     /**
@@ -128,7 +135,7 @@ export class LocalAuthStore extends BaseAuthStore {
 
             const data = this._storageGet(this.storageKey) || {};
 
-            super.save(data.token || "", data.model || null);
+            super.save(data.token || "", data.record || data.model || null);
         });
     }
 }

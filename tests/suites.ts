@@ -1,5 +1,5 @@
 import { describe, assert, expect, test, beforeAll, afterAll } from "vitest";
-import { CrudService } from "@/services/utils/CrudService";
+import { CrudService } from "@/services/CrudService";
 import { FetchMock } from "./mocks";
 
 export function crudServiceTestsSuite<M>(

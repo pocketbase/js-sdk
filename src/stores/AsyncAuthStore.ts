@@ -1,4 +1,4 @@
-import { BaseAuthStore, AuthModel } from "@/stores/BaseAuthStore";
+import { BaseAuthStore, AuthRecord } from "@/stores/BaseAuthStore";
 
 export type AsyncSaveFunc = (serializedPayload: string) => Promise<void>;
 
@@ -55,12 +55,12 @@ export class AsyncAuthStore extends BaseAuthStore {
     /**
      * @inheritdoc
      */
-    save(token: string, model?: AuthModel): void {
-        super.save(token, model);
+    save(token: string, record?: AuthRecord): void {
+        super.save(token, record);
 
         let value = "";
         try {
-            value = JSON.stringify({ token, model });
+            value = JSON.stringify({ token, record });
         } catch (err) {
             console.warn("AsyncAuthStore: failed to stringify the new state");
         }
@@ -96,7 +96,7 @@ export class AsyncAuthStore extends BaseAuthStore {
                     parsed = payload;
                 }
 
-                this.save(parsed.token || "", parsed.model || null);
+                this.save(parsed.token || "", parsed.record || parsed.model || null);
             }
         } catch (_) {}
     }

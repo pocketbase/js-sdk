@@ -11,7 +11,7 @@ import { crudServiceTestsSuite } from "../suites";
 import { FetchMock } from "../mocks";
 import Client from "@/Client";
 import { RecordService } from "@/services/RecordService";
-import { RecordModel } from "@/services/utils/dtos";
+import { RecordModel } from "@/tools/dtos";
 
 describe("RecordService", function () {
     const client = new Client("test_base_url/");
@@ -281,31 +281,16 @@ describe("RecordService", function () {
 
     describe("listAuthMethods()", function () {
         test("Should fetch all available authorization methods", async function () {
-            const expectedBody = {
-                usernamePassword: true,
-                emailPassword: true,
-                authProviders: [
-                    {
-                        name: "test",
-                        state: "123",
-                        codeVerifier: "v123",
-                        codeChallenge: "c123",
-                        codeChallengeMethod: "m123",
-                        authUrl: "http://example.com",
-                    },
-                ],
-            };
-
             fetchMock.on({
                 method: "GET",
                 url:
                     service.client.buildUrl(service.baseCollectionPath) +
-                    "/auth-methods?q1=123",
+                    "/auth-methods?fields=mfa%2Cotp%2Cpassword%2Coauth2&q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
                 },
                 replyCode: 200,
-                replyBody: expectedBody,
+                replyBody: "test123",
             });
 
             const result = await service.listAuthMethods({
@@ -313,39 +298,11 @@ describe("RecordService", function () {
                 headers: { "x-test": "456" },
             });
 
-            assert.deepEqual(result, expectedBody);
+            assert.deepEqual(result, "test123" as any);
         });
     });
 
     describe("authWithPassword()", function () {
-        test("(legacy) Should authenticate a record by its username/email and password", async function () {
-            fetchMock.on({
-                method: "POST",
-                url:
-                    service.client.buildUrl(service.baseCollectionPath) +
-                    "/auth-with-password?q1=456",
-                body: {
-                    identity: "test@example.com",
-                    password: "123456",
-                    b1: 123,
-                },
-                replyCode: 200,
-                replyBody: {
-                    token: "token_auth",
-                    record: { id: "id_auth" },
-                },
-            });
-
-            const result = await service.authWithPassword(
-                "test@example.com",
-                "123456",
-                { b1: 123 },
-                { q1: 456 },
-            );
-
-            authResponseCheck(result, "token_auth", { id: "id_auth" } as any);
-        });
-
         test("Should authenticate a record by its username/email and password", async function () {
             fetchMock.on({
                 method: "POST",
@@ -386,7 +343,7 @@ describe("RecordService", function () {
                     provider: "test",
                     code: "c123",
                     codeVerifier: "v123",
-                    redirectUrl: "http://example.com",
+                    redirectURL: "http://example.com",
                     createData: { test: 1 },
                     b1: 123,
                 },
@@ -420,7 +377,7 @@ describe("RecordService", function () {
                     provider: "test",
                     code: "c123",
                     codeVerifier: "v123",
-                    redirectUrl: "http://example.com",
+                    redirectURL: "http://example.com",
                     createData: { test: 1 },
                 },
                 additionalMatcher: (_, config) => {
@@ -460,7 +417,7 @@ describe("RecordService", function () {
                     provider: "test",
                     code: "c123",
                     codeVerifier: "v123",
-                    redirectUrl: "http://example.com",
+                    redirectURL: "http://example.com",
                     createData: { test: 1 },
                     b1: 123,
                 },
@@ -835,47 +792,16 @@ describe("RecordService", function () {
         });
     });
 
-    describe("listExternalAuths()", function () {
-        test("Should send a list external auths request", async function () {
+    describe("requestOTP()", function () {
+        test("Should send OTP request", async function () {
             fetchMock.on({
-                method: "GET",
+                method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCrudPath) +
-                    "/" +
-                    encodeURIComponent("@test_id") +
-                    "/external-auths?q1=456",
-                additionalMatcher: (_, config) => {
-                    return config?.headers?.["x-test"] === "789";
+                    service.client.buildUrl(service.baseCollectionPath) +
+                    "/request-otp?q1=456",
+                body: {
+                    email: "test@example.com",
                 },
-                replyCode: 200,
-                replyBody: [
-                    { id: "1", provider: "google" },
-                    { id: "2", provider: "github" },
-                ],
-            });
-
-            const result = await service.listExternalAuths("@test_id", {
-                q1: 456,
-                headers: { "x-test": "789" },
-            });
-
-            assert.equal(result.length, 2);
-            assert.equal(result[0].provider, "google");
-            assert.equal(result[1].provider, "github");
-        });
-    });
-
-    describe("unlinkExternalAuth()", function () {
-        test("Should send a unlinkExternalAuth request", async function () {
-            fetchMock.on({
-                method: "DELETE",
-                url:
-                    service.client.buildUrl(service.baseCrudPath) +
-                    "/" +
-                    encodeURIComponent("@test_id") +
-                    "/external-auths/" +
-                    encodeURIComponent("@test_provider") +
-                    "?q1=456",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "789";
                 },
@@ -883,16 +809,77 @@ describe("RecordService", function () {
                 replyBody: true,
             });
 
-            const result = await service.unlinkExternalAuth(
-                "@test_id",
-                "@test_provider",
-                {
-                    q1: 456,
-                    headers: { "x-test": "789" },
-                },
-            );
+            const result = await service.requestOTP("test@example.com", {
+                q1: 456,
+                headers: { "x-test": "789" },
+            });
 
             assert.isTrue(result);
+        });
+    });
+
+    describe("authWithOTP()", function () {
+        test("Should authenticate a record using the OTP id and password", async function () {
+            fetchMock.on({
+                method: "POST",
+                url:
+                    service.client.buildUrl(service.baseCollectionPath) +
+                    "/auth-with-otp?q1=456",
+                body: {
+                    otpId: "test_otp",
+                    password: "123456",
+                },
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.["x-test"] === "789";
+                },
+                replyCode: 200,
+                replyBody: {
+                    token: "token_auth",
+                    record: { id: "id_auth" },
+                },
+            });
+
+            const result = await service.authWithOTP("test_otp", "123456", {
+                q1: 456,
+                headers: { "x-test": "789" },
+            });
+
+            authResponseCheck(result, "token_auth", { id: "id_auth" } as any);
+        });
+    });
+
+    describe("impersonate()", function () {
+        test("Should create a new impersonate client", async function () {
+            fetchMock.on({
+                method: "POST",
+                url:
+                    service.client.buildUrl(service.baseCollectionPath) +
+                    "/impersonate/%40test?q1=456",
+                body: {
+                    duration: 3600,
+                },
+                additionalMatcher: (_, config) => {
+                    return (
+                        config?.headers?.["x-test"] === "789" &&
+                        config?.headers?.["Authorization"] === "auth_token"
+                    );
+                },
+                replyCode: 200,
+                replyBody: {
+                    token: "impersonate_token",
+                    record: { id: "impersonate_record_id" },
+                },
+            });
+
+            service.client.authStore.save("auth_token", null);
+
+            const impersonateClient = await service.impersonate("@test", 3600, {
+                q1: 456,
+                headers: { "x-test": "789" },
+            });
+
+            assert.equal(impersonateClient.authStore.token, "impersonate_token");
+            assert.equal(impersonateClient.authStore.record?.id, "impersonate_record_id");
         });
     });
 });

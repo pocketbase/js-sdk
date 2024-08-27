@@ -1,5 +1,5 @@
 import { describe, assert, test } from "vitest";
-import { getTokenPayload, isTokenExpired } from "@/stores/utils/jwt";
+import { getTokenPayload, isTokenExpired } from "@/tools/jwt";
 
 describe("jwt", function () {
     describe("getTokenPayload()", function () {

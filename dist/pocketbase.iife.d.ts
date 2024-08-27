@@ -9,17 +9,134 @@ interface SerializeOptions {
     priority?: string;
     sameSite?: boolean | string;
 }
-type AuthModel = {
+interface ListResult<T> {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
+    items: Array<T>;
+}
+interface BaseModel {
     [key: string]: any;
-} | null;
-type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
+    id: string;
+}
+interface LogModel extends BaseModel {
+    level: string;
+    message: string;
+    created: string;
+    updated: string;
+    data: {
+        [key: string]: any;
+    };
+}
+interface RecordModel extends BaseModel {
+    collectionId: string;
+    collectionName: string;
+    expand?: {
+        [key: string]: any;
+    };
+}
+// -------------------------------------------------------------------
+// Collection types
+// -------------------------------------------------------------------
+interface SchemaField {
+    [key: string]: any;
+    id: string;
+    name: string;
+    type: string;
+    system: boolean;
+    hidden: boolean;
+    presentable: boolean;
+}
+interface TokenConfig {
+    duration: number;
+    secret?: string;
+}
+interface OTPConfig {
+    enabled: boolean;
+    duration: number;
+    length: number;
+}
+interface MFAConfig {
+    enabled: boolean;
+    duration: number;
+}
+interface PasswordAuthConfig {
+    enabled: boolean;
+    identityFields: Array<string>;
+}
+interface OAuth2Provider {
+    pkce?: boolean;
+    clientId: string;
+    clientSecret: string;
+    authUrl: string;
+    tokenUrl: string;
+    userApiUrl: string;
+    displayName: string;
+}
+interface OAuth2Config {
+    enabled: boolean;
+    mappedFields: {
+        [key: string]: string;
+    };
+    Providers: {
+        [key: string]: OAuth2Provider;
+    };
+}
+interface EmailTemplate {
+    subject: string;
+    body: string;
+}
+interface collection extends BaseModel {
+    name: string;
+    schema: Array<SchemaField>;
+    indexes: Array<string>;
+    system: boolean;
+    listRule?: string;
+    viewRule?: string;
+    createRule?: string;
+    updateRule?: string;
+    deleteRule?: string;
+}
+interface BaseCollectionModel extends collection {
+    type: "base";
+}
+interface ViewCollectionModel extends collection {
+    type: "view";
+    viewQuery: string;
+}
+interface AuthCollectionModel extends collection {
+    type: "auth";
+    authRule?: string;
+    manageRule?: string;
+    oauth2: OAuth2Config;
+    passwordAuth: PasswordAuthConfig;
+    mfa: MFAConfig;
+    otp: OTPConfig;
+    authToken: TokenConfig;
+    passwordResetToken: TokenConfig;
+    emailChangeToken: TokenConfig;
+    verificationToken: TokenConfig;
+    fileToken: TokenConfig;
+    verificationTemplate: EmailTemplate;
+    resetPasswordTemplate: EmailTemplate;
+    confirmEmailChangeTemplate: EmailTemplate;
+    otpTemplate: EmailTemplate;
+    loginAlertTemplate: EmailTemplate;
+}
+type CollectionModel = BaseCollectionModel | ViewCollectionModel | AuthCollectionModel;
+type AuthRecord = RecordModel | null;
+// for backward compatibility
+type OnStoreChangeFunc = (token: string, record: AuthRecord) => void;
 /**
- * Base AuthStore class that is intended to be extended by all other
- * PocketBase AuthStore implementations.
+ * Base AuthStore class that stores the auth state in runtime memory (aka. only for the duration of the store instane).
+ *
+ * Usually you wouldn't use it directly and instead use the builtin LocalAuthStore, AsyncAuthStore
+ * or extend it with your own custom implementation.
  */
-declare abstract class BaseAuthStore {
+declare class BaseAuthStore {
     protected baseToken: string;
-    protected baseModel: AuthModel;
+    protected baseModel: AuthRecord;
     private _onChangeCallbacks;
     /**
      * Retrieves the stored token (if any).
@@ -28,7 +145,11 @@ declare abstract class BaseAuthStore {
     /**
      * Retrieves the stored model data (if any).
      */
-    get model(): AuthModel;
+    get record(): AuthRecord;
+    /**
+     * @deprecated use `record` instead.
+     */
+    get model(): AuthRecord;
     /**
      * Loosely checks if the store has valid token (aka. existing and unexpired exp claim).
      */
@@ -44,7 +165,7 @@ declare abstract class BaseAuthStore {
     /**
      * Saves the provided new token and model data in the auth store.
      */
-    save(token: string, model?: AuthModel): void;
+    save(token: string, record?: AuthRecord): void;
     /**
      * Removes the stored token and model data form the auth store.
      */
@@ -181,22 +302,6 @@ interface FileOptions extends CommonOptions {
     thumb?: string;
     download?: boolean;
 }
-interface AuthOptions extends CommonOptions {
-    /**
-     * If autoRefreshThreshold is set it will take care to auto refresh
-     * when necessary the auth data before each request to ensure that
-     * the auth state is always valid.
-     *
-     * The value must be in seconds, aka. the amount of seconds
-     * that will be subtracted from the current token `exp` claim in order
-     * to determine whether it is going to expire within the specified time threshold.
-     *
-     * For example, if you want to auto refresh the token if it is
-     * going to expire in the next 30mins (or already has expired),
-     * it can be set to `1800`
-     */
-    autoRefreshThreshold?: number;
-}
 interface appleClientSecret {
     secret: string;
 }
@@ -245,68 +350,75 @@ declare class SettingsService extends BaseService {
      */
     generateAppleClientSecret(clientId: string, teamId: string, keyId: string, privateKey: string, duration: number, options?: CommonOptions): Promise<appleClientSecret>;
 }
-interface ListResult<T> {
-    page: number;
-    perPage: number;
-    totalItems: number;
-    totalPages: number;
-    items: Array<T>;
-}
-interface BaseModel {
-    [key: string]: any;
-    id: string;
-    created: string;
-    updated: string;
-}
-interface AdminModel extends BaseModel {
-    avatar: number;
-    email: string;
-}
-interface SchemaField {
-    id: string;
-    name: string;
-    type: string;
-    system: boolean;
-    required: boolean;
-    presentable: boolean;
-    options: {
-        [key: string]: any;
-    };
-}
-interface CollectionModel extends BaseModel {
-    name: string;
-    type: string;
-    schema: Array<SchemaField>;
-    indexes: Array<string>;
-    system: boolean;
-    listRule?: string;
-    viewRule?: string;
-    createRule?: string;
-    updateRule?: string;
-    deleteRule?: string;
-    options: {
-        [key: string]: any;
-    };
-}
-interface ExternalAuthModel extends BaseModel {
-    recordId: string;
-    collectionId: string;
-    provider: string;
-    providerId: string;
-}
-interface LogModel extends BaseModel {
-    level: string;
-    message: string;
-    data: {
-        [key: string]: any;
-    };
-}
-interface RecordModel extends BaseModel {
-    collectionId: string;
-    collectionName: string;
-    expand?: {
-        [key: string]: any;
-    };
+type UnsubscribeFunc = () => Promise<void>;
+declare class RealtimeService extends BaseService {
+    clientId: string;
+    private eventSource;
+    private subscriptions;
+    private lastSentSubscriptions;
+    private connectTimeoutId;
+    private maxConnectTimeout;
+    private reconnectTimeoutId;
+    private reconnectAttempts;
+    private maxReconnectAttempts;
+    private predefinedReconnectIntervals;
+    private pendingConnects;
+    /**
+     * Returns whether the realtime connection has been established.
+     */
+    get isConnected(): boolean;
+    /**
+     * Register the subscription listener.
+     *
+     * You can subscribe multiple times to the same topic.
+     *
+     * If the SSE connection is not started yet,
+     * this method will also initialize it.
+     */
+    subscribe(topic: string, callback: (data: any) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
+    /**
+     * Unsubscribe from all subscription listeners with the specified topic.
+     *
+     * If `topic` is not provided, then this method will unsubscribe
+     * from all active subscriptions.
+     *
+     * This method is no-op if there are no active subscriptions.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribe(topic?: string): Promise<void>;
+    /**
+     * Unsubscribe from all subscription listeners starting with the specified topic prefix.
+     *
+     * This method is no-op if there are no active subscriptions with the specified topic prefix.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribeByPrefix(keyPrefix: string): Promise<void>;
+    /**
+     * Unsubscribe from all subscriptions matching the specified topic and listener function.
+     *
+     * This method is no-op if there are no active subscription with
+     * the specified topic and listener.
+     *
+     * The related sse connection will be autoclosed if after the
+     * unsubscribe operation there are no active subscriptions left.
+     */
+    unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void>;
+    private hasSubscriptionListeners;
+    private submitSubscriptions;
+    private getSubscriptionsCancelKey;
+    private getSubscriptionsByTopic;
+    private getNonEmptySubscriptionKeys;
+    private addAllSubscriptionListeners;
+    private removeAllSubscriptionListeners;
+    private connect;
+    private initConnect;
+    private hasUnsentSubscriptions;
+    private connectErrorHandler;
+    private disconnect;
 }
 declare abstract class CrudService<M> extends BaseService {
     /**
@@ -395,163 +507,6 @@ declare abstract class CrudService<M> extends BaseService {
      */
     protected _getFullList<T = M>(batchSize?: number, options?: ListOptions): Promise<Array<T>>;
 }
-interface AdminAuthResponse {
-    [key: string]: any;
-    token: string;
-    admin: AdminModel;
-}
-declare class AdminService extends CrudService<AdminModel> {
-    /**
-     * @inheritdoc
-     */
-    get baseCrudPath(): string;
-    // ---------------------------------------------------------------
-    // Post update/delete AuthStore sync
-    // ---------------------------------------------------------------
-    /**
-     * @inheritdoc
-     *
-     * If the current `client.authStore.model` matches with the updated id, then
-     * on success the `client.authStore.model` will be updated with the result.
-     */
-    update<T = AdminModel>(id: string, bodyParams?: {
-        [key: string]: any;
-    } | FormData, options?: CommonOptions): Promise<T>;
-    /**
-     * @inheritdoc
-     *
-     * If the current `client.authStore.model` matches with the deleted id,
-     * then on success the `client.authStore` will be cleared.
-     */
-    delete(id: string, options?: CommonOptions): Promise<boolean>;
-    // ---------------------------------------------------------------
-    // Auth handlers
-    // ---------------------------------------------------------------
-    /**
-     * Prepare successful authorize response.
-     */
-    protected authResponse(responseData: any): AdminAuthResponse;
-    /**
-     * Authenticate an admin account with its email and password
-     * and returns a new admin token and data.
-     *
-     * On success this method automatically updates the client's AuthStore data.
-     *
-     * @throws {ClientResponseError}
-     */
-    authWithPassword(email: string, password: string, options?: AuthOptions): Promise<AdminAuthResponse>;
-    /**
-     * @deprecated
-     * Consider using authWithPassword(email, password, options?).
-     */
-    authWithPassword(email: string, password: string, body?: any, query?: any): Promise<AdminAuthResponse>;
-    /**
-     * Refreshes the current admin authenticated instance and
-     * returns a new token and admin data.
-     *
-     * On success this method automatically updates the client's AuthStore data.
-     *
-     * @throws {ClientResponseError}
-     */
-    authRefresh(options?: CommonOptions): Promise<AdminAuthResponse>;
-    /**
-     * @deprecated
-     * Consider using authRefresh(options?).
-     */
-    authRefresh(body?: any, query?: any): Promise<AdminAuthResponse>;
-    /**
-     * Sends admin password reset request.
-     *
-     * @throws {ClientResponseError}
-     */
-    requestPasswordReset(email: string, options?: CommonOptions): Promise<boolean>;
-    /**
-     * @deprecated
-     * Consider using requestPasswordReset(email, options?).
-     */
-    requestPasswordReset(email: string, body?: any, query?: any): Promise<boolean>;
-    /**
-     * Confirms admin password reset request.
-     *
-     * @throws {ClientResponseError}
-     */
-    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, options?: CommonOptions): Promise<boolean>;
-    /**
-     * @deprecated
-     * Consider using confirmPasswordReset(resetToken, password, passwordConfirm, options?).
-     */
-    confirmPasswordReset(resetToken: string, password: string, passwordConfirm: string, body?: any, query?: any): Promise<boolean>;
-}
-type UnsubscribeFunc = () => Promise<void>;
-declare class RealtimeService extends BaseService {
-    clientId: string;
-    private eventSource;
-    private subscriptions;
-    private lastSentSubscriptions;
-    private connectTimeoutId;
-    private maxConnectTimeout;
-    private reconnectTimeoutId;
-    private reconnectAttempts;
-    private maxReconnectAttempts;
-    private predefinedReconnectIntervals;
-    private pendingConnects;
-    /**
-     * Returns whether the realtime connection has been established.
-     */
-    get isConnected(): boolean;
-    /**
-     * Register the subscription listener.
-     *
-     * You can subscribe multiple times to the same topic.
-     *
-     * If the SSE connection is not started yet,
-     * this method will also initialize it.
-     */
-    subscribe(topic: string, callback: (data: any) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
-    /**
-     * Unsubscribe from all subscription listeners with the specified topic.
-     *
-     * If `topic` is not provided, then this method will unsubscribe
-     * from all active subscriptions.
-     *
-     * This method is no-op if there are no active subscriptions.
-     *
-     * The related sse connection will be autoclosed if after the
-     * unsubscribe operation there are no active subscriptions left.
-     */
-    unsubscribe(topic?: string): Promise<void>;
-    /**
-     * Unsubscribe from all subscription listeners starting with the specified topic prefix.
-     *
-     * This method is no-op if there are no active subscriptions with the specified topic prefix.
-     *
-     * The related sse connection will be autoclosed if after the
-     * unsubscribe operation there are no active subscriptions left.
-     */
-    unsubscribeByPrefix(keyPrefix: string): Promise<void>;
-    /**
-     * Unsubscribe from all subscriptions matching the specified topic and listener function.
-     *
-     * This method is no-op if there are no active subscription with
-     * the specified topic and listener.
-     *
-     * The related sse connection will be autoclosed if after the
-     * unsubscribe operation there are no active subscriptions left.
-     */
-    unsubscribeByTopicAndListener(topic: string, listener: EventListener): Promise<void>;
-    private hasSubscriptionListeners;
-    private submitSubscriptions;
-    private getSubscriptionsCancelKey;
-    private getSubscriptionsByTopic;
-    private getNonEmptySubscriptionKeys;
-    private addAllSubscriptionListeners;
-    private removeAllSubscriptionListeners;
-    private connect;
-    private initConnect;
-    private hasUnsentSubscriptions;
-    private connectErrorHandler;
-    private disconnect;
-}
 interface RecordAuthResponse<T = RecordModel> {
     /**
      * The signed PocketBase auth record.
@@ -581,10 +536,22 @@ interface AuthProviderInfo {
     codeChallengeMethod: string;
 }
 interface AuthMethodsList {
-    usernamePassword: boolean;
-    emailPassword: boolean;
-    onlyVerified: boolean;
-    authProviders: Array<AuthProviderInfo>;
+    mfa: {
+        enabled: boolean;
+        duration: number;
+    };
+    otp: {
+        enabled: boolean;
+        duration: number;
+    };
+    password: {
+        enabled: boolean;
+        identityFields: Array<string>;
+    };
+    oauth2: {
+        enabled: boolean;
+        providers: Array<AuthProviderInfo>;
+    };
 }
 interface RecordSubscription<T = RecordModel> {
     action: string; // eg. create, update, delete
@@ -605,6 +572,9 @@ interface OAuth2AuthConfig extends SendOptions {
     // optional query params to send with the PocketBase auth request (eg. fields, expand, etc.)
     query?: RecordOptions;
 }
+interface OTPResponse {
+    otpId: string;
+}
 declare class RecordService<M = RecordModel> extends CrudService<M> {
     readonly collectionIdOrName: string;
     constructor(client: Client, collectionIdOrName: string);
@@ -616,6 +586,10 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * Returns the current collection service base path.
      */
     get baseCollectionPath(): string;
+    /**
+     * Returns whether the current service collection is superusers.
+     */
+    get isSuperusers(): boolean;
     // ---------------------------------------------------------------
     // Realtime handlers
     // ---------------------------------------------------------------
@@ -673,8 +647,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      *
-     * If the current `client.authStore.model` matches with the updated id, then
-     * on success the `client.authStore.model` will be updated with the result.
+     * If the current `client.authStore.record` matches with the updated id, then
+     * on success the `client.authStore.record` will be updated with the result.
      */
     update<T = M>(id: string, bodyParams?: {
         [key: string]: any;
@@ -682,7 +656,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      *
-     * If the current `client.authStore.model` matches with the deleted id,
+     * If the current `client.authStore.record` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
     delete(id: string, options?: CommonOptions): Promise<boolean>;
@@ -710,11 +684,6 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * @throws {ClientResponseError}
      */
     authWithPassword<T = M>(usernameOrEmail: string, password: string, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
-    /**
-     * @deprecated
-     * Consider using authWithPassword(usernameOrEmail, password, options?).
-     */
-    authWithPassword<T = M>(usernameOrEmail: string, password: string, body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
      * Authenticate a single auth collection record with OAuth2 code.
      *
@@ -853,8 +822,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record email verification request.
      *
-     * If the current `client.authStore.model` matches with the auth record from the token,
-     * then on success the `client.authStore.model.verified` will be updated to `true`.
+     * If the current `client.authStore.record` matches with the auth record from the token,
+     * then on success the `client.authStore.record.verified` will be updated to `true`.
      *
      * @throws {ClientResponseError}
      */
@@ -878,7 +847,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record's new email address.
      *
-     * If the current `client.authStore.model` matches with the auth record from the token,
+     * If the current `client.authStore.record` matches with the auth record from the token,
      * then on success the `client.authStore` will be cleared.
      *
      * @throws {ClientResponseError}
@@ -890,17 +859,50 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      */
     confirmEmailChange(emailChangeToken: string, password: string, body?: any, query?: any): Promise<boolean>;
     /**
+     * @deprecated use collection("_externalAuths").*
+     *
      * Lists all linked external auth providers for the specified auth record.
      *
      * @throws {ClientResponseError}
      */
-    listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<ExternalAuthModel>>;
+    listExternalAuths(recordId: string, options?: CommonOptions): Promise<Array<RecordModel>>;
     /**
+     * @deprecated use collection("_externalAuths").*
+     *
      * Unlink a single external auth provider from the specified auth record.
      *
      * @throws {ClientResponseError}
      */
     unlinkExternalAuth(recordId: string, provider: string, options?: CommonOptions): Promise<boolean>;
+    /**
+     * Sends auth record OTP to the provided email.
+     *
+     * @throws {ClientResponseError}
+     */
+    requestOTP(email: string, options?: CommonOptions): Promise<OTPResponse>;
+    /**
+     * Authenticate a single auth collection record via OTP.
+     *
+     * On success, this method also automatically updates
+     * the client's AuthStore data and returns:
+     * - the authentication token
+     * - the authenticated record model
+     *
+     * @throws {ClientResponseError}
+     */
+    authWithOTP<T = M>(otpId: string, password: string, options?: CommonOptions): Promise<RecordAuthResponse<T>>;
+    /**
+     * Impersonate authenticates with the specified recordId and
+     * returns a new client with the received auth token in a memory store.
+     *
+     * If `duration` is 0 the generated auth token will fallback
+     * to the default collection auth token duration.
+     *
+     * This action currently requires superusers privileges.
+     *
+     * @throws {ClientResponseError}
+     */
+    impersonate(recordId: string, duration: number, options?: CommonOptions): Promise<Client>;
     // ---------------------------------------------------------------
     // very rudimentary url query params replacement because at the moment
     // URL (and URLSearchParams) doesn't seem to be fully supported in React Native
@@ -923,6 +925,15 @@ declare class CollectionService extends CrudService<CollectionModel> {
      * @throws {ClientResponseError}
      */
     import(collections: Array<CollectionModel>, deleteMissing?: boolean, options?: CommonOptions): Promise<true>;
+    /**
+     * Returns type indexed map with scaffolded collection models
+     * populated with their default field values.
+     *
+     * @throws {ClientResponseError}
+     */
+    getScaffolds(options?: CommonOptions): Promise<{
+        [key: string]: CollectionModel;
+    }>;
 }
 interface HourlyStats {
     total: number;
@@ -1033,6 +1044,69 @@ declare class BackupService extends BaseService {
      */
     getDownloadUrl(token: string, key: string): string;
 }
+interface BatchRequest {
+    method: string;
+    url: string;
+    json?: {
+        [key: string]: any;
+    };
+    files?: {
+        [key: string]: Array<any>;
+    };
+    headers?: {
+        [key: string]: string;
+    };
+}
+interface BatchRequestResult {
+    status: number;
+    body: any;
+}
+declare class BatchService extends BaseService {
+    private requests;
+    private subs;
+    /**
+     * Starts constructing a batch request entry for the specified collection.
+     */
+    collection(collectionIdOrName: string): SubBatchService;
+    /**
+     * Sends the batch requests.
+     *
+     * Note: FormData as individual request body is not supported at the moment.
+     *
+     * @throws {ClientResponseError}
+     */
+    send(options?: SendOptions): Promise<Array<BatchRequestResult>>;
+}
+declare class SubBatchService {
+    private requests;
+    private readonly collectionIdOrName;
+    constructor(requests: Array<BatchRequest>, collectionIdOrName: string);
+    /**
+     * Registers a record upsert request into the current batch queue.
+     *
+     * The request will be executed as update if `bodyParams` have a valid existing record `id` value, otherwise - create.
+     */
+    upsert(bodyParams?: {
+        [key: string]: any;
+    }, options?: RecordOptions): void;
+    /**
+     * Registers a record create request into the current batch queue.
+     */
+    create(bodyParams?: {
+        [key: string]: any;
+    }, options?: RecordOptions): void;
+    /**
+     * Registers a record update request into the current batch queue.
+     */
+    update(id: string, bodyParams?: {
+        [key: string]: any;
+    }, options?: RecordOptions): void;
+    /**
+     * Registers a record delete request into the current batch queue.
+     */
+    delete(id: string, options?: SendOptions): void;
+    private prepareRequest;
+}
 interface BeforeSendResult {
     [key: string]: any;
     url?: string;
@@ -1076,7 +1150,7 @@ declare class Client {
      *
      * Example:
      * ```js
-     * client.afterSend = function (response, data) {
+     * client.afterSend = function (response, data, options) {
      *     if (response.status != 200) {
      *         throw new ClientResponseError({
      *             url:      response.url,
@@ -1089,7 +1163,7 @@ declare class Client {
      * };
      * ```
      */
-    afterSend?: (response: Response, data: any) => any;
+    afterSend?: ((response: Response, data: any) => any) & ((response: Response, data: any, options: SendOptions) => any);
     /**
      * Optional language code (default to `en-US`) that will be sent
      * with the requests to the server as `Accept-Language` header.
@@ -1103,10 +1177,6 @@ declare class Client {
      * An instance of the service that handles the **Settings APIs**.
      */
     readonly settings: SettingsService;
-    /**
-     * An instance of the service that handles the **Admin APIs**.
-     */
-    readonly admins: AdminService;
     /**
      * An instance of the service that handles the **Collection APIs**.
      */
@@ -1136,16 +1206,49 @@ declare class Client {
     private enableAutoCancellation;
     constructor(baseUrl?: string, authStore?: BaseAuthStore | null, lang?: string);
     /**
-     * Returns the RecordService associated to the specified collection.
+     * @deprecated
+     * With PocketBase v0.23.0 admins are converted to a regular auth
+     * collection named "_superusers", aka. you can use directly collection("_superusers").
+     */
+    get admins(): RecordService;
+    /**
+     * Creates a new batch handler for sending multiple transactional
+     * create/update/upsert/delete collection requests in one network call.
      *
-     * @param  {string} idOrName
-     * @return {RecordService}
+     * Example:
+     * ```js
+     * const batch = pb.createBatch();
+     *
+     * batch.collection("example1").create({ ... })
+     * batch.collection("example2").update("RECORD_ID", { ... })
+     * batch.collection("example3").delete("RECORD_ID")
+     * batch.collection("example4").upsert({ ... })
+     *
+     * await batch.send()
+     * ```
+     */
+    /**
+     * Creates a new batch handler for sending multiple transactional
+     * create/update/upsert/delete collection requests in one network call.
+     *
+     * Example:
+     * ```js
+     * const batch = pb.createBatch();
+     *
+     * batch.collection("example1").create({ ... })
+     * batch.collection("example2").update("RECORD_ID", { ... })
+     * batch.collection("example3").delete("RECORD_ID")
+     * batch.collection("example4").upsert({ ... })
+     *
+     * await batch.send()
+     * ```
+     */
+    createBatch(): BatchService;
+    /**
+     * Returns the RecordService associated to the specified collection.
      */
     /**
      * Returns the RecordService associated to the specified collection.
-     *
-     * @param  {string} idOrName
-     * @return {RecordService}
      */
     collection<M = RecordModel>(idOrName: string): RecordService<M>;
     /**
@@ -1261,22 +1364,6 @@ declare class Client {
      */
     private initSendOptions;
     /**
-     * Converts analyzes the provided body and converts it to FormData
-     * in case a plain object with File/Blob values is used.
-     */
-    /**
-     * Converts analyzes the provided body and converts it to FormData
-     * in case a plain object with File/Blob values is used.
-     */
-    private convertToFormDataIfNeeded;
-    /**
-     * Checks if the submitted body object has at least one Blob/File field.
-     */
-    /**
-     * Checks if the submitted body object has at least one Blob/File field.
-     */
-    private hasBlobField;
-    /**
      * Extracts the header with the provided name in case-insensitive manner.
      * Returns `null` if no header matching the name is found.
      */
@@ -1285,19 +1372,5 @@ declare class Client {
      * Returns `null` if no header matching the name is found.
      */
     private getHeader;
-    /**
-     * Loosely checks if the specified body is a FormData instance.
-     */
-    /**
-     * Loosely checks if the specified body is a FormData instance.
-     */
-    private isFormData;
-    /**
-     * Serializes the provided query parameters into a query string.
-     */
-    /**
-     * Serializes the provided query parameters into a query string.
-     */
-    private serializeQueryParams;
 }
 export { BeforeSendResult, Client as default };

@@ -1,5 +1,5 @@
-import { BaseService } from "@/services/utils/BaseService";
-import { CommonOptions, FileOptions } from "@/services/utils/options";
+import { BaseService } from "@/services/BaseService";
+import { CommonOptions, FileOptions } from "@/tools/options";
 
 export class FileService extends BaseService {
     /**

@@ -1,5 +1,5 @@
 import Client from "@/Client";
-import { isTokenExpired } from "@/stores/utils/jwt";
+import { isTokenExpired } from "@/tools/jwt";
 
 // reset previous auto refresh registrations
 export function resetAutoRefresh(client: Client) {
@@ -15,7 +15,7 @@ export function registerAutoRefresh(
     resetAutoRefresh(client);
 
     const oldBeforeSend = client.beforeSend;
-    const oldModel = client.authStore.model;
+    const oldModel = client.authStore.record;
 
     // unset the auto refresh in case the auth store was cleared
     // OR a new model was authenticated
@@ -23,7 +23,6 @@ export function registerAutoRefresh(
         if (
             !newToken ||
             model?.id != oldModel?.id ||
-            // check the collection id in case an admin and auth record share the same id
             ((model?.collectionId || oldModel?.collectionId) &&
                 model?.collectionId != oldModel?.collectionId)
         ) {

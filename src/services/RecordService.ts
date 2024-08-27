@@ -1,17 +1,19 @@
 import Client from "@/Client";
-import { getTokenPayload } from "@/stores/utils/jwt";
-import { CrudService } from "@/services/utils/CrudService";
-import { RealtimeService, UnsubscribeFunc } from "@/services/RealtimeService";
 import { ClientResponseError } from "@/ClientResponseError";
-import { ListResult, RecordModel, ExternalAuthModel } from "@/services/utils/dtos";
+import { RealtimeService, UnsubscribeFunc } from "@/services/RealtimeService";
+import { BaseAuthStore } from "@/stores/BaseAuthStore";
+import { CrudService } from "@/services/CrudService";
+import { ListResult, RecordModel } from "@/tools/dtos";
+import { normalizeLegacyOptionsArgs } from "@/tools/legacy";
 import {
-    SendOptions,
     CommonOptions,
-    RecordOptions,
-    RecordListOptions,
     RecordFullListOptions,
-} from "@/services/utils/options";
-import { normalizeLegacyOptionsArgs } from "@/services/utils/legacy";
+    RecordListOptions,
+    RecordOptions,
+    SendOptions,
+} from "@/tools/options";
+import { getTokenPayload } from "@/tools/jwt";
+import { registerAutoRefresh, resetAutoRefresh } from "@/tools/refresh";
 
 export interface RecordAuthResponse<T = RecordModel> {
     /**
@@ -44,10 +46,22 @@ export interface AuthProviderInfo {
 }
 
 export interface AuthMethodsList {
-    usernamePassword: boolean;
-    emailPassword: boolean;
-    onlyVerified: boolean;
-    authProviders: Array<AuthProviderInfo>;
+    mfa: {
+        enabled: boolean;
+        duration: number;
+    };
+    otp: {
+        enabled: boolean;
+        duration: number;
+    };
+    password: {
+        enabled: boolean;
+        identityFields: Array<string>;
+    };
+    oauth2: {
+        enabled: boolean;
+        providers: Array<AuthProviderInfo>;
+    };
 }
 
 export interface RecordSubscription<T = RecordModel> {
@@ -74,6 +88,10 @@ export interface OAuth2AuthConfig extends SendOptions {
     query?: RecordOptions;
 }
 
+export interface OTPResponse {
+    otpId: string;
+}
+
 export class RecordService<M = RecordModel> extends CrudService<M> {
     readonly collectionIdOrName: string;
 
@@ -95,6 +113,16 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      */
     get baseCollectionPath(): string {
         return "/api/collections/" + encodeURIComponent(this.collectionIdOrName);
+    }
+
+    /**
+     * Returns whether the current service collection is superusers.
+     */
+    get isSuperusers(): boolean {
+        return (
+            this.collectionIdOrName == "_superusers" ||
+            this.collectionIdOrName == "_pbc_2773867675"
+        );
     }
 
     // ---------------------------------------------------------------
@@ -226,8 +254,8 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      *
-     * If the current `client.authStore.model` matches with the updated id, then
-     * on success the `client.authStore.model` will be updated with the result.
+     * If the current `client.authStore.record` matches with the updated id, then
+     * on success the `client.authStore.record` will be updated with the result.
      */
     async update<T = M>(
         id: string,
@@ -237,9 +265,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         return super.update<RecordModel>(id, bodyParams, options).then((item) => {
             if (
                 // is record auth
-                this.client.authStore.model?.id === item?.id &&
-                (this.client.authStore.model?.collectionId === this.collectionIdOrName ||
-                    this.client.authStore.model?.collectionName ===
+                this.client.authStore.record?.id === item?.id &&
+                (this.client.authStore.record?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.record?.collectionName ===
                         this.collectionIdOrName)
             ) {
                 this.client.authStore.save(this.client.authStore.token, item);
@@ -252,7 +280,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      *
-     * If the current `client.authStore.model` matches with the deleted id,
+     * If the current `client.authStore.record` matches with the deleted id,
      * then on success the `client.authStore` will be cleared.
      */
     async delete(id: string, options?: CommonOptions): Promise<boolean> {
@@ -260,9 +288,9 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
             if (
                 success &&
                 // is record auth
-                this.client.authStore.model?.id === id &&
-                (this.client.authStore.model?.collectionId === this.collectionIdOrName ||
-                    this.client.authStore.model?.collectionName ===
+                this.client.authStore.record?.id === id &&
+                (this.client.authStore.record?.collectionId === this.collectionIdOrName ||
+                    this.client.authStore.record?.collectionName ===
                         this.collectionIdOrName)
             ) {
                 this.client.authStore.clear();
@@ -300,22 +328,13 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         options = Object.assign(
             {
                 method: "GET",
+                // @todo remove after deleting the pre v0.23 API response fields
+                fields: "mfa,otp,password,oauth2",
             },
             options,
         );
 
-        return this.client
-            .send(this.baseCollectionPath + "/auth-methods", options)
-            .then((responseData: any) => {
-                return Object.assign({}, responseData, {
-                    // normalize common fields
-                    usernamePassword: !!responseData?.usernamePassword,
-                    emailPassword: !!responseData?.emailPassword,
-                    authProviders: Array.isArray(responseData?.authProviders)
-                        ? responseData?.authProviders
-                        : [],
-                });
-            });
+        return this.client.send(this.baseCollectionPath + "/auth-methods", options);
     }
 
     /**
@@ -332,43 +351,50 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         usernameOrEmail: string,
         password: string,
         options?: RecordOptions,
-    ): Promise<RecordAuthResponse<T>>;
-
-    /**
-     * @deprecated
-     * Consider using authWithPassword(usernameOrEmail, password, options?).
-     */
-    async authWithPassword<T = M>(
-        usernameOrEmail: string,
-        password: string,
-        body?: any,
-        query?: any,
-    ): Promise<RecordAuthResponse<T>>;
-
-    async authWithPassword<T = M>(
-        usernameOrEmail: string,
-        password: string,
-        bodyOrOptions?: any,
-        query?: any,
     ): Promise<RecordAuthResponse<T>> {
-        let options: any = {
-            method: "POST",
-            body: {
-                identity: usernameOrEmail,
-                password: password,
+        options = Object.assign(
+            {
+                method: "POST",
+                body: {
+                    identity: usernameOrEmail,
+                    password: password,
+                },
             },
-        };
-
-        options = normalizeLegacyOptionsArgs(
-            "This form of authWithPassword(usernameOrEmail, pass, body?, query?) is deprecated. Consider replacing it with authWithPassword(usernameOrEmail, pass, options?).",
             options,
-            bodyOrOptions,
-            query,
         );
 
-        return this.client
-            .send(this.baseCollectionPath + "/auth-with-password", options)
-            .then((data) => this.authResponse<T>(data));
+        // note: consider to deprecate
+        let autoRefreshThreshold;
+        if (this.isSuperusers) {
+            autoRefreshThreshold = options.autoRefreshThreshold;
+            delete options.autoRefreshThreshold;
+            if (!options.autoRefresh) {
+                resetAutoRefresh(this.client);
+            }
+        }
+
+        let authData = await this.client.send(
+            this.baseCollectionPath + "/auth-with-password",
+            options,
+        );
+
+        authData = this.authResponse<T>(authData);
+
+        if (autoRefreshThreshold && this.isSuperusers) {
+            registerAutoRefresh(
+                this.client,
+                autoRefreshThreshold,
+                () => this.authRefresh({ autoRefresh: true }),
+                () =>
+                    this.authWithPassword<T>(
+                        usernameOrEmail,
+                        password,
+                        Object.assign({ autoRefresh: true }, options),
+                    ),
+            );
+        }
+
+        return authData;
     }
 
     /**
@@ -422,7 +448,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 provider: provider,
                 code: code,
                 codeVerifier: codeVerifier,
-                redirectUrl: redirectUrl,
+                redirectURL: redirectUrl,
                 createData: createData,
             },
         };
@@ -549,110 +575,115 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         }
 
         const requestKeyOptions: SendOptions = {};
-        const requestKey = config.requestKey
+        const requestKey = config.requestKey;
         if (requestKey) {
             requestKeyOptions.requestKey = requestKey;
         }
 
-        return this.listAuthMethods(requestKeyOptions).then((authMethods) => {
-            const provider = authMethods.authProviders.find(
-                (p) => p.name === config.provider,
-            );
-            if (!provider) {
-                throw new ClientResponseError(
-                    new Error(`Missing or invalid provider "${config.provider}".`),
+        return this.listAuthMethods(requestKeyOptions)
+            .then((authMethods) => {
+                const provider = authMethods.oauth2.providers.find(
+                    (p) => p.name === config.provider,
                 );
-            }
-
-            const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
-
-            // find the AbortController associated with the current request key (if any)
-            const cancelController = requestKey ? this.client['cancelControllers']?.[requestKey] : undefined;
-            if (cancelController) {
-                cancelController.signal.onabort = () => {
-                    cleanup();
+                if (!provider) {
+                    throw new ClientResponseError(
+                        new Error(`Missing or invalid provider "${config.provider}".`),
+                    );
                 }
-            }
 
-            return new Promise(async (resolve, reject) => {
-                try {
-                    await realtime.subscribe("@oauth2", async (e) => {
-                        const oldState = realtime.clientId;
+                const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
 
-                        try {
-                            if (!e.state || oldState !== e.state) {
-                                throw new Error("State parameters don't match.");
-                            }
+                // find the AbortController associated with the current request key (if any)
+                const cancelController = requestKey
+                    ? this.client["cancelControllers"]?.[requestKey]
+                    : undefined;
+                if (cancelController) {
+                    cancelController.signal.onabort = () => {
+                        cleanup();
+                    };
+                }
 
-                            if (e.error || !e.code) {
-                                throw new Error(
-                                    "OAuth2 redirect error or missing code: " + e.error,
+                return new Promise(async (resolve, reject) => {
+                    try {
+                        await realtime.subscribe("@oauth2", async (e) => {
+                            const oldState = realtime.clientId;
+
+                            try {
+                                if (!e.state || oldState !== e.state) {
+                                    throw new Error("State parameters don't match.");
+                                }
+
+                                if (e.error || !e.code) {
+                                    throw new Error(
+                                        "OAuth2 redirect error or missing code: " +
+                                            e.error,
+                                    );
+                                }
+
+                                // clear the non SendOptions props
+                                const options = Object.assign({}, config);
+                                delete options.provider;
+                                delete options.scopes;
+                                delete options.createData;
+                                delete options.urlCallback;
+
+                                // reset the cancelController listener as it will be triggered by the next api call
+                                if (cancelController?.signal?.onabort) {
+                                    cancelController.signal.onabort = null;
+                                }
+
+                                const authData = await this.authWithOAuth2Code<T>(
+                                    provider.name,
+                                    e.code,
+                                    provider.codeVerifier,
+                                    redirectUrl,
+                                    config.createData,
+                                    options,
                                 );
+
+                                resolve(authData);
+                            } catch (err) {
+                                reject(new ClientResponseError(err));
                             }
 
-                            // clear the non SendOptions props
-                            const options = Object.assign({}, config);
-                            delete options.provider;
-                            delete options.scopes;
-                            delete options.createData;
-                            delete options.urlCallback;
+                            cleanup();
+                        });
 
-                            // reset the cancelController listener as it will be triggered by the next api call
-                            if (cancelController?.signal?.onabort) {
-                                cancelController.signal.onabort = null
-                            }
-
-                            const authData = await this.authWithOAuth2Code<T>(
-                                provider.name,
-                                e.code,
-                                provider.codeVerifier,
-                                redirectUrl,
-                                config.createData,
-                                options,
-                            );
-
-                            resolve(authData);
-                        } catch (err) {
-                            reject(new ClientResponseError(err));
+                        const replacements: { [key: string]: any } = {
+                            state: realtime.clientId,
+                        };
+                        if (config.scopes?.length) {
+                            replacements["scope"] = config.scopes.join(" ");
                         }
 
+                        const url = this._replaceQueryParams(
+                            provider.authUrl + redirectUrl,
+                            replacements,
+                        );
+
+                        let urlCallback =
+                            config.urlCallback ||
+                            function (url: string) {
+                                if (eagerDefaultPopup) {
+                                    eagerDefaultPopup.location.href = url;
+                                } else {
+                                    // it could have been blocked due to its empty initial url,
+                                    // try again...
+                                    eagerDefaultPopup = openBrowserPopup(url);
+                                }
+                            };
+
+                        await urlCallback(url);
+                    } catch (err) {
                         cleanup();
-                    });
-
-                    const replacements: { [key: string]: any } = {
-                        state: realtime.clientId,
-                    };
-                    if (config.scopes?.length) {
-                        replacements["scope"] = config.scopes.join(" ");
+                        reject(new ClientResponseError(err));
                     }
-
-                    const url = this._replaceQueryParams(
-                        provider.authUrl + redirectUrl,
-                        replacements,
-                    );
-
-                    let urlCallback =
-                        config.urlCallback ||
-                        function (url: string) {
-                            if (eagerDefaultPopup) {
-                                eagerDefaultPopup.location.href = url;
-                            } else {
-                                // it could have been blocked due to its empty initial url,
-                                // try again...
-                                eagerDefaultPopup = openBrowserPopup(url);
-                            }
-                        };
-
-                    await urlCallback(url);
-                } catch (err) {
-                    cleanup();
-                    reject(new ClientResponseError(err));
-                }
-            });
-        }).catch((err) => {
-            cleanup();
-            throw err // rethrow
-        }) as Promise<RecordAuthResponse<T>>;
+                });
+            })
+            .catch((err) => {
+                cleanup();
+                throw err; // rethrow
+            }) as Promise<RecordAuthResponse<T>>;
     }
 
     /**
@@ -820,8 +851,8 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record email verification request.
      *
-     * If the current `client.authStore.model` matches with the auth record from the token,
-     * then on success the `client.authStore.model.verified` will be updated to `true`.
+     * If the current `client.authStore.record` matches with the auth record from the token,
+     * then on success the `client.authStore.record.verified` will be updated to `true`.
      *
      * @throws {ClientResponseError}
      */
@@ -864,7 +895,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
             .then(() => {
                 // on success manually update the current auth record verified state
                 const payload = getTokenPayload(verificationToken);
-                const model = this.client.authStore.model;
+                const model = this.client.authStore.record;
                 if (
                     model &&
                     !model.verified &&
@@ -919,7 +950,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * Confirms auth record's new email address.
      *
-     * If the current `client.authStore.model` matches with the auth record from the token,
+     * If the current `client.authStore.record` matches with the auth record from the token,
      * then on success the `client.authStore` will be cleared.
      *
      * @throws {ClientResponseError}
@@ -966,7 +997,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
             .send(this.baseCollectionPath + "/confirm-email-change", options)
             .then(() => {
                 const payload = getTokenPayload(emailChangeToken);
-                const model = this.client.authStore.model;
+                const model = this.client.authStore.record;
                 if (
                     model &&
                     model.id === payload.id &&
@@ -980,6 +1011,8 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     }
 
     /**
+     * @deprecated use collection("_externalAuths").*
+     *
      * Lists all linked external auth providers for the specified auth record.
      *
      * @throws {ClientResponseError}
@@ -987,21 +1020,17 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     async listExternalAuths(
         recordId: string,
         options?: CommonOptions,
-    ): Promise<Array<ExternalAuthModel>> {
-        options = Object.assign(
-            {
-                method: "GET",
-            },
-            options,
-        );
-
-        return this.client.send(
-            this.baseCrudPath + "/" + encodeURIComponent(recordId) + "/external-auths",
-            options,
+    ): Promise<Array<RecordModel>> {
+        return this.client.collection("_externalAuths").getFullList(
+            Object.assign({}, options, {
+                filter: this.client.filter("recordRef = {:id}", { id: recordId }),
+            }),
         );
     }
 
     /**
+     * @deprecated use collection("_externalAuths").*
+     *
      * Unlink a single external auth provider from the specified auth record.
      *
      * @throws {ClientResponseError}
@@ -1011,23 +1040,105 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         provider: string,
         options?: CommonOptions,
     ): Promise<boolean> {
+        const ea = await this.client.collection("_externalAuths").getFirstListItem(
+            this.client.filter("recordRef = {:recordId} && provider = {:provider}", {
+                recordId,
+                provider,
+            }),
+        );
+
+        return this.client
+            .collection("_externalAuths")
+            .delete(ea.id, options)
+            .then(() => true);
+    }
+
+    /**
+     * Sends auth record OTP to the provided email.
+     *
+     * @throws {ClientResponseError}
+     */
+    async requestOTP(email: string, options?: CommonOptions): Promise<OTPResponse> {
         options = Object.assign(
             {
-                method: "DELETE",
+                method: "POST",
+                body: { email: email },
+            },
+            options,
+        );
+
+        return this.client.send(this.baseCollectionPath + "/request-otp", options);
+    }
+
+    /**
+     * Authenticate a single auth collection record via OTP.
+     *
+     * On success, this method also automatically updates
+     * the client's AuthStore data and returns:
+     * - the authentication token
+     * - the authenticated record model
+     *
+     * @throws {ClientResponseError}
+     */
+    async authWithOTP<T = M>(
+        otpId: string,
+        password: string,
+        options?: CommonOptions,
+    ): Promise<RecordAuthResponse<T>> {
+        options = Object.assign(
+            {
+                method: "POST",
+                body: { otpId, password },
             },
             options,
         );
 
         return this.client
-            .send(
-                this.baseCrudPath +
-                    "/" +
-                    encodeURIComponent(recordId) +
-                    "/external-auths/" +
-                    encodeURIComponent(provider),
-                options,
-            )
-            .then(() => true);
+            .send(this.baseCollectionPath + "/auth-with-otp", options)
+            .then((data) => this.authResponse<T>(data));
+    }
+
+    /**
+     * Impersonate authenticates with the specified recordId and
+     * returns a new client with the received auth token in a memory store.
+     *
+     * If `duration` is 0 the generated auth token will fallback
+     * to the default collection auth token duration.
+     *
+     * This action currently requires superusers privileges.
+     *
+     * @throws {ClientResponseError}
+     */
+    async impersonate(
+        recordId: string,
+        duration: number,
+        options?: CommonOptions,
+    ): Promise<Client> {
+        options = Object.assign(
+            {
+                method: "POST",
+                body: { duration: duration },
+            },
+            options,
+        );
+        options.headers = options.headers || {};
+        if (!options.headers.Authorization) {
+            options.headers.Authorization = this.client.authStore.token;
+        }
+
+        // create a new client loaded with the impersonated auth state
+        // ---
+        const client = new Client(this.client.baseUrl, new BaseAuthStore(), this.client.lang);
+
+        const authData = await client.send(
+            this.baseCollectionPath + "/impersonate/" + encodeURIComponent(recordId),
+            options,
+        );
+
+        client.authStore.save(authData?.token, this.decode(authData?.record || {}));
+        // ---
+
+        return client;
     }
 
     // ---------------------------------------------------------------

@@ -1,19 +1,24 @@
-import { cookieParse, cookieSerialize, SerializeOptions } from "@/stores/utils/cookie";
-import { isTokenExpired, getTokenPayload } from "@/stores/utils/jwt";
+import { cookieParse, cookieSerialize, SerializeOptions } from "@/tools/cookie";
+import { isTokenExpired, getTokenPayload } from "@/tools/jwt";
+import { RecordModel } from "@/tools/dtos";
 
-export type AuthModel = { [key: string]: any } | null;
+export type AuthRecord = RecordModel | null;
 
-export type OnStoreChangeFunc = (token: string, model: AuthModel) => void;
+export type AuthModel = AuthRecord; // for backward compatibility
+
+export type OnStoreChangeFunc = (token: string, record: AuthRecord) => void;
 
 const defaultCookieKey = "pb_auth";
 
 /**
- * Base AuthStore class that is intended to be extended by all other
- * PocketBase AuthStore implementations.
+ * Base AuthStore class that stores the auth state in runtime memory (aka. only for the duration of the store instane).
+ *
+ * Usually you wouldn't use it directly and instead use the builtin LocalAuthStore, AsyncAuthStore
+ * or extend it with your own custom implementation.
  */
-export abstract class BaseAuthStore {
+export class BaseAuthStore {
     protected baseToken: string = "";
-    protected baseModel: AuthModel = null;
+    protected baseModel: AuthRecord = null;
 
     private _onChangeCallbacks: Array<OnStoreChangeFunc> = [];
 
@@ -27,7 +32,14 @@ export abstract class BaseAuthStore {
     /**
      * Retrieves the stored model data (if any).
      */
-    get model(): AuthModel {
+    get record(): AuthRecord {
+        return this.baseModel;
+    }
+
+    /**
+     * @deprecated use `record` instead.
+     */
+    get model(): AuthRecord {
         return this.baseModel;
     }
 
@@ -55,9 +67,9 @@ export abstract class BaseAuthStore {
     /**
      * Saves the provided new token and model data in the auth store.
      */
-    save(token: string, model?: AuthModel): void {
+    save(token: string, record?: AuthRecord): void {
         this.baseToken = token || "";
-        this.baseModel = model || null;
+        this.baseModel = record || null;
 
         this.triggerChange();
     }
@@ -107,7 +119,7 @@ export abstract class BaseAuthStore {
             }
         } catch (_) {}
 
-        this.save(data.token || "", data.model || null);
+        this.save(data.token || "", data.record || data.model || null);
     }
 
     /**
@@ -145,7 +157,7 @@ export abstract class BaseAuthStore {
 
         const rawData = {
             token: this.token,
-            model: this.model ? JSON.parse(JSON.stringify(this.model)) : null,
+            record: this.record ? JSON.parse(JSON.stringify(this.record)) : null,
         };
 
         let result = cookieSerialize(key, JSON.stringify(rawData), options);
@@ -154,12 +166,12 @@ export abstract class BaseAuthStore {
             typeof Blob !== "undefined" ? new Blob([result]).size : result.length;
 
         // strip down the model data to the bare minimum
-        if (rawData.model && resultLength > 4096) {
-            rawData.model = { id: rawData?.model?.id, email: rawData?.model?.email };
-            const extraProps = ["collectionId", "username", "verified"];
-            for (const prop in this.model) {
+        if (rawData.record && resultLength > 4096) {
+            rawData.record = { id: rawData.record?.id, email: rawData.record?.email };
+            const extraProps = ["collectionId", "collectionName", "verified"];
+            for (const prop in this.record) {
                 if (extraProps.includes(prop)) {
-                    rawData.model[prop] = this.model[prop];
+                    rawData.record[prop] = this.record[prop];
                 }
             }
             result = cookieSerialize(key, JSON.stringify(rawData), options);
@@ -180,7 +192,7 @@ export abstract class BaseAuthStore {
         this._onChangeCallbacks.push(callback);
 
         if (fireImmediately) {
-            callback(this.token, this.model);
+            callback(this.token, this.record);
         }
 
         return () => {
@@ -196,7 +208,7 @@ export abstract class BaseAuthStore {
 
     protected triggerChange(): void {
         for (const callback of this._onChangeCallbacks) {
-            callback && callback(this.token, this.model);
+            callback && callback(this.token, this.record);
         }
     }
 }

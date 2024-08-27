@@ -1,5 +1,5 @@
 import { describe, assert, test } from "vitest";
-import { cookieParse, cookieSerialize } from "@/stores/utils/cookie";
+import { cookieParse, cookieSerialize } from "@/tools/cookie";
 
 describe("cookie", function () {
     describe("cookieParse()", function () {
