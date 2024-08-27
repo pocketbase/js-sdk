@@ -55,7 +55,8 @@ export class RealtimeService extends BaseService {
 
         // serialize and append the topic options (if any)
         if (options) {
-            normalizeUnknownQueryParams(options);
+            options = Object.assign({}, options); // shallow copy
+            normalizeUnknownQueryParams(options)
             const serialized =
                 "options=" +
                 encodeURIComponent(

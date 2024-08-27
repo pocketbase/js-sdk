@@ -1,3 +1,8 @@
+## 0.21.5
+
+- Shallow copy the realtime subscribe `options` argument for consistency with the other methods ([#308](https://github.com/pocketbase/js-sdk/issues/308)).
+
+
 ## 0.21.4
 
 - Fixed the `requestKey` handling in `authWithOAuth2({...})` to allow manually cancelling the entire OAuth2 pending request flow using `pb.cancelRequest(requestKey)`.
