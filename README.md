@@ -893,6 +893,24 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 
 ---
 
+#### BatchService
+
+```js
+// create a new batch instance
+const batch = pb.createBatch();
+
+// register create/update/delete/upsert requests to the created batch
+batch.collection('example1').create({ ... });
+batch.collection('example2').update('RECORD_ID', { ... });
+batch.collection('example3').delete('RECORD_ID');
+batch.collection('example4').upsert({ ... });
+
+// send the batch request
+const result = await batch.send()
+```
+
+---
+
 ##### FileService
 
 ```js
@@ -934,7 +952,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 🔐 pb.collections.import(collections, deleteMissing = false, options = {});
 
 // Returns type indexed map with scaffolded collection models populated with their default field values.
-🔐 pb.collections.import(options = {});
+🔐 pb.collections.getScaffolds(options = {});
 ```
 
 ---
