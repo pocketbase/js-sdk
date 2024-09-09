@@ -39,9 +39,9 @@
     "devDependencies": {
         "@rollup/plugin-terser": "^0.4.3",
         "prettier": "3.2.4",
-        "rollup": "^3.0.0",
+        "rollup": "^4.0.0",
         "rollup-plugin-ts": "^3.0.0",
         "typescript": "^5.1.6",
-        "vitest": "^0.34.1"
+        "vitest": "^2.0.0"
     }
 }
