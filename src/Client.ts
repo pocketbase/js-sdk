@@ -340,7 +340,9 @@ export default class Client {
             options.body &&
             typeof options.body !== "string"
         ) {
-            options.body = JSON.stringify(options.body);
+            options.body = JSON.stringify(options.body, function (key, value) {
+                return this[key] instanceof Date ? value.split("T").join(" ") : value;
+            });
         }
 
         const fetchFunc = options.fetch || fetch;
