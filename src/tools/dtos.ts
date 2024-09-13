@@ -46,10 +46,16 @@ export interface TokenConfig {
     secret?: string;
 }
 
+export interface AuthAlertConfig {
+    enabled: boolean;
+    emailTemplate: EmailTemplate;
+}
+
 export interface OTPConfig {
     enabled: boolean;
     duration: number;
     length: number;
+    emailTemplate: EmailTemplate;
 }
 
 export interface MFAConfig {
@@ -108,6 +114,7 @@ export interface AuthCollectionModel extends collection {
     type: "auth";
     authRule?: string;
     manageRule?: string;
+    authAlert: AuthAlertConfig;
     oauth2: OAuth2Config;
     passwordAuth: PasswordAuthConfig;
     mfa: MFAConfig;
@@ -122,8 +129,6 @@ export interface AuthCollectionModel extends collection {
     verificationTemplate: EmailTemplate;
     resetPasswordTemplate: EmailTemplate;
     confirmEmailChangeTemplate: EmailTemplate;
-    otpTemplate: EmailTemplate;
-    loginAlertTemplate: EmailTemplate;
 }
 
 export type CollectionModel =

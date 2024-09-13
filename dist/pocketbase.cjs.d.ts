@@ -52,10 +52,15 @@ interface TokenConfig {
     duration: number;
     secret?: string;
 }
+interface AuthAlertConfig {
+    enabled: boolean;
+    emailTemplate: EmailTemplate;
+}
 interface OTPConfig {
     enabled: boolean;
     duration: number;
     length: number;
+    emailTemplate: EmailTemplate;
 }
 interface MFAConfig {
     enabled: boolean;
@@ -109,6 +114,7 @@ interface AuthCollectionModel extends collection {
     type: "auth";
     authRule?: string;
     manageRule?: string;
+    authAlert: AuthAlertConfig;
     oauth2: OAuth2Config;
     passwordAuth: PasswordAuthConfig;
     mfa: MFAConfig;
@@ -121,8 +127,6 @@ interface AuthCollectionModel extends collection {
     verificationTemplate: EmailTemplate;
     resetPasswordTemplate: EmailTemplate;
     confirmEmailChangeTemplate: EmailTemplate;
-    otpTemplate: EmailTemplate;
-    loginAlertTemplate: EmailTemplate;
 }
 type CollectionModel = BaseCollectionModel | ViewCollectionModel | AuthCollectionModel;
 type AuthRecord = RecordModel | null;
