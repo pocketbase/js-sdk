@@ -77,6 +77,7 @@ export class SettingsService extends BaseService {
      * @throws {ClientResponseError}
      */
     async testEmail(
+        collectionIdOrName: string,
         toEmail: string,
         emailTemplate: string,
         options?: CommonOptions,
@@ -85,8 +86,9 @@ export class SettingsService extends BaseService {
             {
                 method: "POST",
                 body: {
-                    email: toEmail,
-                    template: emailTemplate,
+                    email:      toEmail,
+                    template:   emailTemplate,
+                    collection: collectionIdOrName,
                 },
             },
             options,

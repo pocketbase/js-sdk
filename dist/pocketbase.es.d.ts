@@ -389,7 +389,7 @@ declare class SettingsService extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    testEmail(toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean>;
+    testEmail(collectionIdOrName: string, toEmail: string, emailTemplate: string, options?: CommonOptions): Promise<boolean>;
     /**
      * Generates a new Apple OAuth2 client secret.
      *

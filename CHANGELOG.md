@@ -96,6 +96,16 @@
     }
     ```
 
+- ⚠️ Require specifying collection id or name when sending test email because the email templates can be changed per collection.
+    ```js
+    // old
+    pb.settings.testEmail(email, "verification")
+
+    // new
+    pb.settings.testEmail("users", email, "verification")
+    ```
+
+
 
 ## 0.21.5
 

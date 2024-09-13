@@ -985,7 +985,7 @@ const result = await batch.send()
 🔐 pb.settings.testS3(filesystem = "storage", options = {});
 
 // Sends a test email (verification, password-reset, email-change).
-🔐 pb.settings.testEmail(toEmail, template, options = {});
+🔐 pb.settings.testEmail(collectionIdOrName, toEmail, template, options = {});
 
 // Generates a new Apple OAuth2 client secret.
 🔐 pb.settings.generateAppleClientSecret(clientId, teamId, keyId, privateKey, duration, options = {});
