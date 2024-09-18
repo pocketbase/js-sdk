@@ -108,13 +108,21 @@ export class BackupService extends BaseService {
     }
 
     /**
+     * @deprecated Please use `getDownloadURL()`.
+     */
+    getDownloadUrl(token: string, key: string): string {
+        console.warn("Please replace pb.backups.getDownloadUrl() with pb.backups.getDownloadURL()");
+        return this.getDownloadURL(token, key)
+    }
+
+    /**
      * Builds a download url for a single existing backup using an
      * admin file token and the backup file key.
      *
      * The file token can be generated via `pb.files.getToken()`.
      */
-    getDownloadUrl(token: string, key: string): string {
-        return this.client.buildUrl(
+    getDownloadURL(token: string, key: string): string {
+        return this.client.buildURL(
             `/api/backups/${encodeURIComponent(key)}?token=${encodeURIComponent(token)}`,
         );
     }

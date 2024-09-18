@@ -20,31 +20,31 @@ describe("FileService", function () {
         fetchMock.clearMocks();
     });
 
-    describe("getFileUrl()", function () {
+    describe("getUrl()", function () {
         test("Should return empty string (missing record id)", async function () {
             const record = { id: "", collectionId: "123", collectionName: "789" };
-            const result = service.getUrl(record, "demo.png");
+            const result = service.getURL(record, "demo.png");
 
             assert.deepEqual(result, "");
         });
 
         test("Should return empty string (missing filename)", async function () {
             const record = { id: "456", collectionId: "123", collectionName: "789" };
-            const result = service.getUrl(record, "");
+            const result = service.getURL(record, "");
 
             assert.deepEqual(result, "");
         });
 
         test("Should return a formatted url", async function () {
             const record = { id: "456", collectionId: "123", collectionName: "789" };
-            const result = service.getUrl(record, "demo.png");
+            const result = service.getURL(record, "demo.png");
 
             assert.deepEqual(result, "test_base_url/api/files/123/456/demo.png");
         });
 
         test("Should return a formatted url + query params", async function () {
             const record = { id: "456", collectionId: "123", collectionName: "789" };
-            const result = service.getUrl(record, "demo=", { test: "abc" });
+            const result = service.getURL(record, "demo=", { test: "abc" });
 
             assert.deepEqual(result, "test_base_url/api/files/123/456/demo%3D?test=abc");
         });
@@ -54,7 +54,7 @@ describe("FileService", function () {
         test("Should send a file token request", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/files/token") + "?q1=123",
+                url: service.client.buildURL("/api/files/token") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
                 },

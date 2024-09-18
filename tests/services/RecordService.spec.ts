@@ -41,7 +41,7 @@ describe("RecordService", function () {
         test("Should update the AuthStore record model on matching update id and collection", async function () {
             fetchMock.on({
                 method: "PATCH",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 200,
                 replyBody: {
                     id: "test123",
@@ -62,7 +62,7 @@ describe("RecordService", function () {
         test("Should not update the AuthStore record model on matching id but mismatched collection", async function () {
             fetchMock.on({
                 method: "PATCH",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 200,
                 replyBody: {
                     id: "test123",
@@ -84,7 +84,7 @@ describe("RecordService", function () {
         test("Should not update the AuthStore record model on mismatched update id", async function () {
             fetchMock.on({
                 method: "PATCH",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 200,
                 replyBody: {
                     id: "test123",
@@ -106,7 +106,7 @@ describe("RecordService", function () {
         test("Should delete the AuthStore record model on matching delete id and collection", async function () {
             fetchMock.on({
                 method: "DELETE",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 204,
             });
 
@@ -123,7 +123,7 @@ describe("RecordService", function () {
         test("Should not delete the AuthStore record model on matching delete id but mismatched collection", async function () {
             fetchMock.on({
                 method: "DELETE",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 204,
             });
 
@@ -140,7 +140,7 @@ describe("RecordService", function () {
         test("Should not delete the AuthStore record model on mismatched delete id", async function () {
             fetchMock.on({
                 method: "DELETE",
-                url: service.client.buildUrl("/api/collections/sub%3D/records/test123"),
+                url: service.client.buildURL("/api/collections/sub%3D/records/test123"),
                 replyCode: 204,
             });
 
@@ -161,7 +161,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-verification",
                 body: { token: token },
                 replyCode: 204,
@@ -187,7 +187,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-verification",
                 body: { token: token },
                 replyCode: 204,
@@ -213,7 +213,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-email-change",
                 body: {
                     token: token,
@@ -241,7 +241,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-email-change",
                 body: {
                     token: token,
@@ -284,7 +284,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "GET",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-methods?fields=mfa%2Cotp%2Cpassword%2Coauth2&q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
@@ -307,7 +307,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-with-password?q1=456",
                 body: {
                     identity: "test@example.com",
@@ -337,7 +337,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-with-oauth2?q1=456",
                 body: {
                     provider: "test",
@@ -371,7 +371,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-with-oauth2?q1=456",
                 body: {
                     provider: "test",
@@ -411,7 +411,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-with-oauth2?q1=456",
                 body: {
                     provider: "test",
@@ -449,7 +449,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-refresh?q1=456",
                 body: { b1: 123 },
                 replyCode: 200,
@@ -468,7 +468,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-refresh?q1=456",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "789";
@@ -494,7 +494,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-password-reset?q1=456",
                 body: {
                     email: "test@example.com",
@@ -517,7 +517,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-password-reset?q1=456",
                 body: {
                     email: "test@example.com",
@@ -543,7 +543,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-password-reset?q1=456",
                 body: {
                     token: "test",
@@ -570,7 +570,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-password-reset?q1=456",
                 body: {
                     token: "test",
@@ -598,7 +598,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-verification?q1=456",
                 body: {
                     email: "test@example.com",
@@ -621,7 +621,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-verification?q1=456",
                 body: {
                     email: "test@example.com",
@@ -647,7 +647,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-verification?q1=456",
                 body: {
                     token: "test",
@@ -670,7 +670,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-verification?q1=456",
                 body: {
                     token: "test",
@@ -696,7 +696,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-email-change?q1=456",
                 body: {
                     newEmail: "test@example.com",
@@ -719,7 +719,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-email-change?q1=456",
                 body: {
                     newEmail: "test@example.com",
@@ -745,7 +745,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-email-change?q1=456",
                 body: {
                     token: "test",
@@ -770,7 +770,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/confirm-email-change?q1=456",
                 body: {
                     token: "test",
@@ -797,7 +797,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/request-otp?q1=456",
                 body: {
                     email: "test@example.com",
@@ -823,7 +823,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/auth-with-otp?q1=456",
                 body: {
                     otpId: "test_otp",
@@ -853,7 +853,7 @@ describe("RecordService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(service.baseCollectionPath) +
+                    service.client.buildURL(service.baseCollectionPath) +
                     "/impersonate/%40test?q1=456",
                 body: {
                     duration: 3600,

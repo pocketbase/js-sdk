@@ -32,7 +32,23 @@ export default class Client {
     /**
      * The base PocketBase backend url address (eg. 'http://127.0.0.1.8090').
      */
-    baseUrl: string;
+    baseURL: string;
+
+    /**
+     * Legacy getter alias for baseURL.
+     * @deprecated Please replace with baseURL.
+     */
+    get baseUrl(): string {
+        return this.baseURL;
+    }
+
+    /**
+     * Legacy setter alias for baseURL.
+     * @deprecated Please replace with baseURL.
+     */
+    set baseUrl(v: string) {
+        this.baseURL = v;
+    }
 
     /**
      * Hook that get triggered right before sending the fetch request,
@@ -131,8 +147,8 @@ export default class Client {
     private recordServices: { [key: string]: RecordService } = {};
     private enableAutoCancellation: boolean = true;
 
-    constructor(baseUrl = "/", authStore?: BaseAuthStore | null, lang = "en-US") {
-        this.baseUrl = baseUrl;
+    constructor(baseURL = "/", authStore?: BaseAuthStore | null, lang = "en-US") {
+        this.baseURL = baseURL;
         this.lang = lang;
 
         if (authStore) {
@@ -282,21 +298,30 @@ export default class Client {
     }
 
     /**
-     * Legacy alias of `pb.files.getUrl()`.
+     * @deprecated Please use `pb.files.getURL()`.
      */
     getFileUrl(
         record: { [key: string]: any },
         filename: string,
         queryParams: FileOptions = {},
     ): string {
-        return this.files.getUrl(record, filename, queryParams);
+        console.warn("Please replace pb.getFileUrl() with pb.files.getURL()");
+        return this.files.getURL(record, filename, queryParams);
+    }
+
+    /**
+     * @deprecated Please use `pb.buildURL()`.
+     */
+    buildUrl(path: string): string {
+        console.warn("Please replace pb.buildUrl() with pb.buildURL()");
+        return this.buildURL(path);
     }
 
     /**
      * Builds a full client url by safely concatenating the provided path.
      */
-    buildUrl(path: string): string {
-        let url = this.baseUrl;
+    buildURL(path: string): string {
+        let url = this.baseURL;
 
         // construct an absolute base url if in a browser environment
         if (
@@ -309,12 +334,12 @@ export default class Client {
                 ? window.location.origin.substring(0, window.location.origin.length - 1)
                 : window.location.origin || "";
 
-            if (!this.baseUrl.startsWith("/")) {
+            if (!this.baseURL.startsWith("/")) {
                 url += window.location.pathname || "/";
                 url += url.endsWith("/") ? "" : "/";
             }
 
-            url += this.baseUrl;
+            url += this.baseURL;
         }
 
         // concatenate the path
@@ -335,7 +360,7 @@ export default class Client {
         options = this.initSendOptions(path, options);
 
         // build url + path
-        let url = this.buildUrl(path);
+        let url = this.buildURL(path);
 
         if (this.beforeSend) {
             const result = Object.assign({}, await this.beforeSend(url, options));

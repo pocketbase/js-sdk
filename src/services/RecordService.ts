@@ -39,7 +39,7 @@ export interface AuthProviderInfo {
     name: string;
     displayName: string;
     state: string;
-    authUrl: string;
+    authURL: string;
     codeVerifier: string;
     codeChallenge: string;
     codeChallengeMethod: string;
@@ -414,20 +414,20 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         provider: string,
         code: string,
         codeVerifier: string,
-        redirectUrl: string,
+        redirectURL: string,
         createData?: { [key: string]: any },
         options?: RecordOptions,
     ): Promise<RecordAuthResponse<T>>;
 
     /**
      * @deprecated
-     * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createdData, options?).
+     * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectURL, createdData, options?).
      */
     async authWithOAuth2Code<T = M>(
         provider: string,
         code: string,
         codeVerifier: string,
-        redirectUrl: string,
+        redirectURL: string,
         createData?: { [key: string]: any },
         body?: any,
         query?: any,
@@ -437,7 +437,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         provider: string,
         code: string,
         codeVerifier: string,
-        redirectUrl: string,
+        redirectURL: string,
         createData?: { [key: string]: any },
         bodyOrOptions?: any,
         query?: any,
@@ -448,13 +448,13 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 provider: provider,
                 code: code,
                 codeVerifier: codeVerifier,
-                redirectURL: redirectUrl,
+                redirectURL: redirectURL,
                 createData: createData,
             },
         };
 
         options = normalizeLegacyOptionsArgs(
-            "This form of authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, body?, query?) is deprecated. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createData?, options?).",
+            "This form of authWithOAuth2Code(provider, code, codeVerifier, redirectURL, createData?, body?, query?) is deprecated. Consider replacing it with authWithOAuth2Code(provider, code, codeVerifier, redirectURL, createData?, options?).",
             options,
             bodyOrOptions,
             query,
@@ -475,7 +475,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         provider: string,
         code: string,
         codeVerifier: string,
-        redirectUrl: string,
+        redirectURL: string,
         createData?: { [key: string]: any },
         bodyParams?: { [key: string]: any },
         queryParams?: RecordOptions,
@@ -591,7 +591,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                     );
                 }
 
-                const redirectUrl = this.client.buildUrl("/api/oauth2-redirect");
+                const redirectURL = this.client.buildURL("/api/oauth2-redirect");
 
                 // find the AbortController associated with the current request key (if any)
                 const cancelController = requestKey
@@ -636,7 +636,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                                     provider.name,
                                     e.code,
                                     provider.codeVerifier,
-                                    redirectUrl,
+                                    redirectURL,
                                     config.createData,
                                     options,
                                 );
@@ -657,7 +657,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                         }
 
                         const url = this._replaceQueryParams(
-                            provider.authUrl + redirectUrl,
+                            provider.authURL + redirectURL,
                             replacements,
                         );
 
@@ -1128,7 +1128,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         // create a new client loaded with the impersonated auth state
         // ---
-        const client = new Client(this.client.baseUrl, new BaseAuthStore(), this.client.lang);
+        const client = new Client(this.client.baseURL, new BaseAuthStore(), this.client.lang);
 
         const authData = await client.send(
             this.baseCollectionPath + "/impersonate/" + encodeURIComponent(recordId),

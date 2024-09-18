@@ -772,7 +772,7 @@ This is out of the scope of the SDK, but you could find more resources about CSP
 ### Creating new client instance
 
 ```js
-const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
+const pb = new PocketBase(baseURL = '/', authStore = LocalAuthStore);
 ```
 
 ### Instance methods
@@ -785,7 +785,7 @@ const pb = new PocketBase(baseUrl = '/', authStore = LocalAuthStore);
 | `pb.autoCancellation(enable)`     | Globally enable or disable auto cancellation for pending duplicated requests. |
 | `pb.cancelAllRequests()`          | Cancels all pending requests.                                                 |
 | `pb.cancelRequest(cancelKey)`     | Cancels single request by its cancellation token key.                         |
-| `pb.buildUrl(path)`               | Builds a full client url by safely concatenating the provided path.           |
+| `pb.buildURL(path)`               | Builds a full client url by safely concatenating the provided path.           |
 
 
 ### Services
@@ -915,7 +915,7 @@ const result = await batch.send()
 
 ```js
 // Builds and returns an absolute record file url for the provided filename.
-🔓 pb.files.getUrl(record, filename, options = {});
+🔓 pb.files.getURL(record, filename, options = {});
 
 // Requests a new private file access token for the current auth model (admin or record).
 🔐 pb.files.getToken(options = {});
@@ -1037,7 +1037,7 @@ const result = await batch.send()
 
 // Builds a download url for a single existing backup using an
 // admin file token and the backup file key.
-🔐 pb.backups.getDownloadUrl(token, key);
+🔐 pb.backups.getDownloadURL(token, key);
 ```
 
 ---

@@ -42,7 +42,7 @@ export class LogService extends BaseService {
     async getOne(id: string, options?: CommonOptions): Promise<LogModel> {
         if (!id) {
             throw new ClientResponseError({
-                url: this.client.buildUrl("/api/logs/"),
+                url: this.client.buildURL("/api/logs/"),
                 status: 404,
                 response: {
                     code: 404,

@@ -29,7 +29,7 @@ describe("BackupService", function () {
 
             fetchMock.on({
                 method: "GET",
-                url: service.client.buildUrl("/api/backups") + "?q1=123",
+                url: service.client.buildURL("/api/backups") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
                 },
@@ -50,7 +50,7 @@ describe("BackupService", function () {
         test("Should initialize a backup create", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/backups") + "?q1=123",
+                url: service.client.buildURL("/api/backups") + "?q1=123",
                 body: { name: "@test" },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
@@ -72,7 +72,7 @@ describe("BackupService", function () {
         test("Should upload a backup", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/backups/upload") + "?q1=123",
+                url: service.client.buildURL("/api/backups/upload") + "?q1=123",
                 body: { file: "123" },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
@@ -94,7 +94,7 @@ describe("BackupService", function () {
         test("Should delete a single backup", async function () {
             fetchMock.on({
                 method: "DELETE",
-                url: service.client.buildUrl("/api/backups") + "/%40test?q1=123",
+                url: service.client.buildURL("/api/backups") + "/%40test?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
                 },
@@ -115,7 +115,7 @@ describe("BackupService", function () {
         test("Should initialize a backup restore", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/backups") + "/%40test/restore?q1=123",
+                url: service.client.buildURL("/api/backups") + "/%40test/restore?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
                 },
@@ -132,13 +132,13 @@ describe("BackupService", function () {
         });
     });
 
-    describe("getDownloadUrl()", function () {
-        test("Should initialize a backup getDownloadUrl", function () {
-            const result = service.getDownloadUrl("@token", "@test");
+    describe("getDownloadURL()", function () {
+        test("Should initialize a backup getDownloadURL", function () {
+            const result = service.getDownloadURL("@token", "@test");
 
             assert.deepEqual(
                 result,
-                service.client.buildUrl("/api/backups") + "/%40test?token=%40token",
+                service.client.buildURL("/api/backups") + "/%40test?token=%40token",
             );
         });
     });

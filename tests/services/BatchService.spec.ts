@@ -25,7 +25,7 @@ describe("BatchService", function () {
 
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/batch") + "?q1=123",
+                url: service.client.buildURL("/api/batch") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     if (
                         // custom header is missing
@@ -152,7 +152,7 @@ describe("BatchService", function () {
 
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/batch") + "?q1=123",
+                url: service.client.buildURL("/api/batch") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     if (
                         // custom header is missing

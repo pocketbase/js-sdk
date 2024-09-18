@@ -24,7 +24,7 @@ describe("SettingsService", function () {
         test("Should fetch all app settings", async function () {
             fetchMock.on({
                 method: "GET",
-                url: service.client.buildUrl("/api/settings") + "?q1=123",
+                url: service.client.buildURL("/api/settings") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
                 },
@@ -45,7 +45,7 @@ describe("SettingsService", function () {
         test("Should send bulk app settings update", async function () {
             fetchMock.on({
                 method: "PATCH",
-                url: service.client.buildUrl("/api/settings"),
+                url: service.client.buildURL("/api/settings"),
                 body: { b1: 123 },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
@@ -67,7 +67,7 @@ describe("SettingsService", function () {
         test("Should send S3 connection test request", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/settings/test/s3") + "?q1=123",
+                url: service.client.buildURL("/api/settings/test/s3") + "?q1=123",
                 body: { filesystem: "storage" },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
@@ -89,7 +89,7 @@ describe("SettingsService", function () {
         test("Should send a test email request", async function () {
             fetchMock.on({
                 method: "POST",
-                url: service.client.buildUrl("/api/settings/test/email") + "?q1=123",
+                url: service.client.buildURL("/api/settings/test/email") + "?q1=123",
                 body: { template: "abc", email: "test@example.com", collection: "test_collection" },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
@@ -112,7 +112,7 @@ describe("SettingsService", function () {
             fetchMock.on({
                 method: "POST",
                 url:
-                    service.client.buildUrl(
+                    service.client.buildURL(
                         "/api/settings/apple/generate-client-secret",
                     ) + "?q1=123",
                 body: {

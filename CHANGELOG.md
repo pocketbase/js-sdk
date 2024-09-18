@@ -105,6 +105,14 @@
     pb.settings.testEmail("users", email, "verification")
     ```
 
+- ⚠️ Soft-deprecated and aliased `*Url()` -> `*URL()` methods for consistency with other similar native JS APIs and the accepted Go conventions.
+    _The old methods still works but you may get a console warning to replace it because they will be removed in the future._
+    ```js
+    pb.baseUrl                  -> pb.baseURL
+    pb.buildUrl()               -> pb.buildURL()
+    pb.files.getUrl()           -> pb.files.getURL()
+    pb.backups.getDownloadUrl() -> pb.backups.getDownloadURL()
+    ```
 
 
 ## 0.21.5

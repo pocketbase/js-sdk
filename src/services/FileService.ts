@@ -3,9 +3,21 @@ import { CommonOptions, FileOptions } from "@/tools/options";
 
 export class FileService extends BaseService {
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * @deprecated Please replace with `pb.files.getURL()`.
      */
     getUrl(
+        record: { [key: string]: any },
+        filename: string,
+        queryParams: FileOptions = {},
+    ): string {
+        console.warn("Please replace pb.files.getUrl() with pb.files.getURL()");
+        return this.getURL(record, filename, queryParams);
+    }
+
+    /**
+     * Builds and returns an absolute record file url for the provided filename.
+     */
+    getURL(
         record: { [key: string]: any },
         filename: string,
         queryParams: FileOptions = {},
@@ -25,7 +37,7 @@ export class FileService extends BaseService {
         parts.push(encodeURIComponent(record.id));
         parts.push(encodeURIComponent(filename));
 
-        let result = this.client.buildUrl(parts.join("/"));
+        let result = this.client.buildURL(parts.join("/"));
 
         if (Object.keys(queryParams).length) {
             // normalize the download query param for consistency with the Dart sdk

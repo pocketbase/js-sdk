@@ -24,7 +24,7 @@ describe("HealthService", function () {
         test("Should fetch all app settings", async function () {
             fetchMock.on({
                 method: "GET",
-                url: service.client.buildUrl("/api/health") + "?q1=123",
+                url: service.client.buildURL("/api/health") + "?q1=123",
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
                 },

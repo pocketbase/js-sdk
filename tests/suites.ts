@@ -26,7 +26,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=1&perPage=1&skipTotal=1&q1=emptyRequest",
             replyCode: 200,
             replyBody: {
@@ -43,7 +43,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=2&perPage=1&skipTotal=1&q1=emptyRequest",
             replyCode: 200,
             replyBody: {
@@ -60,7 +60,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=3&perPage=1&skipTotal=1&q1=emptyRequest",
             replyCode: 200,
             replyBody: {
@@ -79,7 +79,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=1&perPage=2&skipTotal=1&q1=noEmptyRequest",
             replyCode: 200,
             replyBody: {
@@ -96,7 +96,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=2&perPage=2&skipTotal=1&q1=noEmptyRequest",
             replyCode: 200,
             replyBody: {
@@ -115,7 +115,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=1&perPage=1&q1=abc",
             replyCode: 200,
             replyBody: {
@@ -132,7 +132,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=2&perPage=1&q1=abc",
             replyCode: 200,
             replyBody: {
@@ -151,7 +151,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "/" +
                 encodeURIComponent(id) +
                 "?q1=abc",
@@ -166,7 +166,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "GET",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "?page=1&perPage=1&filter=test%3D123&skipTotal=1&q1=abc",
             replyCode: 200,
             replyBody: {
@@ -184,7 +184,7 @@ export function crudServiceTestsSuite<M>(
         // create
         fetchMock.on({
             method: "POST",
-            url: service.client.buildUrl(service.baseCrudPath) + "?q1=456",
+            url: service.client.buildURL(service.baseCrudPath) + "?q1=456",
             body: { b1: 123 },
             replyCode: 200,
             replyBody: { id: "item-create" },
@@ -197,7 +197,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "PATCH",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "/" +
                 encodeURIComponent(id) +
                 "?q1=456",
@@ -213,7 +213,7 @@ export function crudServiceTestsSuite<M>(
         fetchMock.on({
             method: "DELETE",
             url:
-                service.client.buildUrl(service.baseCrudPath) +
+                service.client.buildURL(service.baseCrudPath) +
                 "/" +
                 encodeURIComponent(id) +
                 "?q1=456",

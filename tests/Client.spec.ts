@@ -26,7 +26,7 @@ describe("Client", function () {
         test("Should create a properly configured http client instance", function () {
             const client = new Client("test_base_url", null, "test_language");
 
-            assert.equal(client.baseUrl, "test_base_url");
+            assert.equal(client.baseURL, "test_base_url");
             assert.instanceOf(client.authStore, LocalAuthStore);
             assert.equal(client.lang, "test_language");
         });
@@ -67,17 +67,17 @@ describe("Client", function () {
         });
     });
 
-    describe("buildUrl()", function () {
-        test("Should properly concatenate path to baseUrl", function () {
+    describe("buildURL()", function () {
+        test("Should properly concatenate path to baseURL", function () {
             // with trailing slash
             const client1 = new Client("test_base_url/");
-            assert.equal(client1.buildUrl("test123"), "test_base_url/test123");
-            assert.equal(client1.buildUrl("/test123"), "test_base_url/test123");
+            assert.equal(client1.buildURL("test123"), "test_base_url/test123");
+            assert.equal(client1.buildURL("/test123"), "test_base_url/test123");
 
             // no trailing slash
             const client2 = new Client("test_base_url");
-            assert.equal(client2.buildUrl("test123"), "test_base_url/test123");
-            assert.equal(client2.buildUrl("/test123"), "test_base_url/test123");
+            assert.equal(client2.buildURL("test123"), "test_base_url/test123");
+            assert.equal(client2.buildURL("/test123"), "test_base_url/test123");
         });
 
         test("Should construct an absolute url if window.location is defined", function () {
@@ -92,11 +92,11 @@ describe("Client", function () {
             {
                 const client = new Client("");
                 assert.equal(
-                    client.buildUrl("test123"),
+                    client.buildURL("test123"),
                     "https://example.com/sub/test123",
                 );
                 assert.equal(
-                    client.buildUrl("/test123"),
+                    client.buildURL("/test123"),
                     "https://example.com/sub/test123",
                 );
             }
@@ -105,11 +105,11 @@ describe("Client", function () {
             {
                 const client = new Client("/a/b/");
                 assert.equal(
-                    client.buildUrl("test123"),
+                    client.buildURL("test123"),
                     "https://example.com/a/b/test123",
                 );
                 assert.equal(
-                    client.buildUrl("/test123"),
+                    client.buildURL("/test123"),
                     "https://example.com/a/b/test123",
                 );
             }
@@ -118,11 +118,11 @@ describe("Client", function () {
             {
                 const client = new Client("../a/b/");
                 assert.equal(
-                    client.buildUrl("test123"),
+                    client.buildURL("test123"),
                     "https://example.com/sub/../a/b/test123",
                 );
                 assert.equal(
-                    client.buildUrl("/test123"),
+                    client.buildURL("/test123"),
                     "https://example.com/sub/../a/b/test123",
                 );
             }
@@ -131,11 +131,11 @@ describe("Client", function () {
             {
                 const client = new Client("a/b/");
                 assert.equal(
-                    client.buildUrl("test123"),
+                    client.buildURL("test123"),
                     "https://example.com/sub/a/b/test123",
                 );
                 assert.equal(
-                    client.buildUrl("/test123"),
+                    client.buildURL("/test123"),
                     "https://example.com/sub/a/b/test123",
                 );
             }
@@ -143,15 +143,15 @@ describe("Client", function () {
             // with explicit HTTP absolute base url
             {
                 const client = new Client("http://example2.com");
-                assert.equal(client.buildUrl("test123"), "http://example2.com/test123");
-                assert.equal(client.buildUrl("/test123"), "http://example2.com/test123");
+                assert.equal(client.buildURL("test123"), "http://example2.com/test123");
+                assert.equal(client.buildURL("/test123"), "http://example2.com/test123");
             }
 
             // with explicit HTTPS absolute base url and trailing slash
             {
                 const client = new Client("https://example2.com/");
-                assert.equal(client.buildUrl("test123"), "https://example2.com/test123");
-                assert.equal(client.buildUrl("/test123"), "https://example2.com/test123");
+                assert.equal(client.buildURL("test123"), "https://example2.com/test123");
+                assert.equal(client.buildURL("/test123"), "https://example2.com/test123");
             }
         });
     });

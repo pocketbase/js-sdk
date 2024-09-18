@@ -144,7 +144,7 @@ export abstract class CrudService<M> extends BaseService {
     async getOne<T = M>(id: string, options?: CommonOptions): Promise<T> {
         if (!id) {
             throw new ClientResponseError({
-                url: this.client.buildUrl(this.baseCrudPath + "/"),
+                url: this.client.buildURL(this.baseCrudPath + "/"),
                 status: 404,
                 response: {
                     code: 404,

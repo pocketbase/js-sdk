@@ -29,7 +29,7 @@ describe("CollectionService", function () {
         test("Should send a bulk import collections request", async function () {
             fetchMock.on({
                 method: "PUT",
-                url: service.client.buildUrl("/api/collections/import?q1=456"),
+                url: service.client.buildURL("/api/collections/import?q1=456"),
                 body: {
                     collections: [{ id: "id1" }, { id: "id2" }],
                     deleteMissing: true,
@@ -58,7 +58,7 @@ describe("CollectionService", function () {
         test("Should send collection scaffolds request", async function () {
             fetchMock.on({
                 method: "GET",
-                url: service.client.buildUrl("/api/collections/meta/scaffolds?q1=456"),
+                url: service.client.buildURL("/api/collections/meta/scaffolds?q1=456"),
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
                 },

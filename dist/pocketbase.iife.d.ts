@@ -534,7 +534,7 @@ interface AuthProviderInfo {
     name: string;
     displayName: string;
     state: string;
-    authUrl: string;
+    authURL: string;
     codeVerifier: string;
     codeChallenge: string;
     codeChallengeMethod: string;
@@ -701,14 +701,14 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      *
      * @throws {ClientResponseError}
      */
-    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectURL: string, createData?: {
         [key: string]: any;
     }, options?: RecordOptions): Promise<RecordAuthResponse<T>>;
     /**
      * @deprecated
-     * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectUrl, createdData, options?).
+     * Consider using authWithOAuth2Code(provider, code, codeVerifier, redirectURL, createdData, options?).
      */
-    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2Code<T = M>(provider: string, code: string, codeVerifier: string, redirectURL: string, createData?: {
         [key: string]: any;
     }, body?: any, query?: any): Promise<RecordAuthResponse<T>>;
     /**
@@ -717,7 +717,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * Please use `authWithOAuth2Code()` OR its simplified realtime version
      * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
      */
-    authWithOAuth2<T = M>(provider: string, code: string, codeVerifier: string, redirectUrl: string, createData?: {
+    authWithOAuth2<T = M>(provider: string, code: string, codeVerifier: string, redirectURL: string, createData?: {
         [key: string]: any;
     }, bodyParams?: {
         [key: string]: any;
@@ -982,9 +982,15 @@ declare class HealthService extends BaseService {
 }
 declare class FileService extends BaseService {
     /**
-     * Builds and returns an absolute record file url for the provided filename.
+     * @deprecated Please replace with `pb.files.getURL()`.
      */
     getUrl(record: {
+        [key: string]: any;
+    }, filename: string, queryParams?: FileOptions): string;
+    /**
+     * Builds and returns an absolute record file url for the provided filename.
+     */
+    getURL(record: {
         [key: string]: any;
     }, filename: string, queryParams?: FileOptions): string;
     /**
@@ -1041,12 +1047,16 @@ declare class BackupService extends BaseService {
      */
     restore(key: string, options?: CommonOptions): Promise<boolean>;
     /**
+     * @deprecated Please use `getDownloadURL()`.
+     */
+    getDownloadUrl(token: string, key: string): string;
+    /**
      * Builds a download url for a single existing backup using an
      * admin file token and the backup file key.
      *
      * The file token can be generated via `pb.files.getToken()`.
      */
-    getDownloadUrl(token: string, key: string): string;
+    getDownloadURL(token: string, key: string): string;
 }
 interface BatchRequest {
     method: string;
@@ -1125,7 +1135,17 @@ declare class Client {
     /**
      * The base PocketBase backend url address (eg. 'http://127.0.0.1.8090').
      */
-    baseUrl: string;
+    baseURL: string;
+    /**
+     * Legacy getter alias for baseURL.
+     * @deprecated Please replace with baseURL.
+     */
+    get baseUrl(): string;
+    /**
+     * Legacy setter alias for baseURL.
+     * @deprecated Please replace with baseURL.
+     */
+    set baseUrl(v: string);
     /**
      * Hook that get triggered right before sending the fetch request,
      * allowing you to inspect and modify the url and request options.
@@ -1208,7 +1228,7 @@ declare class Client {
     private cancelControllers;
     private recordServices;
     private enableAutoCancellation;
-    constructor(baseUrl?: string, authStore?: BaseAuthStore | null, lang?: string);
+    constructor(baseURL?: string, authStore?: BaseAuthStore | null, lang?: string);
     /**
      * @deprecated
      * With PocketBase v0.23.0 admins are converted to a regular auth
@@ -1326,21 +1346,28 @@ declare class Client {
         [key: string]: any;
     }): string;
     /**
-     * Legacy alias of `pb.files.getUrl()`.
+     * @deprecated Please use `pb.files.getURL()`.
      */
     /**
-     * Legacy alias of `pb.files.getUrl()`.
+     * @deprecated Please use `pb.files.getURL()`.
      */
     getFileUrl(record: {
         [key: string]: any;
     }, filename: string, queryParams?: FileOptions): string;
     /**
+     * @deprecated Please use `pb.buildURL()`.
+     */
+    /**
+     * @deprecated Please use `pb.buildURL()`.
+     */
+    buildUrl(path: string): string;
+    /**
      * Builds a full client url by safely concatenating the provided path.
      */
     /**
      * Builds a full client url by safely concatenating the provided path.
      */
-    buildUrl(path: string): string;
+    buildURL(path: string): string;
     /**
      * Sends an api http request.
      *
