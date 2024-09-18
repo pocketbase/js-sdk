@@ -86,8 +86,8 @@ export class SettingsService extends BaseService {
             {
                 method: "POST",
                 body: {
-                    email:      toEmail,
-                    template:   emailTemplate,
+                    email: toEmail,
+                    template: emailTemplate,
                     collection: collectionIdOrName,
                 },
             },

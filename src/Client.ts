@@ -95,7 +95,8 @@ export default class Client {
      * };
      * ```
      */
-    afterSend?: ((response: Response, data: any) => any) & ((response: Response, data: any, options: SendOptions) => any);
+    afterSend?: ((response: Response, data: any) => any) &
+        ((response: Response, data: any, options: SendOptions) => any);
 
     /**
      * Optional language code (default to `en-US`) that will be sent

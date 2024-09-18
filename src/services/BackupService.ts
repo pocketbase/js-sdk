@@ -111,8 +111,10 @@ export class BackupService extends BaseService {
      * @deprecated Please use `getDownloadURL()`.
      */
     getDownloadUrl(token: string, key: string): string {
-        console.warn("Please replace pb.backups.getDownloadUrl() with pb.backups.getDownloadURL()");
-        return this.getDownloadURL(token, key)
+        console.warn(
+            "Please replace pb.backups.getDownloadUrl() with pb.backups.getDownloadURL()",
+        );
+        return this.getDownloadURL(token, key);
     }
 
     /**

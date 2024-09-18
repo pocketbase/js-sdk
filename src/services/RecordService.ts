@@ -1128,7 +1128,11 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
         // create a new client loaded with the impersonated auth state
         // ---
-        const client = new Client(this.client.baseURL, new BaseAuthStore(), this.client.lang);
+        const client = new Client(
+            this.client.baseURL,
+            new BaseAuthStore(),
+            this.client.lang,
+        );
 
         const authData = await client.send(
             this.baseCollectionPath + "/impersonate/" + encodeURIComponent(recordId),

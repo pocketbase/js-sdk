@@ -90,7 +90,11 @@ describe("SettingsService", function () {
             fetchMock.on({
                 method: "POST",
                 url: service.client.buildURL("/api/settings/test/email") + "?q1=123",
-                body: { template: "abc", email: "test@example.com", collection: "test_collection" },
+                body: {
+                    template: "abc",
+                    email: "test@example.com",
+                    collection: "test_collection",
+                },
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "456";
                 },
@@ -98,10 +102,15 @@ describe("SettingsService", function () {
                 replyBody: true,
             });
 
-            const result = await service.testEmail("test_collection", "test@example.com", "abc", {
-                q1: 123,
-                headers: { "x-test": "456" },
-            });
+            const result = await service.testEmail(
+                "test_collection",
+                "test@example.com",
+                "abc",
+                {
+                    q1: 123,
+                    headers: { "x-test": "456" },
+                },
+            );
 
             assert.isTrue(result);
         });
