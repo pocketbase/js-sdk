@@ -39,7 +39,7 @@ interface RecordModel extends BaseModel {
 // -------------------------------------------------------------------
 // Collection types
 // -------------------------------------------------------------------
-interface SchemaField {
+interface CollectionField {
     [key: string]: any;
     id: string;
     name: string;
@@ -94,7 +94,7 @@ interface EmailTemplate {
 }
 interface collection extends BaseModel {
     name: string;
-    schema: Array<SchemaField>;
+    fields: Array<CollectionField>;
     indexes: Array<string>;
     system: boolean;
     listRule?: string;
@@ -922,7 +922,7 @@ declare class CollectionService extends CrudService<CollectionModel> {
     /**
      * Imports the provided collections.
      *
-     * If `deleteMissing` is `true`, all local collections and schema fields,
+     * If `deleteMissing` is `true`, all local collections and their fields,
      * that are not present in the imported configuration, WILL BE DELETED
      * (including their related records data)!
      *

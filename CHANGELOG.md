@@ -106,13 +106,17 @@
     ```
 
 - ⚠️ Soft-deprecated and aliased `*Url()` -> `*URL()` methods for consistency with other similar native JS APIs and the accepted Go conventions.
-    _The old methods still works but you may get a console warning to replace it because they will be removed in the future._
+    _The old methods still works but you may get a console warning to replace them because they will be removed in the future._
     ```js
     pb.baseUrl                  -> pb.baseURL
     pb.buildUrl()               -> pb.buildURL()
     pb.files.getUrl()           -> pb.files.getURL()
     pb.backups.getDownloadUrl() -> pb.backups.getDownloadURL()
     ```
+
+- ⚠️ Renamed `CollectionModel.schema` to `CollectionModel.fields`.
+
+- ⚠️ Renamed type `SchemaField` to `CollectionField`.
 
 
 ## 0.21.5

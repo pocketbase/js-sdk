@@ -30,7 +30,7 @@ export interface RecordModel extends BaseModel {
 // Collection types
 // -------------------------------------------------------------------
 
-export interface SchemaField {
+export interface CollectionField {
     [key: string]: any;
 
     id: string;
@@ -91,7 +91,7 @@ export interface EmailTemplate {
 
 interface collection extends BaseModel {
     name: string;
-    schema: Array<SchemaField>;
+    fields: Array<CollectionField>;
     indexes: Array<string>;
     system: boolean;
     listRule?: string;
