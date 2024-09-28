@@ -74,4 +74,25 @@ describe("CollectionService", function () {
             assert.deepEqual(result as any, true);
         });
     });
+
+    describe("truncate()", function () {
+        test("Should send truncate collection request", async function () {
+            fetchMock.on({
+                method: "DELETE",
+                url: service.client.buildURL("/api/collections/test%3D/truncate?q1=456"),
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.["x-test"] === "123";
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.truncate("test=", {
+                q1: 456,
+                headers: { "x-test": "123" },
+            });
+
+            assert.deepEqual(result, true);
+        });
+    });
 });

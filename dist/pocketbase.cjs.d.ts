@@ -938,6 +938,12 @@ declare class CollectionService extends CrudService<CollectionModel> {
     getScaffolds(options?: CommonOptions): Promise<{
         [key: string]: CollectionModel;
     }>;
+    /**
+     * Deletes all records associated with the specified collection.
+     *
+     * @throws {ClientResponseError}
+     */
+    truncate(collectionIdOrName: string, options?: CommonOptions): Promise<true>;
 }
 interface HourlyStats {
     total: number;

@@ -936,17 +936,20 @@ const result = await batch.send()
 // Returns the first found collection matching the specified filter.
 🔐 pb.collections.getFirstListItem(filter, options = {});
 
-// Returns a single collection by its id.
-🔐 pb.collections.getOne(id, options = {});
+// Returns a single collection by its id or name.
+🔐 pb.collections.getOne(idOrName, options = {});
 
 // Creates (aka. register) a new collection.
 🔐 pb.collections.create(bodyParams = {}, options = {});
 
-// Updates an existing collection by its id.
-🔐 pb.collections.update(id, bodyParams = {}, options = {});
+// Updates an existing collection by its id or name.
+🔐 pb.collections.update(idOrName, bodyParams = {}, options = {});
 
-// Deletes a single collection by its id.
-🔐 pb.collections.delete(id, options = {});
+// Deletes a single collection by its id or name.
+🔐 pb.collections.delete(idOrName, options = {});
+
+// Deletes all records associated with the specified collection.
+🔐 pb.collections.truncate(idOrName, options = {});
 
 // Imports the provided collections.
 🔐 pb.collections.import(collections, deleteMissing = false, options = {});

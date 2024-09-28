@@ -56,4 +56,20 @@ export class CollectionService extends CrudService<CollectionModel> {
 
         return this.client.send(this.baseCrudPath + "/meta/scaffolds", options);
     }
+
+    /**
+     * Deletes all records associated with the specified collection.
+     *
+     * @throws {ClientResponseError}
+     */
+    async truncate(collectionIdOrName: string, options?: CommonOptions): Promise<true> {
+        options = Object.assign(
+            {
+                method: "DELETE",
+            },
+            options,
+        );
+
+        return this.client.send(this.baseCrudPath + "/" + encodeURIComponent(collectionIdOrName) +"/truncate", options).then(() => true);
+    }
 }

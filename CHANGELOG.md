@@ -61,6 +61,8 @@
 
 - Added new `pb.collections.getScaffolds()` method to retrieve a type indexed map with the collection models (base, auth, view) loaded with their defaults.
 
+- Added new `pb.collections.truncate(idOrName)` to delete all records associated with the specified collection.
+
 - Added the submitted fetch options as 3rd last argument in the `pb.afterSend` hook.
 
 - ⚠️ Admins are converted to `_superusers` auth collection and there is no longer `AdminService` and `AdminModel` types.
