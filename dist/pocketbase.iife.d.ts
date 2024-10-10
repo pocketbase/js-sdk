@@ -652,7 +652,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * @inheritdoc
      *
      * If the current `client.authStore.record` matches with the updated id, then
-     * on success the `client.authStore.record` will be updated with the result.
+     * on success the `client.authStore.record` will be updated with the new response record fields.
      */
     update<T = M>(id: string, bodyParams?: {
         [key: string]: any;
