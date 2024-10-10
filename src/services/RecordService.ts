@@ -255,7 +255,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @inheritdoc
      *
      * If the current `client.authStore.record` matches with the updated id, then
-     * on success the `client.authStore.record` will be updated with the result.
+     * on success the `client.authStore.record` will be updated with the new response record fields.
      */
     async update<T = M>(
         id: string,
@@ -270,7 +270,14 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                     this.client.authStore.record?.collectionName ===
                         this.collectionIdOrName)
             ) {
-                this.client.authStore.save(this.client.authStore.token, item);
+                let authExpand = Object.assign({}, this.client.authStore.record.expand);
+                let authRecord = Object.assign({}, this.client.authStore.record, item);
+                if (authExpand && item.expand) {
+                    // for now replace only top-level expand
+                    authRecord.expand = Object.assign(authExpand, item.expand)
+                }
+
+                this.client.authStore.save(this.client.authStore.token, authRecord);
             }
 
             return item as any as T;

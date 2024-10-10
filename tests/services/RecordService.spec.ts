@@ -46,17 +46,26 @@ describe("RecordService", function () {
                 replyBody: {
                     id: "test123",
                     email: "new@example.com",
+                    name: "name_new",
+                    expand: {"b": 3},
                 },
             });
 
             service.client.authStore.save("test_token", {
                 id: "test123",
                 collectionName: "sub=",
+                name: "abc",
+                expand: {"a": 1, "b": 2},
             } as any);
 
             await service.update("test123", {});
 
-            assert.equal(service.client.authStore.model?.email, "new@example.com");
+            assert.equal(service.client.authStore.record?.id, "test123");
+            assert.equal(service.client.authStore.record?.collectionName, "sub=");
+            assert.equal(service.client.authStore.record?.name, "name_new");
+            assert.equal(service.client.authStore.record?.email, "new@example.com");
+            assert.equal(service.client.authStore.record?.expand?.a, 1);
+            assert.equal(service.client.authStore.record?.expand?.b, 3);
         });
 
         test("Should not update the AuthStore record model on matching id but mismatched collection", async function () {
@@ -78,7 +87,7 @@ describe("RecordService", function () {
 
             await service.update("test123", {});
 
-            assert.equal(service.client.authStore.model?.email, "old@example.com");
+            assert.equal(service.client.authStore.record?.email, "old@example.com");
         });
 
         test("Should not update the AuthStore record model on mismatched update id", async function () {
@@ -100,7 +109,7 @@ describe("RecordService", function () {
 
             await service.update("test123", {});
 
-            assert.equal(service.client.authStore.model?.email, "old@example.com");
+            assert.equal(service.client.authStore.record?.email, "old@example.com");
         });
 
         test("Should delete the AuthStore record model on matching delete id and collection", async function () {
@@ -177,7 +186,7 @@ describe("RecordService", function () {
             const result = await service.confirmVerification(token);
 
             assert.isTrue(result);
-            assert.isTrue(service.client.authStore.model?.verified);
+            assert.isTrue(service.client.authStore.record?.verified);
         });
 
         test("Should not update the AuthStore record model verified state on mismatched token data", async function () {
@@ -203,7 +212,7 @@ describe("RecordService", function () {
             const result = await service.confirmVerification(token);
 
             assert.isTrue(result);
-            assert.isFalse(service.client.authStore.model?.verified);
+            assert.isFalse(service.client.authStore.record?.verified);
         });
 
         test("Should delete the AuthStore record model matching the token data", async function () {

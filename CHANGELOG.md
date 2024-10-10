@@ -1,3 +1,10 @@
+## 0.22.0-rc2
+
+**⚠️ This is a prerelease and works only with PocketBase v0.23.0+!**
+
+- Instead of replacing the entire `pb.authStore.record`, on auth record update we now only replace the available returned response record data ([pocketbase#5638](https://github.com/pocketbase/pocketbase/issues/5638)).
+
+
 ## 0.22.0-rc
 
 **⚠️ This release works only with PocketBase v0.23.0+ and contains breaking changes!**
