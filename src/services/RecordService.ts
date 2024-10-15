@@ -65,7 +65,7 @@ export interface AuthMethodsList {
 }
 
 export interface RecordSubscription<T = RecordModel> {
-    action: string; // eg. create, update, delete
+    action: "create" | "update" | "delete";
     record: T;
 }
 
