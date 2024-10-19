@@ -117,7 +117,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     async subscribe<T = M>(
         topic: string,
         callback: (data: RecordSubscription<T>) => void,
-        options?: SendOptions,
+        options?: RecordOptions,
     ): Promise<UnsubscribeFunc> {
         if (!topic) {
             throw new Error("Missing topic.");
