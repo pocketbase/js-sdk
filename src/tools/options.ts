@@ -72,6 +72,12 @@ export interface RecordListOptions extends ListOptions, RecordOptions {}
 
 export interface RecordFullListOptions extends FullListOptions, RecordOptions {}
 
+export interface RecordSubscribeOptions extends SendOptions {
+    fields?: string;
+    filter?: string;
+    expand?: string;
+}
+
 export interface LogStatsOptions extends CommonOptions {
     filter?: string;
 }

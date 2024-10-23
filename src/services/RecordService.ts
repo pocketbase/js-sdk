@@ -11,6 +11,7 @@ import {
     RecordListOptions,
     RecordOptions,
     SendOptions,
+    RecordSubscribeOptions,
 } from "@/tools/options";
 import { getTokenPayload } from "@/tools/jwt";
 import { registerAutoRefresh, resetAutoRefresh } from "@/tools/refresh";
@@ -145,7 +146,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     async subscribe<T = M>(
         topic: string,
         callback: (data: RecordSubscription<T>) => void,
-        options?: SendOptions,
+        options?: RecordSubscribeOptions,
     ): Promise<UnsubscribeFunc> {
         if (!topic) {
             throw new Error("Missing topic.");

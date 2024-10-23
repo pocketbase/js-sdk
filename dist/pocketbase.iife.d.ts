@@ -299,6 +299,11 @@ interface RecordListOptions extends ListOptions, RecordOptions {
 }
 interface RecordFullListOptions extends FullListOptions, RecordOptions {
 }
+interface RecordSubscribeOptions extends SendOptions {
+    fields?: string;
+    filter?: string;
+    expand?: string;
+}
 interface LogStatsOptions extends CommonOptions {
     filter?: string;
 }
@@ -610,7 +615,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
+    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void, options?: RecordSubscribeOptions): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscriptions of the specified topic
      * ("*" or record id).

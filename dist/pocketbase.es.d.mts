@@ -321,6 +321,11 @@ interface RecordListOptions extends ListOptions, RecordOptions {
 }
 interface RecordFullListOptions extends FullListOptions, RecordOptions {
 }
+interface RecordSubscribeOptions extends SendOptions {
+    fields?: string;
+    filter?: string;
+    expand?: string;
+}
 interface LogStatsOptions extends CommonOptions {
     filter?: string;
 }
@@ -653,7 +658,7 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * You can use the returned `UnsubscribeFunc` to remove only a single subscription.
      * Or use `unsubscribe(topic)` if you want to remove all subscriptions attached to the topic.
      */
-    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void, options?: SendOptions): Promise<UnsubscribeFunc>;
+    subscribe<T = M>(topic: string, callback: (data: RecordSubscription<T>) => void, options?: RecordSubscribeOptions): Promise<UnsubscribeFunc>;
     /**
      * Unsubscribe from all subscriptions of the specified topic
      * ("*" or record id).
@@ -1525,4 +1530,4 @@ declare function getTokenPayload(token: string): {
  * @param [expirationThreshold] Time in seconds that will be subtracted from the token `exp` property.
  */
 declare function isTokenExpired(token: string, expirationThreshold?: number): boolean;
-export { Client as default, BeforeSendResult, ClientResponseError, CollectionService, HealthCheckResponse, HealthService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OTPResponse, RecordService, CrudService, BatchRequest, BatchRequestResult, BatchService, SubBatchService, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, AuthRecord, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, ListResult, BaseModel, LogModel, RecordModel, CollectionField, TokenConfig, AuthAlertConfig, OTPConfig, MFAConfig, PasswordAuthConfig, OAuth2Provider, OAuth2Config, EmailTemplate, BaseCollectionModel, ViewCollectionModel, AuthCollectionModel, CollectionModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, serializeQueryParams, ParseOptions, cookieParse, SerializeOptions, cookieSerialize, getTokenPayload, isTokenExpired };
+export { Client as default, BeforeSendResult, ClientResponseError, CollectionService, HealthCheckResponse, HealthService, HourlyStats, LogService, UnsubscribeFunc, RealtimeService, RecordAuthResponse, AuthProviderInfo, AuthMethodsList, RecordSubscription, OAuth2UrlCallback, OAuth2AuthConfig, OTPResponse, RecordService, CrudService, BatchRequest, BatchRequestResult, BatchService, SubBatchService, AsyncSaveFunc, AsyncClearFunc, AsyncAuthStore, AuthRecord, AuthModel, OnStoreChangeFunc, BaseAuthStore, LocalAuthStore, ListResult, BaseModel, LogModel, RecordModel, CollectionField, TokenConfig, AuthAlertConfig, OTPConfig, MFAConfig, PasswordAuthConfig, OAuth2Provider, OAuth2Config, EmailTemplate, BaseCollectionModel, ViewCollectionModel, AuthCollectionModel, CollectionModel, SendOptions, CommonOptions, ListOptions, FullListOptions, RecordOptions, RecordListOptions, RecordFullListOptions, RecordSubscribeOptions, LogStatsOptions, FileOptions, AuthOptions, normalizeUnknownQueryParams, serializeQueryParams, ParseOptions, cookieParse, SerializeOptions, cookieSerialize, getTokenPayload, isTokenExpired };
