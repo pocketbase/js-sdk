@@ -158,10 +158,10 @@ which means that to upload a file it is enough to provide either a [`FormData`](
 
 All services return a standard [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-based response, so the error handling is straightforward:
 ```js
-pb.collection('example').getList(1, 50).then((result) {
+pb.collection('example').getList(1, 50).then((result) => {
   // success...
   console.log('Result:', result);
-}).catch((error) {
+}).catch((error) => {
   // error...
   console.log('Error:', error);
 });
