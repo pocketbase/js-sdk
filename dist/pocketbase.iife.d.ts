@@ -65,6 +65,7 @@ interface OTPConfig {
 interface MFAConfig {
     enabled: boolean;
     duration: number;
+    rule: string;
 }
 interface PasswordAuthConfig {
     enabled: boolean;
@@ -73,6 +74,7 @@ interface PasswordAuthConfig {
 interface OAuth2Provider {
     pkce?: boolean;
     clientId: string;
+    name: string;
     clientSecret: string;
     authUrl: string;
     tokenUrl: string;
@@ -84,9 +86,7 @@ interface OAuth2Config {
     mappedFields: {
         [key: string]: string;
     };
-    Providers: {
-        [key: string]: OAuth2Provider;
-    };
+    providers: Array<OAuth2Provider>;
 }
 interface EmailTemplate {
     subject: string;
