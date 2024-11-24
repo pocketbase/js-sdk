@@ -1,13 +1,6 @@
-## 0.22.0-rc2
+## 0.22.0
 
-**⚠️ This is a prerelease and works only with PocketBase v0.23.0+!**
-
-- Instead of replacing the entire `pb.authStore.record`, on auth record update we now only replace the available returned response record data ([pocketbase#5638](https://github.com/pocketbase/pocketbase/issues/5638)).
-
-
-## 0.22.0-rc
-
-**⚠️ This release works only with PocketBase v0.23.0+ and contains breaking changes!**
+**⚠️ This release introduces some breaking changes and works only with PocketBase v0.23.0+.**
 
 - Added support for sending batch/transactional create/updated/delete/**upsert** requests with the new batch Web APIs.
     ```js
@@ -71,6 +64,8 @@
 - Added new `pb.collections.truncate(idOrName)` to delete all records associated with the specified collection.
 
 - Added the submitted fetch options as 3rd last argument in the `pb.afterSend` hook.
+
+- Instead of replacing the entire `pb.authStore.record`, on auth record update we now only replace the available returned response record data ([pocketbase#5638](https://github.com/pocketbase/pocketbase/issues/5638)).
 
 - ⚠️ Admins are converted to `_superusers` auth collection and there is no longer `AdminService` and `AdminModel` types.
     `pb.admins` is soft-deprecated and aliased to `pb.collection("_superusers")`.
