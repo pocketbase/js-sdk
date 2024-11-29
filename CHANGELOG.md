@@ -1,6 +1,6 @@
 ## 0.22.1
 
-- Fixed old `pb.authStore.isAdmin`/`pb.authStore..isAuthRecord` and marked them as depricated in favour of `pb.authStore.isSuperuser` ([#323](https://github.com/pocketbase/js-sdk/issues/323)).
+- Fixed old `pb.authStore.isAdmin`/`pb.authStore.isAuthRecord` and marked them as deprecated in favour of `pb.authStore.isSuperuser` ([#323](https://github.com/pocketbase/js-sdk/issues/323)).
     _Note that with PocketBase v0.23.0 superusers are converted to a system auth collection so you can always simply check the value of `pb.authStore.record?.collectionName`._
 
 
