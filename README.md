@@ -1037,7 +1037,7 @@ const result = await batch.send()
 // Initializes an app data restore from an existing backup.
 🔐 pb.backups.restore(key, options = {});
 
-// Builds a download url for a single existing backup using an
+// Builds a download url for a single existing backup using a
 // superuser file token and the backup file key.
 🔐 pb.backups.getDownloadURL(token, key);
 ```
