@@ -916,7 +916,7 @@ const result = await batch.send()
 // Builds and returns an absolute record file url for the provided filename.
 🔓 pb.files.getURL(record, filename, options = {});
 
-// Requests a new private file access token for the current auth model (admin or record).
+// Requests a new private file access token for the current authenticated record.
 🔐 pb.files.getToken(options = {});
 ```
 
@@ -1037,8 +1037,8 @@ const result = await batch.send()
 // Initializes an app data restore from an existing backup.
 🔐 pb.backups.restore(key, options = {});
 
-// Builds a download url for a single existing backup using an
-// admin file token and the backup file key.
+// Builds a download url for a single existing backup using a
+// superuser file token and the backup file key.
 🔐 pb.backups.getDownloadURL(token, key);
 ```
 
