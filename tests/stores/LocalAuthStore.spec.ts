@@ -128,22 +128,26 @@ describe("LocalAuthStore", function () {
             store.save(
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
             );
-
             assert.isFalse(store.isSuperuser, "non-superuser token");
 
             // superuser token
             store.save(
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMzE0MjYzNTgyMyIsImV4cCI6MTczMjk2ODAwNSwiaWQiOiJLVDQ1YnpOQTM0MFhhN0wiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.k73nw7y3RFBm-_S0RcmJrGQ_imJPgbUZk6VT0kW0igc",
             );
-
             assert.isTrue(store.isSuperuser, "superuser token");
+
+            // non-superuser record
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
+                {id: "abc", collectionId: "abc", collectionName: "abc"},
+            );
+            assert.isFalse(store.isSuperuser, "non-superuser record");
 
             // superuser record
             store.save(
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
                 {id: "abc", collectionId: "abc", collectionName: "_superusers"},
             );
-
             assert.isTrue(store.isSuperuser, "superuser record");
         });
     });
