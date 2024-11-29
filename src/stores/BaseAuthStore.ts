@@ -51,17 +51,35 @@ export class BaseAuthStore {
     }
 
     /**
-     * Checks whether the current store state is for admin authentication.
+     * Loosely checks whether the currently loaded store state is for superuser.
+     *
+     * Alternatively you can also compare directly `pb.authStore.record?.collectionName`.
      */
-    get isAdmin(): boolean {
-        return getTokenPayload(this.token).type === "admin";
+    get isSuperuser(): boolean {
+        let payload = getTokenPayload(this.token)
+
+        return payload.type == "auth" && (
+            this.record?.collectionName == "_superusers" ||
+            // fallback in case the record field is not populated and assuming
+            // that the collection crc32 checksum id wasn't manually changed
+            (!this.record?.collectionName && payload.collectionId == "pbc_3142635823")
+        );
     }
 
     /**
-     * Checks whether the current store state is for auth record authentication.
+     * @deprecated use `isSuperuser` instead or simply check the record.collectionName property.
+     */
+    get isAdmin(): boolean {
+        console.warn("Please replace pb.authStore.isAdmin with pb.authStore.isSuperuser OR simply check the value of pb.authStore.record?.collectionName");
+        return this.isSuperuser;
+    }
+
+    /**
+     * @deprecated use `!isSuperuser` instead or simply check the record.collectionName property.
      */
     get isAuthRecord(): boolean {
-        return getTokenPayload(this.token).type === "authRecord";
+        console.warn("Please replace pb.authStore.isAuthRecord with !pb.authStore.isSuperuser OR simply check the value of pb.authStore.record?.collectionName");
+        return getTokenPayload(this.token).type == "auth" && !this.isSuperuser;
     }
 
     /**

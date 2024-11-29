@@ -54,7 +54,7 @@ export class FileService extends BaseService {
     }
 
     /**
-     * Requests a new private file access token for the current auth model (admin or record).
+     * Requests a new private file access token for the current auth model.
      *
      * @throws {ClientResponseError}
      */

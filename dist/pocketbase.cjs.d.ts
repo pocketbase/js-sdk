@@ -159,11 +159,17 @@ declare class BaseAuthStore {
      */
     get isValid(): boolean;
     /**
-     * Checks whether the current store state is for admin authentication.
+     * Loosely checks whether the currently loaded store state is for superuser.
+     *
+     * Alternatively you can also compare directly `pb.authStore.record?.collectionName`.
+     */
+    get isSuperuser(): boolean;
+    /**
+     * @deprecated use `isSuperuser` instead or simply check the record.collectionName property.
      */
     get isAdmin(): boolean;
     /**
-     * Checks whether the current store state is for auth record authentication.
+     * @deprecated use `!isSuperuser` instead or simply check the record.collectionName property.
      */
     get isAuthRecord(): boolean;
     /**
@@ -1005,7 +1011,7 @@ declare class FileService extends BaseService {
         [key: string]: any;
     }, filename: string, queryParams?: FileOptions): string;
     /**
-     * Requests a new private file access token for the current auth model (admin or record).
+     * Requests a new private file access token for the current auth model.
      *
      * @throws {ClientResponseError}
      */

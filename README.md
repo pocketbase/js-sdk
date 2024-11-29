@@ -238,11 +238,10 @@ BaseAuthStore {
     record:       RecordModel|null // the authenticated auth record
     token:        string  // the authenticated token
     isValid:      boolean // checks if the store has existing and unexpired token
-    isAdmin:      boolean // checks if the store state is for admin
-    isAuthRecord: boolean // checks if the store state is for an auth record
+    isSuperuser:  boolean // checks if the store state is for superuser
 
     // main methods
-    clear()             // "logout" the authenticated record or admin model
+    clear()             // "logout" the authenticated record
     save(token, record) // update the store with the new auth data
     onChange(callback, fireImmediately = false) // register a callback that will be called on store change
 
@@ -252,7 +251,7 @@ BaseAuthStore {
 }
 ```
 
-To _"logout"_ an authenticated record or admin you can call `pb.authStore.clear()`.
+To _"logout"_ the authenticated record you can call `pb.authStore.clear()`.
 
 To _"listen"_ for changes in the auth store, you can register a new listener via `pb.authStore.onChange`, eg:
 ```js

@@ -72,31 +72,79 @@ describe("LocalAuthStore", function () {
         });
     });
 
+    // @deprecated
     describe("get isAdmin()", function () {
         test("Should checks if the stored token is for admin", function () {
             const store = new LocalAuthStore();
 
             assert.isFalse(store.isAdmin, "empty token (initial)");
 
+            // non-superuser token
             store.save(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWRtaW4iLCJleHAiOjE2MjQ3ODgwMDB9.ZYNR7gqmmeu35h8Gf0uR7-jV-b21WIq8APOBLeevnuw",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
             );
 
-            assert.isTrue(store.isAdmin, "admin token");
+            assert.isFalse(store.isAdmin, "non-superuser token");
+
+            // superuser token
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMzE0MjYzNTgyMyIsImV4cCI6MTczMjk2ODAwNSwiaWQiOiJLVDQ1YnpOQTM0MFhhN0wiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.k73nw7y3RFBm-_S0RcmJrGQ_imJPgbUZk6VT0kW0igc",
+            );
+
+            assert.isTrue(store.isAdmin, "superuser token");
         });
     });
 
+    // @deprecated
     describe("get isAuthRecord()", function () {
-        test("Should checks if the stored token is for auth record", function () {
+        test("Should checks if the stored token is for regular auth record", function () {
             const store = new LocalAuthStore();
 
             assert.isFalse(store.isAuthRecord, "empty token (initial)");
 
+            // non-superuser token
             store.save(
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXV0aFJlY29yZCIsImV4cCI6MTYyNDc4ODAwMH0.wuEMjDMF0mV_U80bjUEUfnDM6sL2n9yvy0jnU3XZUE8",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
             );
 
-            assert.isTrue(store.isAuthRecord, "admin token");
+            assert.isTrue(store.isAuthRecord, "non-superuser token");
+
+            // superuser token
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMzE0MjYzNTgyMyIsImV4cCI6MTczMjk2ODAwNSwiaWQiOiJLVDQ1YnpOQTM0MFhhN0wiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.k73nw7y3RFBm-_S0RcmJrGQ_imJPgbUZk6VT0kW0igc",
+            );
+
+            assert.isFalse(store.isAuthRecord, "superuser token");
+        });
+    });
+
+    describe("get isSuperuser()", function () {
+        test("Should checks if the stored token is for superuser", function () {
+            const store = new LocalAuthStore();
+
+            assert.isFalse(store.isSuperuser, "empty token (initial)");
+
+            // non-superuser token
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
+            );
+
+            assert.isFalse(store.isSuperuser, "non-superuser token");
+
+            // superuser token
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMzE0MjYzNTgyMyIsImV4cCI6MTczMjk2ODAwNSwiaWQiOiJLVDQ1YnpOQTM0MFhhN0wiLCJyZWZyZXNoYWJsZSI6dHJ1ZSwidHlwZSI6ImF1dGgifQ.k73nw7y3RFBm-_S0RcmJrGQ_imJPgbUZk6VT0kW0igc",
+            );
+
+            assert.isTrue(store.isSuperuser, "superuser token");
+
+            // superuser record
+            store.save(
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMTIzIiwiZXhwIjoxNzMyOTY4MDA1LCJpZCI6IktUNDViek5BMzQwWGE3TCIsInJlZnJlc2hhYmxlIjp0cnVlLCJ0eXBlIjoiYXV0aCJ9.mxHqwy4zaukvc9HRhKB_LA84UelQjo37rhTAykryV80",
+                {id: "abc", collectionId: "abc", collectionName: "_superusers"},
+            );
+
+            assert.isTrue(store.isSuperuser, "superuser record");
         });
     });
 
