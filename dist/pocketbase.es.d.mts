@@ -1111,8 +1111,8 @@ declare class BackupService extends BaseService {
      */
     getDownloadUrl(token: string, key: string): string;
     /**
-     * Builds a download url for a single existing backup using an
-     * admin file token and the backup file key.
+     * Builds a download url for a single existing backup using a
+     * superuser file token and the backup file key.
      *
      * The file token can be generated via `pb.files.getToken()`.
      */
