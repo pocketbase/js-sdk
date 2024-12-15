@@ -383,6 +383,19 @@ declare class RealtimeService extends BaseService {
      */
     get isConnected(): boolean;
     /**
+     * An optional hook that is invoked when the realtime client disconnects
+     * either when unsubscribing from all subscriptions or when the
+     * connection was interrupted or closed by the server.
+     *
+     * The received argument could be used to determine whether the disconnect
+     * is a result from unsubscribing (`activeSubscriptions.length == 0`)
+     * or because of network/server error (`activeSubscriptions.length > 0`).
+     *
+     * If you want to listen for the opposite, aka. when the client connection is established,
+     * subscribe to the `PB_CONNECT` event.
+     */
+    onDisconnect?: (activeSubscriptions: Array<string>) => void;
+    /**
      * Register the subscription listener.
      *
      * You can subscribe multiple times to the same topic.

@@ -1015,6 +1015,18 @@ const result = await batch.send()
 
 // Unsubscribe from all subscriptions matching the specified topic and listener function.
 🔓 pb.realtime.unsubscribeByTopicAndListener(topic, callback);
+
+// Getter that checks whether the realtime connection has been established.
+pb.realtime.isConnected
+
+// An optional hook that is invoked when the realtime client disconnects
+// either when unsubscribing from all subscriptions or when the connection
+// was interrupted or closed by the server.
+//
+// Note that the realtime client autoreconnect on its own and this hook is
+// useful only for the cases where you want to apply a special behavior on
+// server error or after closing the realtime connection.
+pb.realtime.onDisconnect = function(activeSubscriptions)
 ```
 
 ---

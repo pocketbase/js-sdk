@@ -1,3 +1,9 @@
+## 0.23.0
+
+- Added optional `pb.realtime.onDisconnect` hook function.
+  _Note that the realtime client autoreconnect on its own and this hook is useful only for the cases where you want to apply a special behavior on server error or after closing the realtime connection._
+
+
 ## 0.22.1
 
 - Fixed old `pb.authStore.isAdmin`/`pb.authStore.isAuthRecord` and marked them as deprecated in favour of `pb.authStore.isSuperuser` ([#323](https://github.com/pocketbase/js-sdk/issues/323)).
