@@ -96,7 +96,10 @@ export class SubBatchService {
      *
      * The request will be executed as update if `bodyParams` have a valid existing record `id` value, otherwise - create.
      */
-    upsert(bodyParams?: { [key: string]: any } | FormData, options?: RecordOptions): void {
+    upsert(
+        bodyParams?: { [key: string]: any } | FormData,
+        options?: RecordOptions,
+    ): void {
         options = Object.assign(
             {
                 body: bodyParams || {},
@@ -120,7 +123,10 @@ export class SubBatchService {
     /**
      * Registers a record create request into the current batch queue.
      */
-    create(bodyParams?: { [key: string]: any } | FormData, options?: RecordOptions): void {
+    create(
+        bodyParams?: { [key: string]: any } | FormData,
+        options?: RecordOptions,
+    ): void {
         options = Object.assign(
             {
                 body: bodyParams || {},
@@ -210,7 +216,7 @@ export class SubBatchService {
         // -----------------------------------------------------------
         let body = options.body;
         if (isFormData(body)) {
-            body = convertFormDataToObject(body)
+            body = convertFormDataToObject(body);
         }
 
         for (const key in body) {

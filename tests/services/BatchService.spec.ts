@@ -246,14 +246,14 @@ describe("BatchService", function () {
                                         title: "test_title",
                                         number1: 123,
                                         number2: -123.456,
-                                        number3: '0.0',
-                                        number4: '10e100',
+                                        number3: "0.0",
+                                        number4: "10e100",
                                         bool1: true,
                                         bool2: false,
-                                        options: ["a","b","c"],
+                                        options: ["a", "b", "c"],
                                         json_payload: 789,
                                         description: "new",
-                                        json_array: [1,2,3],
+                                        json_array: [1, 2, 3],
                                     },
                                 },
                             ],
@@ -270,22 +270,25 @@ describe("BatchService", function () {
             });
 
             let formData = new FormData();
-            formData.append("title", "test_title")
-            formData.append("description", "old")
-            formData.append("number1", "123")
-            formData.append("number2", "-123.456")
-            formData.append("number3", "0.0")
-            formData.append("number4", "10e100")
-            formData.append("bool1", "true")
-            formData.append("bool2", "false")
-            formData.append("options", "a")
-            formData.append("options", "b")
-            formData.append("options", "c")
-            formData.append("files_one", new File(["test"], "test0.png"))
-            formData.append("files_many", new File(["test"], "test1.png"))
-            formData.append("files_many", new File(["test"], "test2.png"))
-            formData.append("files_many", new File(["test"], "test3.png"))
-            formData.append("@jsonPayload", `{"json_payload": 789, "description": "new", "json_array": [1,2,3]}`)
+            formData.append("title", "test_title");
+            formData.append("description", "old");
+            formData.append("number1", "123");
+            formData.append("number2", "-123.456");
+            formData.append("number3", "0.0");
+            formData.append("number4", "10e100");
+            formData.append("bool1", "true");
+            formData.append("bool2", "false");
+            formData.append("options", "a");
+            formData.append("options", "b");
+            formData.append("options", "c");
+            formData.append("files_one", new File(["test"], "test0.png"));
+            formData.append("files_many", new File(["test"], "test1.png"));
+            formData.append("files_many", new File(["test"], "test2.png"));
+            formData.append("files_many", new File(["test"], "test3.png"));
+            formData.append(
+                "@jsonPayload",
+                `{"json_payload": 789, "description": "new", "json_array": [1,2,3]}`,
+            );
 
             service.collection("@test1").create(formData, { fields: "1abc" });
 

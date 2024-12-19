@@ -47,7 +47,7 @@ describe("RecordService", function () {
                     id: "test123",
                     email: "new@example.com",
                     name: "name_new",
-                    expand: {"b": 3},
+                    expand: { b: 3 },
                 },
             });
 
@@ -55,7 +55,7 @@ describe("RecordService", function () {
                 id: "test123",
                 collectionName: "sub=",
                 name: "abc",
-                expand: {"a": 1, "b": 2},
+                expand: { a: 1, b: 2 },
             } as any);
 
             await service.update("test123", {});

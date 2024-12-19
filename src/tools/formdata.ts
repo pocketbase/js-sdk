@@ -99,20 +99,20 @@ export function convertToFormDataIfNeeded(body: any): any {
  *   - any other string (empty string too) is left as it is
  */
 export function convertFormDataToObject(formData: FormData): { [key: string]: any } {
-    let result: { [key: string]: any }= {};
+    let result: { [key: string]: any } = {};
 
     formData.forEach((v, k) => {
         if (k === "@jsonPayload" && typeof v == "string") {
             try {
-                let parsed = JSON.parse(v)
+                let parsed = JSON.parse(v);
                 Object.assign(result, parsed);
             } catch (err) {
-                console.warn("@jsonPayload error:", err)
+                console.warn("@jsonPayload error:", err);
             }
         } else {
-            if (typeof result[k] !== 'undefined') {
+            if (typeof result[k] !== "undefined") {
                 if (!Array.isArray(result[k])) {
-                    result[k] = [result[k]]
+                    result[k] = [result[k]];
                 }
                 result[k].push(inferFormDataValue(v));
             } else {
@@ -124,11 +124,11 @@ export function convertFormDataToObject(formData: FormData): { [key: string]: an
     return result;
 }
 
-const inferNumberCharsRegex = /^[\-\.\d]+$/
+const inferNumberCharsRegex = /^[\-\.\d]+$/;
 
 function inferFormDataValue(value: any): any {
     if (typeof value != "string") {
-        return value
+        return value;
     }
 
     if (value == "true") {
@@ -141,12 +141,12 @@ function inferFormDataValue(value: any): any {
 
     // note: expects the provided raw string to match exactly with the minimal string representation of the parsed number
     if (
-        (value[0] === "-" || (value[0] >= '0' && value[0] <= '9')) &&
+        (value[0] === "-" || (value[0] >= "0" && value[0] <= "9")) &&
         inferNumberCharsRegex.test(value)
     ) {
-        let num = (+value)
-        if (("" + num) === value) {
-            return num
+        let num = +value;
+        if ("" + num === value) {
+            return num;
         }
     }
 

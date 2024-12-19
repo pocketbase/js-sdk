@@ -275,7 +275,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 let authRecord = Object.assign({}, this.client.authStore.record, item);
                 if (authExpand) {
                     // for now "merge" only top-level expand
-                    authRecord.expand = Object.assign(authExpand, item.expand)
+                    authRecord.expand = Object.assign(authExpand, item.expand);
                 }
 
                 this.client.authStore.save(this.client.authStore.token, authRecord);

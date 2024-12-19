@@ -70,6 +70,14 @@ export class CollectionService extends CrudService<CollectionModel> {
             options,
         );
 
-        return this.client.send(this.baseCrudPath + "/" + encodeURIComponent(collectionIdOrName) +"/truncate", options).then(() => true);
+        return this.client
+            .send(
+                this.baseCrudPath +
+                    "/" +
+                    encodeURIComponent(collectionIdOrName) +
+                    "/truncate",
+                options,
+            )
+            .then(() => true);
     }
 }
