@@ -210,7 +210,91 @@ describe("BatchService", function () {
             });
 
             // restore
-            (globalThis.global as any).product = false;
+            (globalThis.global as any).HermesInternal = false;
+
+            assert.deepEqual(result as any, true);
+        });
+
+        test("Should convert FormData to object on individual batch request level", async function () {
+            const service = new BatchService(client);
+
+            fetchMock.on({
+                method: "POST",
+                url: service.client.buildURL("/api/batch") + "?q1=123",
+                additionalMatcher: (_, config) => {
+                    if (
+                        // custom header is missing
+                        config?.headers?.["x-test"] != "123" ||
+                        // multipart/form-data requests shouldn't have explicitly set Content-Type
+                        config?.headers?.["Content-Type"] ||
+                        // the body should have been converted to FormData
+                        !(config.body instanceof FormData)
+                    ) {
+                        return false;
+                    }
+
+                    assert.equal(Array.from(config.body.keys()).length, 5);
+
+                    assert.deepEqual(
+                        JSON.parse(config.body.get("@jsonPayload") as string),
+                        {
+                            requests: [
+                                {
+                                    method: "POST",
+                                    url: "/api/collections/%40test1/records?fields=1abc",
+                                    body: {
+                                        title: "test_title",
+                                        number1: 123,
+                                        number2: -123.456,
+                                        number3: '0.0',
+                                        number4: '10e100',
+                                        bool1: true,
+                                        bool2: false,
+                                        options: ["a","b","c"],
+                                        json_payload: 789,
+                                        description: "new",
+                                        json_array: [1,2,3],
+                                    },
+                                },
+                            ],
+                        },
+                    );
+
+                    assert.equal(config.body.getAll("requests.0.files_one").length, 1);
+                    assert.equal(config.body.getAll("requests.0.files_many").length, 3);
+
+                    return true;
+                },
+                replyCode: 200,
+                replyBody: true,
+            });
+
+            let formData = new FormData();
+            formData.append("title", "test_title")
+            formData.append("description", "old")
+            formData.append("number1", "123")
+            formData.append("number2", "-123.456")
+            formData.append("number3", "0.0")
+            formData.append("number4", "10e100")
+            formData.append("bool1", "true")
+            formData.append("bool2", "false")
+            formData.append("options", "a")
+            formData.append("options", "b")
+            formData.append("options", "c")
+            formData.append("files_one", new File(["test"], "test0.png"))
+            formData.append("files_many", new File(["test"], "test1.png"))
+            formData.append("files_many", new File(["test"], "test2.png"))
+            formData.append("files_many", new File(["test"], "test3.png"))
+            formData.append("@jsonPayload", `{"json_payload": 789, "description": "new", "json_array": [1,2,3]}`)
+
+            service.collection("@test1").create(formData, { fields: "1abc" });
+
+            const result = await service.send({
+                q1: 123,
+                headers: {
+                    "x-test": "123",
+                },
+            });
 
             assert.deepEqual(result as any, true);
         });

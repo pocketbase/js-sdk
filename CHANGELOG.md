@@ -1,3 +1,8 @@
+## 0.24.0
+
+- Added support for assigning `FormData` as body to individual batch requests ([pocketbase#6145](https://github.com/pocketbase/pocketbase/discussions/6145)).
+
+
 ## 0.23.0
 
 - Added optional `pb.realtime.onDisconnect` hook function.

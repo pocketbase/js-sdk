@@ -85,3 +85,70 @@ export function convertToFormDataIfNeeded(body: any): any {
 
     return form;
 }
+
+/**
+ * Converts the provided FormData instance into a plain object.
+ *
+ * For consistency with the server multipart/form-data inferring,
+ * the following normalization rules are applied for plain multipart string values:
+ *   - "true" is converted to the json "true"
+ *   - "false" is converted to the json "false"
+ *   - numeric strings are converted to json number ONLY if the resulted
+ *     minimal number string representation is the same as the provided raw string
+ *     (aka. scientific notations, "Infinity", "0.0", "0001", etc. are kept as string)
+ *   - any other string (empty string too) is left as it is
+ */
+export function convertFormDataToObject(formData: FormData): { [key: string]: any } {
+    let result: { [key: string]: any }= {};
+
+    formData.forEach((v, k) => {
+        if (k === "@jsonPayload" && typeof v == "string") {
+            try {
+                let parsed = JSON.parse(v)
+                Object.assign(result, parsed);
+            } catch (err) {
+                console.warn("@jsonPayload error:", err)
+            }
+        } else {
+            if (typeof result[k] !== 'undefined') {
+                if (!Array.isArray(result[k])) {
+                    result[k] = [result[k]]
+                }
+                result[k].push(inferFormDataValue(v));
+            } else {
+                result[k] = inferFormDataValue(v);
+            }
+        }
+    });
+
+    return result;
+}
+
+const inferNumberCharsRegex = /^[\-\.\d]+$/
+
+function inferFormDataValue(value: any): any {
+    if (typeof value != "string") {
+        return value
+    }
+
+    if (value == "true") {
+        return true;
+    }
+
+    if (value == "false") {
+        return false;
+    }
+
+    // note: expects the provided raw string to match exactly with the minimal string representation of the parsed number
+    if (
+        (value[0] === "-" || (value[0] >= '0' && value[0] <= '9')) &&
+        inferNumberCharsRegex.test(value)
+    ) {
+        let num = (+value)
+        if (("" + num) === value) {
+            return num
+        }
+    }
+
+    return value;
+}

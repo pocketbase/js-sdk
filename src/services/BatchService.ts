@@ -1,5 +1,5 @@
 import { BaseService } from "@/services/BaseService";
-import { isFile } from "@/tools/formdata";
+import { isFile, isFormData, convertFormDataToObject } from "@/tools/formdata";
 import {
     SendOptions,
     RecordOptions,
@@ -40,8 +40,6 @@ export class BatchService extends BaseService {
 
     /**
      * Sends the batch requests.
-     *
-     * Note: FormData as individual request body is not supported at the moment.
      *
      * @throws {ClientResponseError}
      */
@@ -98,7 +96,7 @@ export class SubBatchService {
      *
      * The request will be executed as update if `bodyParams` have a valid existing record `id` value, otherwise - create.
      */
-    upsert(bodyParams?: { [key: string]: any }, options?: RecordOptions): void {
+    upsert(bodyParams?: { [key: string]: any } | FormData, options?: RecordOptions): void {
         options = Object.assign(
             {
                 body: bodyParams || {},
@@ -122,7 +120,7 @@ export class SubBatchService {
     /**
      * Registers a record create request into the current batch queue.
      */
-    create(bodyParams?: { [key: string]: any }, options?: RecordOptions): void {
+    create(bodyParams?: { [key: string]: any } | FormData, options?: RecordOptions): void {
         options = Object.assign(
             {
                 body: bodyParams || {},
@@ -148,7 +146,7 @@ export class SubBatchService {
      */
     update(
         id: string,
-        bodyParams?: { [key: string]: any },
+        bodyParams?: { [key: string]: any } | FormData,
         options?: RecordOptions,
     ): void {
         options = Object.assign(
@@ -210,8 +208,13 @@ export class SubBatchService {
 
         // extract json and files body data
         // -----------------------------------------------------------
-        for (const key in options.body) {
-            const val = options.body[key];
+        let body = options.body;
+        if (isFormData(body)) {
+            body = convertFormDataToObject(body)
+        }
+
+        for (const key in body) {
+            const val = body[key];
 
             if (isFile(val)) {
                 request.files[key] = request.files[key] || [];

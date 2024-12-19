@@ -1115,8 +1115,6 @@ declare class BatchService extends BaseService {
     /**
      * Sends the batch requests.
      *
-     * Note: FormData as individual request body is not supported at the moment.
-     *
      * @throws {ClientResponseError}
      */
     send(options?: SendOptions): Promise<Array<BatchRequestResult>>;
@@ -1132,19 +1130,19 @@ declare class SubBatchService {
      */
     upsert(bodyParams?: {
         [key: string]: any;
-    }, options?: RecordOptions): void;
+    } | FormData, options?: RecordOptions): void;
     /**
      * Registers a record create request into the current batch queue.
      */
     create(bodyParams?: {
         [key: string]: any;
-    }, options?: RecordOptions): void;
+    } | FormData, options?: RecordOptions): void;
     /**
      * Registers a record update request into the current batch queue.
      */
     update(id: string, bodyParams?: {
         [key: string]: any;
-    }, options?: RecordOptions): void;
+    } | FormData, options?: RecordOptions): void;
     /**
      * Registers a record delete request into the current batch queue.
      */
