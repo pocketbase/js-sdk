@@ -1061,7 +1061,7 @@ pb.realtime.onDisconnect = function(activeSubscriptions)
 🔐 pb.crons.getFullList(options = {});
 
 // Runs the specified cron job.
-🔐 pb.crons.run(cronId, options = {});
+🔐 pb.crons.run(jobId, options = {});
 ```
 
 ---

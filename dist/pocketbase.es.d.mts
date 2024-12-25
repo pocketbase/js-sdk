@@ -1147,7 +1147,7 @@ declare class CronService extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    run(cronId: string, options?: CommonOptions): Promise<boolean>;
+    run(jobId: string, options?: CommonOptions): Promise<boolean>;
 }
 interface BatchRequest {
     method: string;

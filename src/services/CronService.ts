@@ -28,7 +28,7 @@ export class CronService extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    async run(cronId: string, options?: CommonOptions): Promise<boolean> {
+    async run(jobId: string, options?: CommonOptions): Promise<boolean> {
         options = Object.assign(
             {
                 method: "POST",
@@ -37,7 +37,7 @@ export class CronService extends BaseService {
         );
 
         return this.client
-            .send(`/api/crons/${encodeURIComponent(cronId)}`, options)
+            .send(`/api/crons/${encodeURIComponent(jobId)}`, options)
             .then(() => true);
     }
 }
