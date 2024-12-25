@@ -1,3 +1,8 @@
+## 0.25.0 (WIP)
+
+- Added `pb.crons` service to interact with the cron Web APIs.
+
+
 ## 0.24.0
 
 - Added support for assigning `FormData` as body to individual batch requests ([pocketbase#6145](https://github.com/pocketbase/pocketbase/discussions/6145)).

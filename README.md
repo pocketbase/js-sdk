@@ -1054,6 +1054,16 @@ pb.realtime.onDisconnect = function(activeSubscriptions)
 🔐 pb.backups.getDownloadURL(token, key);
 ```
 
+##### CronService
+
+```js
+// Returns list with all available cron jobs.
+🔐 pb.crons.getFullList(options = {});
+
+// Runs the specified cron job.
+🔐 pb.crons.run(cronId, options = {});
+```
+
 ---
 
 ##### HealthService

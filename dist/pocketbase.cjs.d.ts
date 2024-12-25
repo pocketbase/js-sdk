@@ -1088,6 +1088,24 @@ declare class BackupService extends BaseService {
      */
     getDownloadURL(token: string, key: string): string;
 }
+interface CronJob {
+    id: string;
+    expression: string;
+}
+declare class CronService extends BaseService {
+    /**
+     * Returns list with all registered cron jobs.
+     *
+     * @throws {ClientResponseError}
+     */
+    getFullList(options?: CommonOptions): Promise<Array<CronJob>>;
+    /**
+     * Runs the specified cron job.
+     *
+     * @throws {ClientResponseError}
+     */
+    run(cronId: string, options?: CommonOptions): Promise<boolean>;
+}
 interface BatchRequest {
     method: string;
     url: string;
@@ -1253,6 +1271,10 @@ declare class Client {
      * An instance of the service that handles the **Backup APIs**.
      */
     readonly backups: BackupService;
+    /**
+     * An instance of the service that handles the **Cron APIs**.
+     */
+    readonly crons: CronService;
     private cancelControllers;
     private recordServices;
     private enableAutoCancellation;
