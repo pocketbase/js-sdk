@@ -1,3 +1,8 @@
+## 0.25.1
+
+- Ignore query parameters with `undefined` value ([#330](https://github.com/pocketbase/js-sdk/issues/330)).
+
+
 ## 0.25.0
 
 - Added `pb.crons` service to interact with the cron Web APIs.
