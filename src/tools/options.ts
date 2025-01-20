@@ -152,8 +152,8 @@ export function serializeQueryParams(params: { [key: string]: any }): string {
     const result: Array<string> = [];
 
     for (const key in params) {
-        if (params[key] === null) {
-            // skip null query params
+        if (params[key] === null || typeof params[key] === "undefined") {
+            // skip null or undefined query params
             continue;
         }
 

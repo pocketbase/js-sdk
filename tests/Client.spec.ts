@@ -228,42 +228,42 @@ describe("Client", function () {
 
             fetchMock.on({
                 method: "GET",
-                url: "test_base_url/123",
+                url: "test_base_url/123?queryA=456",
                 replyCode: 200,
                 replyBody: "successGet",
             });
 
             fetchMock.on({
                 method: "POST",
-                url: "test_base_url/123",
+                url: "test_base_url/123?queryA=456",
                 replyCode: 200,
                 replyBody: "successPost",
             });
 
             fetchMock.on({
                 method: "PUT",
-                url: "test_base_url/123",
+                url: "test_base_url/123?queryA=456",
                 replyCode: 200,
                 replyBody: "successPut",
             });
 
             fetchMock.on({
                 method: "PATCH",
-                url: "test_base_url/123",
+                url: "test_base_url/123?queryA=456",
                 replyCode: 200,
                 replyBody: "successPatch",
             });
 
             fetchMock.on({
                 method: "DELETE",
-                url: "test_base_url/123",
+                url: "test_base_url/123?queryA=456",
                 replyCode: 200,
                 replyBody: "successDelete",
             });
 
             fetchMock.on({
                 method: "GET",
-                url: "test_base_url/multipart",
+                url: "test_base_url/multipart?queryA=456",
                 additionalMatcher: (_, config: any): boolean => {
                     // multipart/form-data requests shouldn't have explicitly set Content-Type
                     return !config?.headers?.["Content-Type"];
@@ -274,7 +274,7 @@ describe("Client", function () {
 
             fetchMock.on({
                 method: "GET",
-                url: "test_base_url/multipartAuto",
+                url: "test_base_url/multipartAuto?queryA=456",
                 additionalMatcher: (_, config: any): boolean => {
                     if (
                         // multipart/form-data requests shouldn't have explicitly set Content-Type
@@ -301,18 +301,20 @@ describe("Client", function () {
                 replyBody: "successMultipartAuto",
             });
 
+            const testQueryParams = { queryA: 456, queryB: null, queryC: undefined }
+
             const testCases = [
-                [client.send("/123", { method: "GET" }), "successGet"],
-                [client.send("/123", { method: "POST" }), "successPost"],
-                [client.send("/123", { method: "PUT" }), "successPut"],
-                [client.send("/123", { method: "PATCH" }), "successPatch"],
-                [client.send("/123", { method: "DELETE" }), "successDelete"],
+                [client.send("/123", Object.assign({ method: "GET" }, testQueryParams)), "successGet"],
+                [client.send("/123", Object.assign({ method: "POST" }, testQueryParams)), "successPost"],
+                [client.send("/123", Object.assign({ method: "PUT" }, testQueryParams)), "successPut"],
+                [client.send("/123", Object.assign({ method: "PATCH" }, testQueryParams)), "successPatch"],
+                [client.send("/123", Object.assign({ method: "DELETE" }, testQueryParams)), "successDelete"],
                 [
-                    client.send("/multipart", { method: "GET", body: new FormData() }),
+                    client.send("/multipart", Object.assign({ method: "GET", body: new FormData() }, testQueryParams)),
                     "successMultipart",
                 ],
                 [
-                    client.send("/multipartAuto", {
+                    client.send("/multipartAuto", Object.assign({
                         method: "GET",
                         body: {
                             title: "test",
@@ -320,7 +322,7 @@ describe("Client", function () {
                             json: null,
                             files: [new Blob(["11"]), new Blob(["2"])],
                         },
-                    }),
+                    }, testQueryParams)),
                     "successMultipartAuto",
                 ],
             ];
