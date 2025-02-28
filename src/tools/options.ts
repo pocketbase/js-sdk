@@ -167,7 +167,7 @@ export function serializeQueryParams(params: { [key: string]: any }): string {
             }
         } else if (value instanceof Date) {
             result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
-        } else if (typeof value !== null && typeof value === "object") {
+        } else if (value !== null && typeof value === "object") {
             result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
         } else {
             result.push(encodedKey + "=" + encodeURIComponent(value));
