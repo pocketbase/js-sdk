@@ -1,3 +1,8 @@
+## 0.25.2
+
+- Removed unnecessary checks in `serializeQueryParams` and added automated tests.
+
+
 ## 0.25.1
 
 - Ignore query parameters with `undefined` value ([#330](https://github.com/pocketbase/js-sdk/issues/330)).
