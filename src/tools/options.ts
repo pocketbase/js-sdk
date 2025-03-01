@@ -152,27 +152,34 @@ export function serializeQueryParams(params: { [key: string]: any }): string {
     const result: Array<string> = [];
 
     for (const key in params) {
-        if (params[key] === null || typeof params[key] === "undefined") {
-            // skip null or undefined query params
-            continue;
-        }
-
-        const value = params[key];
         const encodedKey = encodeURIComponent(key);
+        const arrValue = Array.isArray(params[key]) ? params[key] : [params[key]];
 
-        if (Array.isArray(value)) {
-            // repeat array params
-            for (const v of value) {
-                result.push(encodedKey + "=" + encodeURIComponent(v));
+        for (let v of arrValue) {
+            v = prepareQueryParamValue(v);
+            if (v === null) {
+                continue
             }
-        } else if (value instanceof Date) {
-            result.push(encodedKey + "=" + encodeURIComponent(value.toISOString()));
-        } else if (typeof value !== null && typeof value === "object") {
-            result.push(encodedKey + "=" + encodeURIComponent(JSON.stringify(value)));
-        } else {
-            result.push(encodedKey + "=" + encodeURIComponent(value));
+            result.push(encodedKey + "=" + v);
         }
     }
 
     return result.join("&");
+}
+
+// encodes and normalizes the provided query param value.
+function prepareQueryParamValue(value: any): null|string {
+    if (value === null || typeof value === "undefined") {
+        return null;
+    }
+
+    if (value instanceof Date) {
+        return encodeURIComponent(value.toISOString().replace("T", " "));
+    }
+
+    if (typeof value === "object") {
+        return encodeURIComponent(JSON.stringify(value));
+    }
+
+    return encodeURIComponent(value)
 }
