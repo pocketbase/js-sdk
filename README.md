@@ -583,7 +583,9 @@ and provide it as a helper to the `nuxtApp` instance:
 ```js
 // plugins/pocketbase.js
 import PocketBase from 'pocketbase';
+import { EventSource } from 'eventsource'
 
+globalThis.EventSource = EventSource
 export default defineNuxtPlugin(async () => {
   const pb = new PocketBase('http://127.0.0.1:8090');
 
