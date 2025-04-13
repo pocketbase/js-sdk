@@ -1202,13 +1202,17 @@ declare class Client {
      *
      * Example:
      * ```js
-     * client.beforeSend = function (url, options) {
+     * const pb = new PocketBase("https://example.com")
+     *
+     * pb.beforeSend = function (url, options) {
      *     options.headers = Object.assign({}, options.headers, {
      *         'X-Custom-Header': 'example',
-     *     });
+     *     })
      *
      *     return { url, options }
-     * };
+     * }
+     *
+     * // use the created client as usual...
      * ```
      */
     beforeSend?: (url: string, options: SendOptions) => BeforeSendResult | Promise<BeforeSendResult>;
@@ -1220,17 +1224,21 @@ declare class Client {
      *
      * Example:
      * ```js
-     * client.afterSend = function (response, data, options) {
+     * const pb = new PocketBase("https://example.com")
+     *
+     * pb.afterSend = function (response, data, options) {
      *     if (response.status != 200) {
      *         throw new ClientResponseError({
      *             url:      response.url,
      *             status:   response.status,
      *             response: { ... },
-     *         });
+     *         })
      *     }
      *
      *     return data;
-     * };
+     * }
+     *
+     * // use the created client as usual...
      * ```
      */
     afterSend?: ((response: Response, data: any) => any) & ((response: Response, data: any, options: SendOptions) => any);

@@ -404,6 +404,8 @@ To accomplish this, the SDK provides 2 function hooks:
 
         return { url, options };
     };
+
+    // use the created client as usual...
     ```
 
 - `afterSend` - triggered after successfully sending the `fetch` request, allowing you to inspect/modify the response object and its parsed data.
@@ -419,6 +421,8 @@ To accomplish this, the SDK provides 2 function hooks:
             "additionalField": 123,
         });
     };
+
+    // use the created client as usual...
     ```
 
 ### SSR integration
