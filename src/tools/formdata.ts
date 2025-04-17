@@ -69,6 +69,12 @@ export function convertToFormDataIfNeeded(body: any): any {
     for (const key in body) {
         const val = body[key];
 
+        // skip undefined values for consistency with JSON.stringify
+        // (see https://github.com/pocketbase/pocketbase/issues/6731#issuecomment-2812382827)
+        if (typeof val === "undefined") {
+            continue
+        }
+
         if (typeof val === "object" && !hasFileField({ data: val })) {
             // send json-like values as jsonPayload to avoid the implicit string value normalization
             let payload: { [key: string]: any } = {};

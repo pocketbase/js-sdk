@@ -294,6 +294,7 @@ describe("Client", function () {
                     assert.equal(config.body.getAll("files").length, 2);
                     assert.equal(config.body.getAll("files")[0].size, 2);
                     assert.equal(config.body.getAll("files")[1].size, 1);
+                    assert.equal(config.body.has("skip"), false);
 
                     return true;
                 },
@@ -321,6 +322,7 @@ describe("Client", function () {
                             roles: ["a", "b"],
                             json: null,
                             files: [new Blob(["11"]), new Blob(["2"])],
+                            skip: undefined,
                         },
                     }, testQueryParams)),
                     "successMultipartAuto",

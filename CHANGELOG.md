@@ -1,3 +1,9 @@
+## 0.26.0
+
+- Ignore `undefined` properties when submitting an object that has `Blob`/`File` fields (_which is under the hood converted to `FormData`_)
+for consistency with how `JSON.stringify` works (see [pocketbase#6731](https://github.com/pocketbase/pocketbase/issues/6731#issuecomment-2812382827)).
+
+
 ## 0.25.2
 
 - Removed unnecessary checks in `serializeQueryParams` and added automated tests.
