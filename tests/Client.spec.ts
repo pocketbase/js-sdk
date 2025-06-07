@@ -202,7 +202,7 @@ describe("Client", function () {
                 test5: 123,
                 test6: -123.45,
                 test7: 123.45,
-                test8: new Date("2023-10-18 10:11:12"),
+                test8: new Date("2023-10-18 10:11:12+0300"),
                 test9: [1, 2, 3, "test'123"],
                 test10: { a: "test'123" },
             };
