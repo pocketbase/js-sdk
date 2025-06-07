@@ -158,7 +158,7 @@ export function serializeQueryParams(params: { [key: string]: any }): string {
         for (let v of arrValue) {
             v = prepareQueryParamValue(v);
             if (v === null) {
-                continue
+                continue;
             }
             result.push(encodedKey + "=" + v);
         }
@@ -168,7 +168,7 @@ export function serializeQueryParams(params: { [key: string]: any }): string {
 }
 
 // encodes and normalizes the provided query param value.
-function prepareQueryParamValue(value: any): null|string {
+function prepareQueryParamValue(value: any): null | string {
     if (value === null || typeof value === "undefined") {
         return null;
     }
@@ -181,5 +181,5 @@ function prepareQueryParamValue(value: any): null|string {
         return encodeURIComponent(JSON.stringify(value));
     }
 
-    return encodeURIComponent(value)
+    return encodeURIComponent(value);
 }

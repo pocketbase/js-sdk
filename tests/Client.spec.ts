@@ -302,29 +302,71 @@ describe("Client", function () {
                 replyBody: "successMultipartAuto",
             });
 
-            const testQueryParams = { queryA: 456, queryB: null, queryC: undefined }
+            const testQueryParams = { queryA: 456, queryB: null, queryC: undefined };
 
             const testCases = [
-                [client.send("/123", Object.assign({ method: "GET" }, testQueryParams)), "successGet"],
-                [client.send("/123", Object.assign({ method: "POST" }, testQueryParams)), "successPost"],
-                [client.send("/123", Object.assign({ method: "PUT" }, testQueryParams)), "successPut"],
-                [client.send("/123", Object.assign({ method: "PATCH" }, testQueryParams)), "successPatch"],
-                [client.send("/123", Object.assign({ method: "DELETE" }, testQueryParams)), "successDelete"],
                 [
-                    client.send("/multipart", Object.assign({ method: "GET", body: new FormData() }, testQueryParams)),
+                    client.send(
+                        "/123",
+                        Object.assign({ method: "GET" }, testQueryParams),
+                    ),
+                    "successGet",
+                ],
+                [
+                    client.send(
+                        "/123",
+                        Object.assign({ method: "POST" }, testQueryParams),
+                    ),
+                    "successPost",
+                ],
+                [
+                    client.send(
+                        "/123",
+                        Object.assign({ method: "PUT" }, testQueryParams),
+                    ),
+                    "successPut",
+                ],
+                [
+                    client.send(
+                        "/123",
+                        Object.assign({ method: "PATCH" }, testQueryParams),
+                    ),
+                    "successPatch",
+                ],
+                [
+                    client.send(
+                        "/123",
+                        Object.assign({ method: "DELETE" }, testQueryParams),
+                    ),
+                    "successDelete",
+                ],
+                [
+                    client.send(
+                        "/multipart",
+                        Object.assign(
+                            { method: "GET", body: new FormData() },
+                            testQueryParams,
+                        ),
+                    ),
                     "successMultipart",
                 ],
                 [
-                    client.send("/multipartAuto", Object.assign({
-                        method: "GET",
-                        body: {
-                            title: "test",
-                            roles: ["a", "b"],
-                            json: null,
-                            files: [new Blob(["11"]), new Blob(["2"])],
-                            skip: undefined,
-                        },
-                    }, testQueryParams)),
+                    client.send(
+                        "/multipartAuto",
+                        Object.assign(
+                            {
+                                method: "GET",
+                                body: {
+                                    title: "test",
+                                    roles: ["a", "b"],
+                                    json: null,
+                                    files: [new Blob(["11"]), new Blob(["2"])],
+                                    skip: undefined,
+                                },
+                            },
+                            testQueryParams,
+                        ),
+                    ),
                     "successMultipartAuto",
                 ],
             ];
