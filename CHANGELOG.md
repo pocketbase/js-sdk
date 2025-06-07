@@ -1,3 +1,8 @@
+## 0.26.1
+
+- Set the `cause` property of `ClientResponseError` to the original thrown error/data for easier debugging ([#349](https://github.com/pocketbase/js-sdk/pull/349); thanks @shish).
+
+
 ## 0.26.0
 
 - Ignore `undefined` properties when submitting an object that has `Blob`/`File` fields (_which is under the hood converted to `FormData`_)
