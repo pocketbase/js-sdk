@@ -52,6 +52,10 @@ export class ClientResponseError extends Error {
                 this.message = "Something went wrong while processing your request.";
             }
         }
+
+        // set this.cause so that JS debugging tools can automatically connect
+        // the dots between the original error and the wrapped one
+        this.cause = this.originalError;
     }
 
     /**
