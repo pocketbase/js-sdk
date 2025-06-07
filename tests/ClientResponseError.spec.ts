@@ -28,10 +28,7 @@ describe("ClientResponseError", function () {
             assert.deepEqual(err.response, {});
             assert.equal(err.isAbort, false);
             assert.equal(err.originalError, "test");
-            assert.equal(
-                err.message,
-                "Something went wrong while processing your request.",
-            );
+            assert.equal(err.message, "Something went wrong.");
         });
 
         test("with plain error", function () {
@@ -43,10 +40,7 @@ describe("ClientResponseError", function () {
             assert.deepEqual(err.response, {});
             assert.equal(err.isAbort, false);
             assert.equal(err.originalError, plainErr);
-            assert.equal(
-                err.message,
-                "Something went wrong while processing your request.",
-            );
+            assert.equal(err.message, "Something went wrong.");
         });
 
         test("with ClientResponseError error", function () {

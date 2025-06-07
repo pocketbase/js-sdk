@@ -72,7 +72,7 @@ export function convertToFormDataIfNeeded(body: any): any {
         // skip undefined values for consistency with JSON.stringify
         // (see https://github.com/pocketbase/pocketbase/issues/6731#issuecomment-2812382827)
         if (typeof val === "undefined") {
-            continue
+            continue;
         }
 
         if (typeof val === "object" && !hasFileField({ data: val })) {

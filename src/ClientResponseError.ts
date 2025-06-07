@@ -49,7 +49,7 @@ export class ClientResponseError extends Error {
                 this.message =
                     "Failed to connect to the PocketBase server. Try changing the SDK URL from localhost to 127.0.0.1 (https://github.com/pocketbase/js-sdk/issues/21).";
             } else {
-                this.message = "Something went wrong while processing your request.";
+                this.message = "Something went wrong.";
             }
         }
 
