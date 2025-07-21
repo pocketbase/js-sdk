@@ -3,7 +3,7 @@ import { ClientResponseError } from "@/ClientResponseError";
 import { RealtimeService, UnsubscribeFunc } from "@/services/RealtimeService";
 import { BaseAuthStore } from "@/stores/BaseAuthStore";
 import { CrudService } from "@/services/CrudService";
-import { ListResult, RecordModel } from "@/tools/dtos";
+import { ExpandMap, ListResult, RecordModel, Expand } from "@/tools/dtos";
 import { normalizeLegacyOptionsArgs } from "@/tools/legacy";
 import {
     CommonOptions,
@@ -15,6 +15,7 @@ import {
 } from "@/tools/options";
 import { getTokenPayload } from "@/tools/jwt";
 import { registerAutoRefresh, resetAutoRefresh } from "@/tools/refresh";
+import { Join, PickCommaSeparated } from "@/tools/type-utils";
 
 export interface RecordAuthResponse<T = RecordModel> {
     /**
@@ -93,7 +94,11 @@ export interface OTPResponse {
     otpId: string;
 }
 
-export class RecordService<M = RecordModel> extends CrudService<M> {
+export class RecordService<
+    M extends RecordModel<any> = RecordModel<any>,
+    TExpandMap extends ExpandMap = ExpandMap,
+    TServiceExpand extends string = Join<keyof TExpandMap & string>,
+> extends CrudService<M> {
     readonly collectionIdOrName: string;
 
     constructor(client: Client, collectionIdOrName: string) {
@@ -188,68 +193,73 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(options?: RecordFullListOptions): Promise<Array<T>>;
+    async getFullList<T = M, TExpand extends TServiceExpand = TServiceExpand>(
+        options?: RecordFullListOptions<TExpand>,
+    ): Promise<Array<T & PickCommaSeparated<TExpandMap, TExpand>>>;
 
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(
+    async getFullList<T = M, TExpand extends TServiceExpand = TServiceExpand>(
         batch?: number,
-        options?: RecordListOptions,
-    ): Promise<Array<T>>;
+        options?: RecordListOptions<TExpand>,
+    ): Promise<Array<T & PickCommaSeparated<TExpandMap, TExpand>>>;
 
     /**
      * @inheritdoc
      */
-    async getFullList<T = M>(
+    async getFullList<T = M, TExpand extends TServiceExpand = TServiceExpand>(
         batchOrOptions?: number | RecordFullListOptions,
-        options?: RecordListOptions,
-    ): Promise<Array<T>> {
+        options?: RecordListOptions<TExpand>,
+    ): Promise<Array<T & PickCommaSeparated<TExpandMap, TExpand>>> {
         if (typeof batchOrOptions == "number") {
-            return super.getFullList<T>(batchOrOptions, options);
+            return super.getFullList(batchOrOptions, options);
         }
 
         const params = Object.assign({}, batchOrOptions, options);
 
-        return super.getFullList<T>(params);
+        return super.getFullList(params);
     }
 
     /**
      * @inheritdoc
      */
-    async getList<T = M>(
+    async getList<TModel = M, TExpand extends TServiceExpand = TServiceExpand>(
         page = 1,
         perPage = 30,
-        options?: RecordListOptions,
-    ): Promise<ListResult<T>> {
-        return super.getList<T>(page, perPage, options);
+        options?: RecordListOptions<TExpand>,
+    ): Promise<ListResult<TModel & PickCommaSeparated<TExpandMap, TExpand>>> {
+        return super.getList(page, perPage, options);
     }
 
     /**
      * @inheritdoc
      */
-    async getFirstListItem<T = M>(
+    async getFirstListItem<T = M, TExpand extends TServiceExpand = TServiceExpand>(
         filter: string,
-        options?: RecordListOptions,
-    ): Promise<T> {
-        return super.getFirstListItem<T>(filter, options);
+        options?: RecordListOptions<TExpand>,
+    ): Promise<T & PickCommaSeparated<TExpandMap, TExpand>> {
+        return super.getFirstListItem(filter, options);
     }
 
     /**
      * @inheritdoc
      */
-    async getOne<T = M>(id: string, options?: RecordOptions): Promise<T> {
-        return super.getOne<T>(id, options);
+    async getOne<T = M, TExpand extends TServiceExpand = TServiceExpand>(
+        id: string,
+        options?: RecordOptions<TExpand>,
+    ): Promise<T & Expand<PickCommaSeparated<TExpandMap, TExpand>>> {
+        return super.getOne(id, options);
     }
 
     /**
      * @inheritdoc
      */
-    async create<T = M>(
+    async create<T = M, TExpand extends TServiceExpand = TServiceExpand>(
         bodyParams?: { [key: string]: any } | FormData,
-        options?: RecordOptions,
-    ): Promise<T> {
-        return super.create<T>(bodyParams, options);
+        options?: RecordOptions<TExpand>,
+    ): Promise<T & Expand<PickCommaSeparated<TExpandMap, TExpand>>> {
+        return super.create(bodyParams, options);
     }
 
     /**
@@ -258,12 +268,12 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * If the current `client.authStore.record` matches with the updated id, then
      * on success the `client.authStore.record` will be updated with the new response record fields.
      */
-    async update<T = M>(
+    async update<T = M, TExpand extends TServiceExpand = TServiceExpand>(
         id: string,
         bodyParams?: { [key: string]: any } | FormData,
-        options?: RecordOptions,
-    ): Promise<T> {
-        return super.update<RecordModel>(id, bodyParams, options).then((item) => {
+        options?: RecordOptions<TExpand>,
+    ): Promise<T & Expand<PickCommaSeparated<TExpandMap, TExpand>>> {
+        return super.update(id, bodyParams, options).then((item) => {
             if (
                 // is record auth
                 this.client.authStore.record?.id === item?.id &&
@@ -281,7 +291,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                 this.client.authStore.save(this.client.authStore.token, authRecord);
             }
 
-            return item as any as T;
+            return item as any;
         });
     }
 

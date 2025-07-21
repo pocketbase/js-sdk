@@ -20,10 +20,10 @@ export interface LogModel extends BaseModel {
     data: { [key: string]: any };
 }
 
-export interface RecordModel extends BaseModel {
+export interface RecordModel<TExpand = ExpandMap> extends BaseModel {
     collectionId: string;
     collectionName: string;
-    expand?: { [key: string]: any };
+    expand?: TExpand;
 }
 
 // -------------------------------------------------------------------
@@ -137,3 +137,9 @@ export type CollectionModel =
     | BaseCollectionModel
     | ViewCollectionModel
     | AuthCollectionModel;
+
+export type Expand<T> = {
+    expand: T;
+};
+
+export type ExpandMap = Record<string, RecordModel | RecordModel[]>;

@@ -64,13 +64,17 @@ export interface FullListOptions extends ListOptions {
     batch?: number;
 }
 
-export interface RecordOptions extends CommonOptions {
-    expand?: string;
+export interface RecordOptions<TExpand extends string = string> extends CommonOptions {
+    expand?: TExpand;
 }
 
-export interface RecordListOptions extends ListOptions, RecordOptions {}
+export interface RecordListOptions<TExpand extends string = string>
+    extends ListOptions,
+        RecordOptions<TExpand> {}
 
-export interface RecordFullListOptions extends FullListOptions, RecordOptions {}
+export interface RecordFullListOptions<TExpand extends string = string>
+    extends FullListOptions,
+        RecordOptions<TExpand> {}
 
 export interface RecordSubscribeOptions extends SendOptions {
     fields?: string;
