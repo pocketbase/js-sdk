@@ -1,3 +1,8 @@
+## 0.26.2
+
+- Allow body object without constructor ([#352](https://github.com/pocketbase/js-sdk/issues/352)).
+
+
 ## 0.26.1
 
 - Set the `cause` property of `ClientResponseError` to the original thrown error/data for easier debugging ([#349](https://github.com/pocketbase/js-sdk/pull/349); thanks @shish).

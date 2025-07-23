@@ -24,7 +24,7 @@ export function isFormData(body: any): boolean {
         // we are checking the constructor name because FormData
         // is not available natively in some environments and the
         // polyfill(s) may not be globally accessible
-        (body.constructor.name === "FormData" ||
+        (body.constructor?.name === "FormData" ||
             // fallback to global FormData instance check
             // note: this is needed because the constructor.name could be different in case of
             //       custom global FormData implementation, eg. React Native on Android/iOS
