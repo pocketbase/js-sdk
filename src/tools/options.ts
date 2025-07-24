@@ -87,7 +87,7 @@ export interface FileOptions extends CommonOptions {
     download?: boolean;
 }
 
-export interface AuthOptions extends CommonOptions {
+export interface AuthOptions extends RecordOptions {
     /**
      * If autoRefreshThreshold is set it will take care to auto refresh
      * when necessary the auth data before each request to ensure that

@@ -12,6 +12,7 @@ import {
     RecordOptions,
     SendOptions,
     RecordSubscribeOptions,
+    AuthOptions,
 } from "@/tools/options";
 import { getTokenPayload } from "@/tools/jwt";
 import { registerAutoRefresh, resetAutoRefresh } from "@/tools/refresh";
@@ -358,7 +359,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
     async authWithPassword<T = M>(
         usernameOrEmail: string,
         password: string,
-        options?: RecordOptions,
+        options?: AuthOptions,
     ): Promise<RecordAuthResponse<T>> {
         options = Object.assign(
             {
