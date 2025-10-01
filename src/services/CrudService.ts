@@ -100,7 +100,7 @@ export abstract class CrudService<M> extends BaseService {
      *
      * @throws {ClientResponseError}
      */
-    async getFirstListItem<T = M>(filter: string, options?: CommonOptions): Promise<T> {
+    async getFirstListItem<T = M>(filter?: string, options?: CommonOptions): Promise<T> {
         options = Object.assign(
             {
                 requestKey: "one_by_filter_" + this.baseCrudPath + "_" + filter,

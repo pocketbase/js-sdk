@@ -229,7 +229,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
      * @inheritdoc
      */
     async getFirstListItem<T = M>(
-        filter: string,
+        filter?: string,
         options?: RecordListOptions,
     ): Promise<T> {
         return super.getFirstListItem<T>(filter, options);
