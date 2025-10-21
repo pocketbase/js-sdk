@@ -82,6 +82,9 @@ export interface OAuth2AuthConfig extends SendOptions {
     // optional record create data
     createData?: { [key: string]: any };
 
+    // optional query params to send with the OAuth2 auth request
+    params?: { [key: string]: any };
+
     // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
     urlCallback?: OAuth2UrlCallback;
 
@@ -485,6 +488,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
         codeVerifier: string,
         redirectURL: string,
         createData?: { [key: string]: any },
+        params?: { [key: string]: any },
         bodyParams?: { [key: string]: any },
         queryParams?: RecordOptions,
     ): Promise<RecordAuthResponse<T>>;
@@ -663,6 +667,10 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                         if (config.scopes?.length) {
                             replacements["scope"] = config.scopes.join(" ");
                         }
+
+                        Object.keys(config.params || {}).forEach((key) => {
+                            replacements[key] = config.params[key];
+                        });
 
                         const url = this._replaceQueryParams(
                             provider.authURL + redirectURL,

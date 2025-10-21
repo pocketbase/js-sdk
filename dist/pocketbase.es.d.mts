@@ -638,6 +638,10 @@ interface OAuth2AuthConfig extends SendOptions {
     createData?: {
         [key: string]: any;
     };
+    // optional query params to send with the OAuth2 auth request
+    params?: {
+        [key: string]: any;
+    };
     // optional callback that is triggered after the OAuth2 sign-in/sign-up url generation
     urlCallback?: OAuth2UrlCallback;
     // optional query params to send with the PocketBase auth request (eg. fields, expand, etc.)
@@ -785,6 +789,8 @@ declare class RecordService<M = RecordModel> extends CrudService<M> {
      * as shown in https://pocketbase.io/docs/authentication/#oauth2-integration.
      */
     authWithOAuth2<T = M>(provider: string, code: string, codeVerifier: string, redirectURL: string, createData?: {
+        [key: string]: any;
+    }, params?: {
         [key: string]: any;
     }, bodyParams?: {
         [key: string]: any;
