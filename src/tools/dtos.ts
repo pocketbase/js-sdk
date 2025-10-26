@@ -74,10 +74,11 @@ export interface OAuth2Provider {
     clientId: string;
     name: string;
     clientSecret: string;
-    authUrl: string;
-    tokenUrl: string;
-    userApiUrl: string;
+    authURL: string;
+    tokenURL: string;
+    userInfoURL: string;
     displayName: string;
+    extra?: { [key: string]: any };
 }
 
 export interface OAuth2Config {

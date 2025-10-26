@@ -1,3 +1,8 @@
+## 0.26.3
+
+- Fixed outdated `OAuth2Provider` TS fields ([pocketbase/site#110](https://github.com/pocketbase/site/pull/110)).
+
+
 ## 0.26.2
 
 - Allow body object without constructor ([#352](https://github.com/pocketbase/js-sdk/issues/352)).
