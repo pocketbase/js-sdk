@@ -1,3 +1,8 @@
+## 0.26.4
+
+- Catch aborted request error during `response.json()` failure _(e.g. in case of tcp connection reset)_ and rethrow it as normalized `ClientResponseError.isAbort=true` error.
+
+
 ## 0.26.3
 
 - Fixed outdated `OAuth2Provider` TS fields ([pocketbase/site#110](https://github.com/pocketbase/site/pull/110)).

@@ -414,6 +414,7 @@ export default class Client {
             options.body = JSON.stringify(options.body);
         }
 
+        // early throw an abort error in case the request was already cancelled
         const fetchFunc = options.fetch || fetch;
 
         // send the request
@@ -423,9 +424,17 @@ export default class Client {
 
                 try {
                     data = await response.json();
-                } catch (_) {
+                } catch (err) {
+                    if (
+                        options.signal?.aborted ||
+                        // note: don't check for the exception name due to platform discrepencies
+                        (typeof DOMException !== "undefined" && err instanceof DOMException)
+                    ) {
+                        throw err;
+                    }
+
                     // all api responses are expected to return json
-                    // with the exception of the realtime event and 204
+                    // with exception of the realtime events and 204
                 }
 
                 if (this.afterSend) {

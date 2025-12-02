@@ -3,6 +3,7 @@ import Client from "@/Client";
 import { LocalAuthStore } from "@/stores/LocalAuthStore";
 import { RecordService } from "@/services/RecordService";
 import { FetchMock } from "./mocks";
+import { ClientResponseError } from "@/ClientResponseError";
 
 describe("Client", function () {
     const fetchMock = new FetchMock();
@@ -556,6 +557,25 @@ describe("Client", function () {
 
             const response = client.send("/async_after", { method: "GET" });
             await expect(response).rejects.toThrow("after_err");
+        });
+
+        test("Should return a wrapped AbortError in case the request is cancelled during the json response resolving", async function () {
+            const client = new Client("test_base_url");
+
+            const controller = new AbortController()
+
+            fetchMock.on({
+                method: "GET",
+                url: "test_base_url/abc",
+                replyCode: 200,
+                replyBody: () => {
+                    controller.abort()
+                    throw new DOMException()
+                },
+            });
+
+            const response = client.send("/abc", { method: "GET", signal: controller.signal, requestKey: null });
+            await expect(response).rejects.toThrow("request was autocancelled");
         });
     });
 

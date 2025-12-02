@@ -75,7 +75,13 @@ export class FetchMock {
                     url: url,
                     status: mock.replyCode,
                     statusText: "test",
-                    json: async () => mock.replyBody || {},
+                    json: async () => {
+                        if (typeof mock.replyBody == "function") {
+                           return mock.replyBody();
+                        }
+
+                        return mock.replyBody || {}
+                    }
                 } as Response;
 
                 return new Promise((resolve, reject) => {
