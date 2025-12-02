@@ -35,7 +35,7 @@ export class ClientResponseError extends Error {
             this.originalError = errData;
         }
 
-        // note: don't check for the exception name due to platform discrepencies
+        // note: don't check for the exception name due to platform discrepancies
         if (typeof DOMException !== "undefined" && errData instanceof DOMException) {
             this.isAbort = true;
         }

@@ -427,7 +427,7 @@ export default class Client {
                 } catch (err) {
                     if (
                         options.signal?.aborted ||
-                        // note: don't check for the exception name due to platform discrepencies
+                        // note: don't check for the exception name due to platform discrepancies
                         (typeof DOMException !== "undefined" && err instanceof DOMException)
                     ) {
                         throw err;

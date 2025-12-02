@@ -3,7 +3,6 @@ import Client from "@/Client";
 import { LocalAuthStore } from "@/stores/LocalAuthStore";
 import { RecordService } from "@/services/RecordService";
 import { FetchMock } from "./mocks";
-import { ClientResponseError } from "@/ClientResponseError";
 
 describe("Client", function () {
     const fetchMock = new FetchMock();
