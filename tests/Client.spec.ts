@@ -561,19 +561,16 @@ describe("Client", function () {
         test("Should return a wrapped AbortError in case the request is cancelled during the json response resolving", async function () {
             const client = new Client("test_base_url");
 
-            const controller = new AbortController()
-
             fetchMock.on({
                 method: "GET",
                 url: "test_base_url/abc",
                 replyCode: 200,
                 replyBody: () => {
-                    controller.abort()
-                    throw new DOMException()
+                    throw new DOMException("", "AbortError")
                 },
             });
 
-            const response = client.send("/abc", { method: "GET", signal: controller.signal, requestKey: null });
+            const response = client.send("/abc", { method: "GET" });
             await expect(response).rejects.toThrow("request was autocancelled");
         });
     });

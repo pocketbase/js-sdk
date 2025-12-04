@@ -61,8 +61,21 @@ describe("ClientResponseError", function () {
             assert.equal(err.message, "test message");
         });
 
-        test("with abort error", function () {
-            const err0 = new DOMException("test");
+        // Safari may throw this on response.json() failure
+        test("with DOMException.SyntaxError", function () {
+            const err0 = new DOMException("test_err", "SyntaxError");
+            const err = new ClientResponseError(err0);
+
+            assert.equal(err.url, "");
+            assert.equal(err.status, 0);
+            assert.deepEqual(err.response, {});
+            assert.equal(err.isAbort, false);
+            assert.equal(err.originalError, err0);
+            assert.include(err.message, "Something went wrong.");
+        });
+
+        test("with DOMException.AbortError", function () {
+            const err0 = new DOMException("test_err", "AbortError");
             const err = new ClientResponseError(err0);
 
             assert.equal(err.url, "");

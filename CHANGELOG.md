@@ -1,3 +1,8 @@
+## 0.26.5
+
+- Fixed abort request error detection on Safari introduced with the previous release because it seems to throw `DOMException.SyntaxError` on `response.json()` failure ([#pocketbase/pocketbase#7369](https://github.com/pocketbase/pocketbase/issues/7369)).
+
+
 ## 0.26.4
 
 - Catch aborted request error during `response.json()` failure _(e.g. in case of tcp connection reset)_ and rethrow it as normalized `ClientResponseError.isAbort=true` error.

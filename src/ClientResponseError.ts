@@ -35,8 +35,12 @@ export class ClientResponseError extends Error {
             this.originalError = errData;
         }
 
-        // note: don't check for the exception name due to platform discrepancies
-        if (typeof DOMException !== "undefined" && errData instanceof DOMException) {
+        if (
+            typeof DOMException !== "undefined" &&
+            errData instanceof DOMException &&
+            // https://developer.mozilla.org/en-US/docs/Web/API/DOMException#aborterror
+            (errData.name == "AbortError" || errData.code == 20)
+        ) {
             this.isAbort = true;
         }
 
