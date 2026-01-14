@@ -77,11 +77,11 @@ export class FetchMock {
                     statusText: "test",
                     json: async () => {
                         if (typeof mock.replyBody == "function") {
-                           return mock.replyBody();
+                            return mock.replyBody();
                         }
 
-                        return mock.replyBody || {}
-                    }
+                        return mock.replyBody || {};
+                    },
                 } as Response;
 
                 return new Promise((resolve, reject) => {

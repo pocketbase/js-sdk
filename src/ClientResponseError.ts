@@ -17,10 +17,16 @@ export class ClientResponseError extends Error {
         Object.setPrototypeOf(this, ClientResponseError.prototype);
 
         if (errData !== null && typeof errData === "object") {
+            this.originalError = errData.originalError;
             this.url = typeof errData.url === "string" ? errData.url : "";
             this.status = typeof errData.status === "number" ? errData.status : 0;
-            this.isAbort = !!errData.isAbort;
-            this.originalError = errData.originalError;
+
+            // note: DOMException is not implemented yet in React Native
+            // and aborting a fetch throws a plain Error with message "Aborted".
+            this.isAbort =
+                !!errData.isAbort ||
+                errData.name === "AbortError" ||
+                errData.message === "Aborted";
 
             if (errData.response !== null && typeof errData.response === "object") {
                 this.response = errData.response;
@@ -33,21 +39,6 @@ export class ClientResponseError extends Error {
 
         if (!this.originalError && !(errData instanceof ClientResponseError)) {
             this.originalError = errData;
-        }
-
-        if (
-            typeof DOMException !== "undefined" &&
-            errData instanceof DOMException &&
-            // https://developer.mozilla.org/en-US/docs/Web/API/DOMException#aborterror
-            (errData.name == "AbortError" || errData.code == 20)
-        ) {
-            this.isAbort = true;
-        }
-
-        // In React Native, aborting a fetch throws a plain Error with message "Aborted"
-        // instead of a DOMException, so we need to detect it by message content.
-        if (errData?.name == "AbortError" || errData?.message === "Aborted") {
-            this.isAbort = true;
         }
 
         this.name = "ClientResponseError " + this.status;

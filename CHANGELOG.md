@@ -1,3 +1,10 @@
+## 0.26.6
+
+- Fixed abort request error detection on React Native Android/iOS ([#361](https://github.com/pocketbase/js-sdk/pull/361); thanks @nathanstitt).
+
+- Updated the default `getFullList()` batch size to 1000 for consistency with the Dart SDK and the latest API limits.
+
+
 ## 0.26.5
 
 - Fixed abort request error detection on Safari introduced with the previous release because it seems to throw `DOMException.SyntaxError` on `response.json()` failure ([#pocketbase/pocketbase#7369](https://github.com/pocketbase/pocketbase/issues/7369)).

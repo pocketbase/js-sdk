@@ -238,7 +238,7 @@ describe("Client", function () {
                 url: "test_base_url/123?queryA=456",
                 additionalMatcher: (_, config: any): boolean => {
                     assert.equal(config.body, `{"test":123}`);
-                    return  true;
+                    return true;
                 },
                 replyCode: 200,
                 replyBody: "successPost",
@@ -249,7 +249,7 @@ describe("Client", function () {
                 url: "test_base_url/123?queryA=456",
                 additionalMatcher: (_, config: any): boolean => {
                     assert.equal(config.body, `{"test":123}`);
-                    return  true;
+                    return true;
                 },
                 replyCode: 200,
                 replyBody: "successPut",
@@ -323,14 +323,23 @@ describe("Client", function () {
                 [
                     client.send(
                         "/123",
-                        Object.assign({ method: "POST", body: {test: 123}}, testQueryParams),
+                        Object.assign(
+                            { method: "POST", body: { test: 123 } },
+                            testQueryParams,
+                        ),
                     ),
                     "successPost",
                 ],
                 [
                     client.send(
                         "/123",
-                        Object.assign({ method: "PUT", body: Object.assign(Object.create(null), {test: 123})}, testQueryParams),
+                        Object.assign(
+                            {
+                                method: "PUT",
+                                body: Object.assign(Object.create(null), { test: 123 }),
+                            },
+                            testQueryParams,
+                        ),
                     ),
                     "successPut",
                 ],
@@ -566,7 +575,7 @@ describe("Client", function () {
                 url: "test_base_url/abc",
                 replyCode: 200,
                 replyBody: () => {
-                    throw new DOMException("", "AbortError")
+                    throw new DOMException("", "AbortError");
                 },
             });
 

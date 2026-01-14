@@ -464,7 +464,7 @@ declare abstract class CrudService<M> extends BaseService {
     }): T;
     /**
      * Returns a promise with all list items batch fetched at once
-     * (by default 500 items per request; to change it set the `batch` query param).
+     * (by default 1000 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      *

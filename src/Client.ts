@@ -424,17 +424,13 @@ export default class Client {
 
                 try {
                     data = await response.json();
-                } catch (err) {
+                } catch (err: any) {
                     // @todo map against the response content type
                     // all api responses are expected to return json
                     // with exception of the realtime events and 204
                     if (
                         options.signal?.aborted ||
-                        (
-                            typeof DOMException !== "undefined" && err instanceof DOMException &&
-                            // https://developer.mozilla.org/en-US/docs/Web/API/DOMException#aborterror
-                            (err.name == "AbortError" || err.code == 20)
-                        )
+                        (err?.name == "AbortError" || err?.message == "Aborted")
                     ) {
                         throw err;
                     }
