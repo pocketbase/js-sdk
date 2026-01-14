@@ -804,7 +804,7 @@ const pb = new PocketBase(baseURL = '/', authStore = LocalAuthStore);
 🔓 pb.collection(collectionIdOrName).getList(page = 1, perPage = 30, options = {});
 
 // Returns a list with all records batch fetched at once
-// (by default 200 items per request; to change it set the `batch` param).
+// (by default 1000 items per request; to change it set the `batch` param).
 🔓 pb.collection(collectionIdOrName).getFullList(options = {});
 
 // Returns the first found record matching the specified filter.

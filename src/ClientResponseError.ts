@@ -46,7 +46,7 @@ export class ClientResponseError extends Error {
 
         // In React Native, aborting a fetch throws a plain Error with message "Aborted"
         // instead of a DOMException, so we need to detect it by message content.
-        if (errData?.message === "Aborted") {
+        if (errData?.name == "AbortError" || errData?.message === "Aborted") {
             this.isAbort = true;
         }
 

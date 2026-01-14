@@ -18,7 +18,7 @@ export abstract class CrudService<M> extends BaseService {
 
     /**
      * Returns a promise with all list items batch fetched at once
-     * (by default 500 items per request; to change it set the `batch` query param).
+     * (by default 1000 items per request; to change it set the `batch` query param).
      *
      * You can use the generic T to supply a wrapper type of the crud model.
      *
@@ -41,7 +41,7 @@ export abstract class CrudService<M> extends BaseService {
 
         options = Object.assign({}, batchOrqueryParams, options);
 
-        let batch = 500;
+        let batch = 1000;
         if (options.batch) {
             batch = options.batch;
             delete options.batch;
@@ -237,7 +237,7 @@ export abstract class CrudService<M> extends BaseService {
      * Returns a promise with all list items batch fetched at once.
      */
     protected _getFullList<T = M>(
-        batchSize = 500,
+        batchSize = 1000,
         options?: ListOptions,
     ): Promise<Array<T>> {
         options = options || {};
@@ -251,7 +251,7 @@ export abstract class CrudService<M> extends BaseService {
         let result: Array<T> = [];
 
         let request = async (page: number): Promise<Array<any>> => {
-            return this.getList(page, batchSize || 500, options).then((list) => {
+            return this.getList(page, batchSize || 1000, options).then((list) => {
                 const castedList = list as any as ListResult<T>;
                 const items = castedList.items;
 
