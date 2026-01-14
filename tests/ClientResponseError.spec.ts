@@ -85,5 +85,18 @@ describe("ClientResponseError", function () {
             assert.equal(err.originalError, err0);
             assert.include(err.message, "request was autocancelled");
         });
+
+        // React Native throws a plain Error with message "Aborted" instead of DOMException
+        test("with React Native abort error", function () {
+            const err0 = new Error("Aborted");
+            const err = new ClientResponseError(err0);
+
+            assert.equal(err.url, "");
+            assert.equal(err.status, 0);
+            assert.deepEqual(err.response, {});
+            assert.equal(err.isAbort, true);
+            assert.equal(err.originalError, err0);
+            assert.include(err.message, "request was autocancelled");
+        });
     });
 });
