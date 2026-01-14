@@ -2,7 +2,7 @@
 
 - Fixed abort request error detection on React Native Android/iOS ([#361](https://github.com/pocketbase/js-sdk/pull/361); thanks @nathanstitt).
 
-- Updated the default `getFullList()` batch size to 1000 for consistency with the Dart SDK and the latest API limits.
+- Updated the default `getFullList()` batch size to 1000 for consistency with the Dart SDK and the v0.23+ API limits.
 
 
 ## 0.26.5
