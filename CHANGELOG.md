@@ -1,3 +1,8 @@
+## 0.26.7
+
+- Normalized `pb.files.getURL()` to serialize the URL query params in the same manner as in the fetch methods (e.g. passing `null` or `undefined` as query param value will be skipped from the generated URL).
+
+
 ## 0.26.6
 
 - Fixed abort request error detection on React Native Android/iOS ([#361](https://github.com/pocketbase/js-sdk/pull/361); thanks @nathanstitt).

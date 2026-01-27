@@ -1,5 +1,5 @@
 import { BaseService } from "@/services/BaseService";
-import { CommonOptions, FileOptions } from "@/tools/options";
+import { CommonOptions, FileOptions, serializeQueryParams } from "@/tools/options";
 
 export class FileService extends BaseService {
     /**
@@ -39,14 +39,13 @@ export class FileService extends BaseService {
 
         let result = this.client.buildURL(parts.join("/"));
 
-        if (Object.keys(queryParams).length) {
-            // normalize the download query param for consistency with the Dart sdk
-            if (queryParams.download === false) {
-                delete queryParams.download;
-            }
+        // normalize the download query param for consistency with the Dart sdk
+        if (queryParams.download === false) {
+            delete queryParams.download;
+        }
 
-            const params = new URLSearchParams(queryParams);
-
+        const params = serializeQueryParams(queryParams)
+        if (params) {
             result += (result.includes("?") ? "&" : "?") + params;
         }
 
