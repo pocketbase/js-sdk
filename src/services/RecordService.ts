@@ -687,7 +687,7 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
                         await urlCallback(url);
                     } catch (err) {
-                        // reset the cancelController listener in case the request key is resued
+                        // reset the cancelController listener in case the request key is reused
                         if (cancelController?.signal?.onabort) {
                             cancelController.signal.onabort = null;
                         }

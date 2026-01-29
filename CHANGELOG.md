@@ -1,3 +1,8 @@
+## 0.26.8
+
+- Properly reject the `authWithOAuth2()` `Promise` when manually calling `pb.cancelRequest(requestKey)` _(previously the manual cancellation didn't account for the waiting realtime subscription)_.
+
+
 ## 0.26.7
 
 - Normalized `pb.files.getURL()` to serialize the URL query params in the same manner as in the fetch methods (e.g. passing `null` or `undefined` as query param value will be skipped from the generated URL).
