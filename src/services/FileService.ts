@@ -44,7 +44,7 @@ export class FileService extends BaseService {
             delete queryParams.download;
         }
 
-        const params = serializeQueryParams(queryParams)
+        const params = serializeQueryParams(queryParams);
         if (params) {
             result += (result.includes("?") ? "&" : "?") + params;
         }

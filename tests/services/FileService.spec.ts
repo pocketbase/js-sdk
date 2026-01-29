@@ -45,13 +45,16 @@ describe("FileService", function () {
         test("Should return a formatted url + query params", async function () {
             const record = { id: "456", collectionId: "123", collectionName: "789" };
             const result = service.getURL(record, "demo=", {
-                test:  "abc",
+                test: "abc",
                 skip1: null,
                 skip2: undefined,
-                arr:   [1,2],
+                arr: [1, 2],
             });
 
-            assert.deepEqual(result, "test_base_url/api/files/123/456/demo%3D?test=abc&arr=1&arr=2");
+            assert.deepEqual(
+                result,
+                "test_base_url/api/files/123/456/demo%3D?test=abc&arr=1&arr=2",
+            );
         });
     });
 

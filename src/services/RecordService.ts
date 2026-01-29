@@ -609,10 +609,12 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                     if (cancelController) {
                         cancelController.signal.onabort = () => {
                             cleanup();
-                            reject(new ClientResponseError({
-                                isAbort: true,
-                                message: "manually cancelled",
-                            }));
+                            reject(
+                                new ClientResponseError({
+                                    isAbort: true,
+                                    message: "manually cancelled",
+                                }),
+                            );
                         };
                     }
 
@@ -620,11 +622,13 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                     realtime.onDisconnect = (activeSubscriptions: Array<string>) => {
                         if (activeSubscriptions.length && reject) {
                             cleanup();
-                            reject(new ClientResponseError(
-                                new Error("realtime connection interrupted")
-                            ));
+                            reject(
+                                new ClientResponseError(
+                                    new Error("realtime connection interrupted"),
+                                ),
+                            );
                         }
-                    }
+                    };
 
                     try {
                         await realtime.subscribe("@oauth2", async (e) => {

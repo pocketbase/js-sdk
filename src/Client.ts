@@ -430,7 +430,8 @@ export default class Client {
                     // with exception of the realtime events and 204
                     if (
                         options.signal?.aborted ||
-                        (err?.name == "AbortError" || err?.message == "Aborted")
+                        err?.name == "AbortError" ||
+                        err?.message == "Aborted"
                     ) {
                         throw err;
                     }
