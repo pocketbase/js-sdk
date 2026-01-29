@@ -616,6 +616,16 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
                         };
                     }
 
+                    // disconnected due to network/server error
+                    realtime.onDisconnect = (activeSubscriptions: Array<string>) => {
+                        if (activeSubscriptions.length && reject) {
+                            cleanup();
+                            reject(new ClientResponseError(
+                                new Error("realtime connection interrupted")
+                            ));
+                        }
+                    }
+
                     try {
                         await realtime.subscribe("@oauth2", async (e) => {
                             const oldState = realtime.clientId;
