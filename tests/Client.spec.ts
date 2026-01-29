@@ -580,7 +580,7 @@ describe("Client", function () {
             });
 
             const response = client.send("/abc", { method: "GET" });
-            await expect(response).rejects.toThrow("request was autocancelled");
+            await expect(response).rejects.toThrow("request was aborted");
         });
     });
 

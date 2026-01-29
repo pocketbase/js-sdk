@@ -601,17 +601,21 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
                 const redirectURL = this.client.buildURL("/api/oauth2-redirect");
 
-                // find the AbortController associated with the current request key (if any)
-                const cancelController = requestKey
-                    ? this.client["cancelControllers"]?.[requestKey]
-                    : undefined;
-                if (cancelController) {
-                    cancelController.signal.onabort = () => {
-                        cleanup();
-                    };
-                }
-
                 return new Promise(async (resolve, reject) => {
+                    // find the AbortController associated with the current request key (if any)
+                    const cancelController = requestKey
+                        ? this.client["cancelControllers"]?.[requestKey]
+                        : undefined;
+                    if (cancelController) {
+                        cancelController.signal.onabort = () => {
+                            cleanup();
+                            reject(new ClientResponseError({
+                                isAbort: true,
+                                message: "manually cancelled",
+                            }));
+                        };
+                    }
+
                     try {
                         await realtime.subscribe("@oauth2", async (e) => {
                             const oldState = realtime.clientId;
@@ -683,6 +687,11 @@ export class RecordService<M = RecordModel> extends CrudService<M> {
 
                         await urlCallback(url);
                     } catch (err) {
+                        // reset the cancelController listener in case the request key is resued
+                        if (cancelController?.signal?.onabort) {
+                            cancelController.signal.onabort = null;
+                        }
+
                         cleanup();
                         reject(new ClientResponseError(err));
                     }

@@ -519,7 +519,7 @@ export default class Client {
             });
         }
 
-        // handle auto cancelation for duplicated pending request
+        // handle auto cancellation for duplicated pending request
         if (this.enableAutoCancellation && options.requestKey !== null) {
             const requestKey = options.requestKey || (options.method || "GET") + path;
 
@@ -528,6 +528,8 @@ export default class Client {
             // cancel previous pending requests
             this.cancelRequest(requestKey);
 
+            // @todo evaluate if a cleanup after the request is necessary
+            // (check also authWithOAuth2 as it currently relies on the controller)
             const controller = new AbortController();
             this.cancelControllers[requestKey] = controller;
             options.signal = controller.signal;
