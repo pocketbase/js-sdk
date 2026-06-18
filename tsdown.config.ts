@@ -34,7 +34,7 @@ export default defineConfig([
     // !!!
     //
     // Browser-friendly IIFE bundle — PocketBase client only
-    // Entry key is "pocketbase"
+    // Entry key is "index"
     {
         entry: {"index": "src/Client.ts"},
         format: "iife",
