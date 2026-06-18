@@ -29,7 +29,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 ### Browser (manually via script tag)
 
 ```html
-<script src="/path/to/dist/pocketbase.umd.js"></script>
+<script src="/path/to/pocketbase/dist/index.umd.js"></script>
 <script type="text/javascript">
     const pb = new PocketBase("https://example.com")
     ...
@@ -39,7 +39,7 @@ Official JavaScript SDK (browser and node) for interacting with the [PocketBase 
 _OR if you are using ES modules:_
 ```html
 <script type="module">
-    import PocketBase from '/path/to/dist/pocketbase.es.mjs'
+    import PocketBase from '/path/to/pocketbase/dist/index.js'
 
     const pb = new PocketBase("https://example.com")
     ...
@@ -522,7 +522,7 @@ declare global {
 
 To integrate with Astro SSR, you could create the PocketBase client in the [Middleware](https://docs.astro.build/en/guides/middleware) and pass it to the Astro components using the `Astro.locals`.
 
-```ts 
+```ts
 // src/middleware/index.ts
 import PocketBase from 'pocketbase';
 

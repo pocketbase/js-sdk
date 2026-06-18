@@ -1,6 +1,7 @@
 {
     "version": "0.27.0",
     "name": "pocketbase",
+    "type": "module",
     "description": "PocketBase JavaScript SDK",
     "author": "Gani Georgiev",
     "license": "MIT",
@@ -8,15 +9,18 @@
         "type": "git",
         "url": "git://github.com/pocketbase/js-sdk.git"
     },
+    "files": [
+      "dist"
+    ],
     "exports": {
-        ".": "./dist/pocketbase.es.mjs",
-        "./cjs": "./dist/pocketbase.cjs.js",
-        "./umd": "./dist/pocketbase.umd.js"
+        ".": "./dist/index.js",
+        "./cjs": "./dist/index.cjs",
+        "./umd": "./dist/index.umd.js"
     },
-    "main": "./dist/pocketbase.es.mjs",
-    "module": "./dist/pocketbase.es.mjs",
-    "react-native": "./dist/pocketbase.es.js",
-    "types": "./dist/pocketbase.es.d.mts",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "react-native": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "keywords": [
         "pocketbase",
         "pocketbase-js",
@@ -31,16 +35,15 @@
     },
     "scripts": {
         "format": "npx prettier ./src ./tests --write",
-        "build": "rm -rf dist && rollup -c",
-        "dev": "rollup -c -w",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest",
         "prepublishOnly": "npm run build"
     },
     "devDependencies": {
-        "@rollup/plugin-terser": "^0.4.3",
-        "prettier": "3.2.4",
-        "rollup": "^4.0.0",
-        "rollup-plugin-ts": "^3.0.0",
+        "@types/bun": "^1.3.14",
+        "prettier": "3.8.4",
+        "tsdown": "^0.22.3",
         "typescript": "^6.0.3",
         "vitest": "^4.1.9"
     }
