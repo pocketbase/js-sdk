@@ -42,6 +42,6 @@
         "rollup": "^4.0.0",
         "rollup-plugin-ts": "^3.0.0",
         "typescript": "^6.0.3",
-        "vitest": "^2.0.0"
+        "vitest": "^4.1.9"
     }
 }

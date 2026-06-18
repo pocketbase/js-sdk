@@ -73,11 +73,11 @@ describe("LogService", function () {
         });
 
         test("Should return a 404 error if id is empty", async function () {
-            expect(service.getOne("")).rejects.toThrow("Missing required log id.");
-            expect(service.getOne(null as any)).rejects.toThrow(
+            await expect(service.getOne("")).rejects.toThrow("Missing required log id.");
+            await expect(service.getOne(null as any)).rejects.toThrow(
                 "Missing required log id.",
             );
-            expect(service.getOne(undefined as any)).rejects.toThrow(
+            await expect(service.getOne(undefined as any)).rejects.toThrow(
                 "Missing required log id.",
             );
         });

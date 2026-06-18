@@ -305,13 +305,13 @@ export function crudServiceTestsSuite<M>(
             test("Should return a 404 error if id is empty", async function () {
                 const options = { q1: "abc", headers: { "x-test": "789" } };
 
-                expect(service.getOne("", options)).rejects.toThrow(
+                await expect(service.getOne("", options)).rejects.toThrow(
                     "Missing required record id.",
                 );
-                expect(service.getOne(null as any, options)).rejects.toThrow(
+                await expect(service.getOne(null as any, options)).rejects.toThrow(
                     "Missing required record id.",
                 );
-                expect(service.getOne(undefined as any, options)).rejects.toThrow(
+                await expect(service.getOne(undefined as any, options)).rejects.toThrow(
                     "Missing required record id.",
                 );
             });
