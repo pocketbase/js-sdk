@@ -1,7 +1,7 @@
 import { ClientResponseError } from "@/ClientResponseError";
 import { BaseService } from "@/services/BaseService";
-import { ListResult, LogModel } from "@/tools/dtos";
-import { CommonOptions, ListOptions, LogStatsOptions } from "@/tools/options";
+import type { ListResult, LogModel } from "@/tools/dtos";
+import type { CommonOptions, ListOptions, LogStatsOptions } from "@/tools/options";
 
 export interface HourlyStats {
     total: number;

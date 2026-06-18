@@ -1,4 +1,4 @@
-import { BaseAuthStore, AuthRecord } from "@/stores/BaseAuthStore";
+import { BaseAuthStore, type AuthRecord } from "@/stores/BaseAuthStore";
 
 /**
  * The default token store for browsers with auto fallback

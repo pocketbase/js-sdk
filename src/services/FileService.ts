@@ -1,5 +1,9 @@
 import { BaseService } from "@/services/BaseService";
-import { CommonOptions, FileOptions, serializeQueryParams } from "@/tools/options";
+import {
+    type CommonOptions,
+    type FileOptions,
+    serializeQueryParams,
+} from "@/tools/options";
 
 export class FileService extends BaseService {
     /**

@@ -1,11 +1,11 @@
 import Client from "@/Client";
 import { ClientResponseError } from "@/ClientResponseError";
-import { RealtimeService, UnsubscribeFunc } from "@/services/RealtimeService";
+import { RealtimeService, type UnsubscribeFunc } from "@/services/RealtimeService";
 import { BaseAuthStore } from "@/stores/BaseAuthStore";
 import { CrudService } from "@/services/CrudService";
-import { ListResult, RecordModel } from "@/tools/dtos";
+import type { ListResult, RecordModel } from "@/tools/dtos";
 import { normalizeLegacyOptionsArgs } from "@/tools/legacy";
-import {
+import type {
     CommonOptions,
     RecordFullListOptions,
     RecordListOptions,

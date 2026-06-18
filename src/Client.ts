@@ -12,10 +12,10 @@ import { BackupService } from "@/services/BackupService";
 import { CronService } from "@/services/CronService";
 import { SQLService } from "@/services/SQLService";
 import { BatchService } from "@/services/BatchService";
-import { RecordModel } from "@/tools/dtos";
+import type { RecordModel } from "@/tools/dtos";
 import {
-    SendOptions,
-    FileOptions,
+    type SendOptions,
+    type FileOptions,
     normalizeUnknownQueryParams,
     serializeQueryParams,
 } from "@/tools/options";

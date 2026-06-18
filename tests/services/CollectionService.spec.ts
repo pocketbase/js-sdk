@@ -3,7 +3,7 @@ import { FetchMock } from "../mocks";
 import { crudServiceTestsSuite } from "../suites";
 import Client from "@/Client";
 import { CollectionService } from "@/services/CollectionService";
-import { CollectionModel } from "@/tools/dtos";
+import type { CollectionModel } from "@/tools/dtos";
 
 describe("CollectionService", function () {
     const client = new Client("test_base_url");
@@ -98,11 +98,13 @@ describe("CollectionService", function () {
 
     describe("getAllOAuth2Providers()", function () {
         test("Should send OAuth2 providers list request", async function () {
-            const mockReply = [{name: "test_name", displayName: "", logo: ""}]
+            const mockReply = [{ name: "test_name", displayName: "", logo: "" }];
 
             fetchMock.on({
                 method: "GET",
-                url: service.client.buildURL("/api/collections/meta/oauth2-providers?q1=456"),
+                url: service.client.buildURL(
+                    "/api/collections/meta/oauth2-providers?q1=456",
+                ),
                 additionalMatcher: (_, config) => {
                     return config?.headers?.["x-test"] === "123";
                 },
@@ -121,7 +123,7 @@ describe("CollectionService", function () {
 
     describe("dryRunViewQuery()", function () {
         test("Should send a dry run view query request", async function () {
-            const mockReply = [{id: 1}]
+            const mockReply = [{ id: 1 }];
 
             fetchMock.on({
                 method: "POST",

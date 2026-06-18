@@ -83,9 +83,9 @@ export interface OAuth2Provider {
 }
 
 export interface ConfigurableOAuth2Provider {
-    name:        string;
+    name: string;
     displayName: string;
-    logo:        string;
+    logo: string;
 }
 
 export interface OAuth2Config {

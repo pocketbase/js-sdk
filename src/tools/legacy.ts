@@ -1,4 +1,4 @@
-import { SendOptions } from "@/tools/options";
+import type { SendOptions } from "@/tools/options";
 
 export function normalizeLegacyOptionsArgs(
     legacyWarn: string,

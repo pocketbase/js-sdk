@@ -1,6 +1,6 @@
 import { CrudService } from "@/services/CrudService";
-import { CommonOptions } from "@/tools/options";
-import { CollectionModel, ConfigurableOAuth2Provider } from "@/tools/dtos";
+import type { CommonOptions } from "@/tools/options";
+import type { CollectionModel, ConfigurableOAuth2Provider } from "@/tools/dtos";
 
 export class CollectionService extends CrudService<CollectionModel> {
     /**

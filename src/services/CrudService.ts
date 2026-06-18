@@ -1,7 +1,7 @@
 import { BaseService } from "@/services/BaseService";
 import { ClientResponseError } from "@/ClientResponseError";
-import { ListResult } from "@/tools/dtos";
-import { CommonOptions, ListOptions, FullListOptions } from "@/tools/options";
+import type { ListResult } from "@/tools/dtos";
+import type { CommonOptions, ListOptions, FullListOptions } from "@/tools/options";
 
 export abstract class CrudService<M> extends BaseService {
     /**

@@ -1,5 +1,5 @@
 import { BaseService } from "@/services/BaseService";
-import { CommonOptions } from "@/tools/options";
+import type { CommonOptions } from "@/tools/options";
 
 export interface BackupFileInfo {
     key: string;

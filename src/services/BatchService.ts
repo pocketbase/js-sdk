@@ -1,8 +1,8 @@
 import { BaseService } from "@/services/BaseService";
 import { isFile, isFormData, convertFormDataToObject } from "@/tools/formdata";
 import {
-    SendOptions,
-    RecordOptions,
+    type SendOptions,
+    type RecordOptions,
     normalizeUnknownQueryParams,
     serializeQueryParams,
 } from "@/tools/options";

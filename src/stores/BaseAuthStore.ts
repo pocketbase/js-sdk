@@ -1,6 +1,6 @@
-import { cookieParse, cookieSerialize, SerializeOptions } from "@/tools/cookie";
+import { cookieParse, cookieSerialize, type SerializeOptions } from "@/tools/cookie";
 import { isTokenExpired, getTokenPayload } from "@/tools/jwt";
-import { RecordModel } from "@/tools/dtos";
+import type { RecordModel } from "@/tools/dtos";
 
 export type AuthRecord = RecordModel | null;
 

@@ -1,6 +1,6 @@
 import { ClientResponseError } from "@/ClientResponseError";
 import { BaseService } from "@/services/BaseService";
-import { SendOptions, normalizeUnknownQueryParams } from "@/tools/options";
+import { type SendOptions, normalizeUnknownQueryParams } from "@/tools/options";
 
 interface promiseCallbacks {
     resolve: Function;
@@ -252,10 +252,7 @@ export class RealtimeService extends BaseService {
     }
 
     private async finalizePendingSubscriptions() {
-        if (
-            this.isProcessingPendingSubmits ||
-            !this.pendingSubmits.length
-        ) {
+        if (this.isProcessingPendingSubmits || !this.pendingSubmits.length) {
             return;
         }
 
@@ -280,7 +277,7 @@ export class RealtimeService extends BaseService {
 
             // another request came in while awaiting above
             if (this.pendingSubmits.length > 0) {
-              await this.finalizePendingSubscriptions();
+                await this.finalizePendingSubscriptions();
             }
         }
     }
