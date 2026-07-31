@@ -431,8 +431,8 @@ export class RealtimeService extends BaseService {
 
             this.submitSubscriptions()
                 .then(async () => {
-                    // This is in case new topics are being added while
-                    // the initial `submitSubscriptions()` is still pending
+                    // This is in case new topics were being added while
+                    // the initial `submitSubscriptions()` was still pending
                     //
                     // It is a best effort attempt to try to submit
                     // all topics before too eagerly resolving their promise.
@@ -472,7 +472,9 @@ export class RealtimeService extends BaseService {
                         }
                     }
 
-                    // just as a last resort in case the 3 retries from above weren't enough
+                    // just as a last resort in case the 3 retries from above weren't enough,
+                    // check for unset subscriptions after the pendingConnects has been resolved
+                    // (aka. subscribe in that case is no longer "blocked" because isConnected would be true)
                     if (this.hasUnsentSubscriptions()) {
                         await this.submitSubscriptions();
                     }
