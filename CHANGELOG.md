@@ -1,3 +1,8 @@
+## 0.27.1
+
+- Fixed realtime data race initial connection handling and added missing subscriptions resubmit as a fallback if all optimizations fail.
+
+
 ## 0.27.0
 
 - Added `pb.sql.run(query)` handler for the upcoming PocketBase v0.39.0 "SQL console" debug interface ([pocketbase#2236](https://github.com/pocketbase/pocketbase/issues/2236)).

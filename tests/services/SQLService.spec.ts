@@ -40,7 +40,10 @@ describe("SQLService", function () {
                 replyBody: Object.assign({}, mockReply),
             });
 
-            const result = await service.run("test_query", { q1: 123, headers: { "x-test": "456" } });
+            const result = await service.run("test_query", {
+                q1: 123,
+                headers: { "x-test": "456" },
+            });
 
             assert.deepEqual(result, mockReply);
         });

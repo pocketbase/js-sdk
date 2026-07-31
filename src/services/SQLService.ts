@@ -4,8 +4,8 @@ import { CommonOptions } from "@/tools/options";
 export interface SQLResult {
     execTime: number;
     affectedRows: number;
-    columns: Array<{ name:string; type:string; nullable:boolean; }>;
-    rows: Array<Array<string|null>>;
+    columns: Array<{ name: string; type: string; nullable: boolean }>;
+    rows: Array<Array<string | null>>;
 }
 
 export class SQLService extends BaseService {

@@ -252,10 +252,7 @@ export class RealtimeService extends BaseService {
     }
 
     private async finalizePendingSubscriptions() {
-        if (
-            this.isProcessingPendingSubmits ||
-            !this.pendingSubmits.length
-        ) {
+        if (this.isProcessingPendingSubmits || !this.pendingSubmits.length) {
             return;
         }
 
@@ -280,7 +277,7 @@ export class RealtimeService extends BaseService {
 
             // another request came in while awaiting above
             if (this.pendingSubmits.length > 0) {
-              await this.finalizePendingSubscriptions();
+                await this.finalizePendingSubscriptions();
             }
         }
     }
@@ -433,7 +430,30 @@ export class RealtimeService extends BaseService {
             this.lastSentSubscriptions = [];
 
             this.submitSubscriptions()
-                .then(() => {
+                .then(async () => {
+                    // This is in case new topics are being added while
+                    // the initial `submitSubscriptions()` is still pending
+                    //
+                    // It is a best effort attempt to try to submit
+                    // all topics before too eagerly resolving their promise.
+                    //
+                    // Or in other words, when there is no SSE established yet
+                    // and the user calls something like:
+                    // ```js
+                    // const p1 = pb.collection("col").subscribe("topic2")
+                    // queueMicrotask(() => {
+                    //   const p2 = pb.collection("col").subscribe("topic2")
+                    // })
+                    // ```
+                    // We want both p1 and p2 to complete AFTER their subscribe
+                    // (SSE connect + submit subscription) calls complete.
+                    let maxResubmit = 3;
+                    while (this.hasUnsentSubscriptions() && maxResubmit > 0) {
+                        maxResubmit--;
+                        await this.submitSubscriptions();
+                    }
+
+                    // resolve connect promises
                     for (let p of this.pendingConnects) {
                         p.resolve();
                     }
@@ -450,6 +470,11 @@ export class RealtimeService extends BaseService {
                         for (let listener of connectSubs[key]) {
                             listener(e);
                         }
+                    }
+
+                    // just as a last resort in case the 3 retries from above weren't enough
+                    if (this.hasUnsentSubscriptions()) {
+                        await this.submitSubscriptions();
                     }
                 })
                 .catch((err) => {
