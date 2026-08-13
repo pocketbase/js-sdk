@@ -1,3 +1,8 @@
+## 0.27.2
+
+- Fixed `pb.filter()` error when object with custom `toJSON()` returning a string is passed as param value.
+
+
 ## 0.27.1
 
 - Fixed realtime data race initial connection handling and added missing subscriptions resubmit as a fallback if all optimizations fail.

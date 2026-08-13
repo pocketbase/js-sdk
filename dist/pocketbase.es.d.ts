@@ -1426,11 +1426,11 @@ declare class Client {
      *
      * The following parameter values are supported:
      *
-     * - `string` (_single quotes are autoescaped_)
+     * - `string`
      * - `number`
      * - `boolean`
-     * - `Date` object (_stringified into the PocketBase datetime format_)
      * - `null`
+     * - `Date` object (_stringified into the PocketBase datetime format_)
      * - everything else is converted to a string using `JSON.stringify()`
      *
      * Example:

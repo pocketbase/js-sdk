@@ -274,11 +274,11 @@ export default class Client {
      *
      * The following parameter values are supported:
      *
-     * - `string` (_single quotes are autoescaped_)
+     * - `string`
      * - `number`
      * - `boolean`
-     * - `Date` object (_stringified into the PocketBase datetime format_)
      * - `null`
+     * - `Date` object (_stringified into the PocketBase datetime format_)
      * - everything else is converted to a string using `JSON.stringify()`
      *
      * Example:
@@ -303,15 +303,23 @@ export default class Client {
                     val = "" + val;
                     break;
                 case "string":
-                    val = "'" + val.replace(/'/g, "\\'") + "'";
+                    val = JSON.stringify(val);
                     break;
                 default:
                     if (val === null) {
                         val = "null";
                     } else if (val instanceof Date) {
-                        val = "'" + val.toISOString().replace("T", " ") + "'";
+                        val = JSON.stringify(val.toISOString().replace("T", " "));
                     } else {
-                        val = "'" + JSON.stringify(val).replace(/'/g, "\\'") + "'";
+                        const stringified = JSON.stringify(val);
+                        if (stringified.startsWith('"')) {
+                            // avoid double wrapping in case of custom toJSON that returns a string
+                            val = stringified;
+                        } else {
+                            // wrap in double quotes in case of regular array, object, etc.
+                            // (inner double quotes are expected to be already escaped)
+                            val = '"' + stringified + '"';
+                        }
                     }
             }
             raw = raw.replaceAll("{:" + key + "}", val);
