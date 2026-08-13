@@ -118,11 +118,12 @@ const records = await pb.collection("example").getList(1, 20, {
 
 The supported placeholder parameter values are:
 
-- `string` (_single quotes are autoescaped_)
+- `string`
 - `number`
 - `boolean`
-- `Date` object (_will be stringified into the format expected by PocketBase_)
 - `null`
+- `undefined` (stringified as `null`)
+- `Date` object (stringified into the format expected by PocketBase)
 - everything else is converted to a string using `JSON.stringify()`
 
 

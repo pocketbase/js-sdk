@@ -278,6 +278,7 @@ export default class Client {
      * - `number`
      * - `boolean`
      * - `null`
+     * - `undefined` (stringified as "null")
      * - `Date` object (_stringified into the PocketBase datetime format_)
      * - everything else is converted to a string using `JSON.stringify()`
      *
@@ -295,34 +296,33 @@ export default class Client {
             return raw;
         }
 
-        for (let key in params) {
-            let val = params[key];
+        function quotify(val: any): string {
             switch (typeof val) {
                 case "boolean":
                 case "number":
-                    val = "" + val;
-                    break;
+                    return "" + val;
                 case "string":
-                    val = JSON.stringify(val);
-                    break;
+                    return JSON.stringify(val);
                 default:
-                    if (val === null) {
-                        val = "null";
+                    if (val == null) {
+                        return "null";
                     } else if (val instanceof Date) {
-                        val = JSON.stringify(val.toISOString().replace("T", " "));
+                        return JSON.stringify(val.toISOString().replace("T", " "));
                     } else {
                         const stringified = JSON.stringify(val);
-                        if (stringified.startsWith('"')) {
-                            // avoid double wrapping in case of custom toJSON that returns a string
-                            val = stringified;
-                        } else {
-                            // wrap in double quotes in case of regular array, object, etc.
-                            // (inner double quotes are expected to be already escaped)
-                            val = '"' + stringified + '"';
+
+                        // wrap in double quotes in case of regular array, object, etc.
+                        if (stringified.startsWith('[') || stringified.startsWith("{")) {
+                            return JSON.stringify(stringified)
                         }
+
+                        return stringified;
                     }
             }
-            raw = raw.replaceAll("{:" + key + "}", val);
+        }
+
+        for (let key in params) {
+            raw = raw.replaceAll("{:" + key + "}", quotify(params[key]));
         }
 
         return raw;

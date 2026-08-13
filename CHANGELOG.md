@@ -1,3 +1,8 @@
+## 0.27.3
+
+- Allow `undefined` (stringified as `null`) and fixed small regression with the earlier `pb.filter()` fix that breaks when a plain array or object is passed as param value _(this is for the cases when direct `json` field value comparison is needed)_.
+
+
 ## 0.27.2
 
 - Fixed `pb.filter()` error when object with custom `toJSON()` returning a string is passed as param value.

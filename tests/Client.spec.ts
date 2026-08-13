@@ -194,13 +194,32 @@ describe("Client", function () {
         test("filter expression with all placeholder types", function () {
             const client = new Client("test_base_url", null, "test_language_A");
 
-            class customToJSON {
+            class customStringToJSON {
                 toJSON() {
-                    return "ab\"c"
+                    return "a\"b"
+                }
+            }
+
+            class customNumberToJSON {
+                toJSON() {
+                    return 123
+                }
+            }
+
+            class customArrayToJSON {
+                toJSON() {
+                    return [1, "a\"b"]
+                }
+            }
+
+            class customObjectToJSON {
+                toJSON() {
+                    return {"a": "a\"b"}
                 }
             }
 
             const params = {
+                test0: undefined,
                 test1: "a'b'c'\"\n\\",
                 test2: null,
                 test3: true,
@@ -209,9 +228,12 @@ describe("Client", function () {
                 test6: -123.45,
                 test7: 123.45,
                 test8: new Date("2023-10-18 10:11:12+0300"),
-                test9: [1, 2, 3, "test'123"],
+                test9: [1, 2, 3, "test'12\"3"],
                 test10: { a: "test'123" },
-                test11: new customToJSON(),
+                test11: new customStringToJSON(),
+                test12: new customNumberToJSON(),
+                test13: new customArrayToJSON(),
+                test14: new customObjectToJSON(),
             };
 
             let raw = "";
@@ -224,7 +246,7 @@ describe("Client", function () {
 
             assert.equal(
                 client.filter(raw, params),
-                `test1="a'b'c'\\"\\n\\\\" || test2=null || test3=true || test4=false || test5=123 || test6=-123.45 || test7=123.45 || test8="2023-10-18 07:11:12.000Z" || test9="[1,2,3,\"test'123\"]" || test10="{\"a\":\"test'123\"}" || test11="ab\\"c"`,
+                `test0=null || test1="a'b'c'\\"\\n\\\\" || test2=null || test3=true || test4=false || test5=123 || test6=-123.45 || test7=123.45 || test8="2023-10-18 07:11:12.000Z" || test9="[1,2,3,\\"test'12\\\\\\"3\\"]" || test10="{\\"a\\":\\"test'123\\"}" || test11="a\\"b" || test12=123 || test13="[1,\\"a\\\\\\"b\\"]" || test14="{\\"a\\":\\"a\\\\\\"b\\"}"`,
             );
         });
     });

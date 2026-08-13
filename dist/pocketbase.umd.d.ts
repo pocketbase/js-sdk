@@ -1415,6 +1415,7 @@ declare class Client {
      * - `number`
      * - `boolean`
      * - `null`
+     * - `undefined` (stringified as "null")
      * - `Date` object (_stringified into the PocketBase datetime format_)
      * - everything else is converted to a string using `JSON.stringify()`
      *
@@ -1438,6 +1439,7 @@ declare class Client {
      * - `number`
      * - `boolean`
      * - `null`
+     * - `undefined` (stringified as "null")
      * - `Date` object (_stringified into the PocketBase datetime format_)
      * - everything else is converted to a string using `JSON.stringify()`
      *
