@@ -981,6 +981,9 @@ const result = await batch.send()
 
 // Returns logs statistics.
 🔐 pb.logs.getStats(options = {});
+
+// Delete all logs.
+🔐 pb.logs.truncate(options = {});
 ```
 
 ---

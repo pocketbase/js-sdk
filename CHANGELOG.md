@@ -1,3 +1,8 @@
+## 0.28.0
+
+- Added `pb.logs.truncate()` handler for the new endpoint in the upcoming PocketBase v0.40.0.
+
+
 ## 0.27.3
 
 - Allow `undefined` (stringified as `null`) and fixed small regression with the earlier `pb.filter()` fix that breaks when a plain array or object is passed as param value _(this is for the cases when direct `json` field value comparison is needed)_.

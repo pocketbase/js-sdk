@@ -196,25 +196,25 @@ describe("Client", function () {
 
             class customStringToJSON {
                 toJSON() {
-                    return "a\"b"
+                    return 'a"b';
                 }
             }
 
             class customNumberToJSON {
                 toJSON() {
-                    return 123
+                    return 123;
                 }
             }
 
             class customArrayToJSON {
                 toJSON() {
-                    return [1, "a\"b"]
+                    return [1, 'a"b'];
                 }
             }
 
             class customObjectToJSON {
                 toJSON() {
-                    return {"a": "a\"b"}
+                    return { a: 'a"b' };
                 }
             }
 

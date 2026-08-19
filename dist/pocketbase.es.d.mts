@@ -1064,6 +1064,12 @@ declare class LogService extends BaseService {
      * @throws {ClientResponseError}
      */
     getStats(options?: LogStatsOptions): Promise<Array<HourlyStats>>;
+    /**
+     * Deletes all logs.
+     *
+     * @throws {ClientResponseError}
+     */
+    truncate(options?: CommonOptions): Promise<true>;
 }
 interface HealthCheckResponse {
     code: number;

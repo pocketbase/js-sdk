@@ -104,4 +104,25 @@ describe("LogService", function () {
             assert.deepEqual(result, expected);
         });
     });
+
+    describe("truncate()", function () {
+        test("Should send truncate logs request", async function () {
+            fetchMock.on({
+                method: "DELETE",
+                url: service.client.buildURL("/api/logs?q1=456"),
+                additionalMatcher: (_, config) => {
+                    return config?.headers?.["x-test"] === "123";
+                },
+                replyCode: 204,
+                replyBody: true,
+            });
+
+            const result = await service.truncate({
+                q1: 456,
+                headers: { "x-test": "123" },
+            });
+
+            assert.deepEqual(result, true);
+        });
+    });
 });

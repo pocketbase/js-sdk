@@ -77,4 +77,20 @@ export class LogService extends BaseService {
 
         return this.client.send("/api/logs/stats", options);
     }
+
+    /**
+     * Deletes all logs.
+     *
+     * @throws {ClientResponseError}
+     */
+    async truncate(options?: CommonOptions): Promise<true> {
+        options = Object.assign(
+            {
+                method: "DELETE",
+            },
+            options,
+        );
+
+        return this.client.send("/api/logs", options).then(() => true);
+    }
 }

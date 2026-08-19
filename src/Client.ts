@@ -312,8 +312,8 @@ export default class Client {
                         const stringified = JSON.stringify(val);
 
                         // wrap in double quotes in case of regular array, object, etc.
-                        if (stringified.startsWith('[') || stringified.startsWith("{")) {
-                            return JSON.stringify(stringified)
+                        if (stringified.startsWith("[") || stringified.startsWith("{")) {
+                            return JSON.stringify(stringified);
                         }
 
                         return stringified;
